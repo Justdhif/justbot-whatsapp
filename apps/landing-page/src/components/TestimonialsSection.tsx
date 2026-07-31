@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Star, MessageSquareQuote, ShieldCheck } from 'lucide-react';
 
 const testimonials = [
@@ -54,21 +55,23 @@ const testimonials = [
 ];
 
 export const TestimonialsSection: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <section id="testimonials" className="py-24 bg-[#010102] relative border-t border-[#23252a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0f1011] border border-[#23252a] text-xs font-mono text-[#25D366] mb-4">
-            <MessageSquareQuote className="w-3.5 h-3.5" /> User Wall of Love
+            <MessageSquareQuote className="w-3.5 h-3.5" /> {t('testimonials.eyebrow')}
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Loved by Developers, <br />
+            {t('testimonials.title1')} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#d0d6e0] to-[#25D366]">
-              Creators, & Business Owners
+              {t('testimonials.title2')}
             </span>
           </h2>
           <p className="mt-4 text-[#8a8f98] text-base sm:text-lg">
-            Lihat pengalaman nyata pengguna yang telah mengotomatisasi aktivitas harian mereka menggunakan modul JustBot WhatsApp.
+            {t('testimonials.subtitle')}
           </p>
         </div>
 
@@ -84,7 +87,6 @@ export const TestimonialsSection: React.FC = () => {
               className="glass-panel glass-panel-hover p-8 rounded-2xl flex flex-col justify-between relative group"
             >
               <div>
-                {/* Rating & Tag */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-1">
                     {[...Array(item.rating)].map((_, rIdx) => (
@@ -96,13 +98,11 @@ export const TestimonialsSection: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Quote */}
                 <p className="text-xs sm:text-sm text-[#d0d6e0] leading-relaxed italic mb-8">
                   "{item.quote}"
                 </p>
               </div>
 
-              {/* Author info */}
               <div className="flex items-center gap-3 pt-4 border-t border-[#23252a]">
                 <img
                   src={item.avatar}

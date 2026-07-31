@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Shield, FileText, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Shield, FileText, X } from 'lucide-react';
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
 
   return (
@@ -18,19 +20,19 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-lg text-white">JustBot</span>
             </div>
             <p className="text-xs text-[#8a8f98] max-w-sm leading-relaxed">
-              Asisten kecerdasan buatan WhatsApp generasi terbaru yang mengintegrasikan modul Coding, Finance, OCR, PDF AI, hingga Translator dalam satu platform interaktif.
+              {t('footer.desc')}
             </p>
 
             {/* Subtle System Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0f1011] border border-[#23252a] text-[11px] font-mono text-[#8a8f98]">
               <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-              <span>All Systems Operational 24/7</span>
+              <span>{t('footer.status')}</span>
             </div>
           </div>
 
           {/* Bot Modules Links */}
           <div>
-            <h4 className="text-xs font-mono text-white uppercase tracking-wider mb-4">Bot Modules</h4>
+            <h4 className="text-xs font-mono text-white uppercase tracking-wider mb-4">{t('footer.colModules')}</h4>
             <ul className="space-y-2.5 text-xs text-[#8a8f98]">
               <li><a href="#features" className="hover:text-white transition-colors">Coding Assistant</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Finance Manager</a></li>
@@ -42,11 +44,11 @@ export const Footer: React.FC = () => {
 
           {/* Interactive Navigation */}
           <div>
-            <h4 className="text-xs font-mono text-white uppercase tracking-wider mb-4">Navigation</h4>
+            <h4 className="text-xs font-mono text-white uppercase tracking-wider mb-4">{t('footer.colNav')}</h4>
             <ul className="space-y-2.5 text-xs text-[#8a8f98]">
-              <li><a href="#features" className="hover:text-white transition-colors">Modul Spesifikasi</a></li>
-              <li><a href="#demo" className="hover:text-white transition-colors">Live Simulator Sandbox</a></li>
-              <li><a href="#testimonials" className="hover:text-white transition-colors">User Testimonials</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">{t('footer.modSpec')}</a></li>
+              <li><a href="#demo" className="hover:text-white transition-colors">{t('footer.simSandbox')}</a></li>
+              <li><a href="#testimonials" className="hover:text-white transition-colors">{t('footer.testimonials')}</a></li>
               <li>
                 <a
                   href="https://wa.me/6282213111575?text=Halo%20JustBot%2C%20saya%20ingin%20mencoba%20bot"
@@ -54,7 +56,7 @@ export const Footer: React.FC = () => {
                   rel="noopener noreferrer"
                   className="hover:text-[#25D366] transition-colors"
                 >
-                  Hubungi Assistant
+                  {t('footer.contactAssist')}
                 </a>
               </li>
             </ul>
@@ -62,7 +64,7 @@ export const Footer: React.FC = () => {
 
           {/* Legal Section */}
           <div>
-            <h4 className="text-xs font-mono text-white uppercase tracking-wider mb-4">Legal & Privacy</h4>
+            <h4 className="text-xs font-mono text-white uppercase tracking-wider mb-4">{t('footer.colLegal')}</h4>
             <ul className="space-y-2.5 text-xs text-[#8a8f98]">
               <li>
                 <a
@@ -76,7 +78,7 @@ export const Footer: React.FC = () => {
                   className="hover:text-white transition-colors text-left flex items-center gap-1.5"
                 >
                   <Shield className="w-3.5 h-3.5 text-[#25D366]" />
-                  <span>Privacy Policy</span>
+                  <span>{t('footer.privacy')}</span>
                 </a>
               </li>
               <li>
@@ -91,7 +93,7 @@ export const Footer: React.FC = () => {
                   className="hover:text-white transition-colors text-left flex items-center gap-1.5"
                 >
                   <FileText className="w-3.5 h-3.5 text-[#25D366]" />
-                  <span>Terms of Service</span>
+                  <span>{t('footer.terms')}</span>
                 </a>
               </li>
             </ul>
@@ -100,13 +102,13 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Copyright & Subtle Links */}
         <div className="pt-8 border-t border-[#23252a] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#62666d]">
-          <p>© {new Date().getFullYear()} JustBot Inc. All rights reserved.</p>
+          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
           <div className="flex items-center gap-6">
             <a href="#privacy" onClick={() => setActiveModal('privacy')} className="hover:text-[#d0d6e0] transition-colors">
-              Privacy
+              {t('footer.privacy')}
             </a>
             <a href="#terms" onClick={() => setActiveModal('terms')} className="hover:text-[#d0d6e0] transition-colors">
-              Terms
+              {t('footer.terms')}
             </a>
           </div>
         </div>
