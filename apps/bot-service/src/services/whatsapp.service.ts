@@ -22,6 +22,7 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
         Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
+      timeout: 10000, // 10 seconds timeout
     });
 
     logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Message sent successfully to WhatsApp');

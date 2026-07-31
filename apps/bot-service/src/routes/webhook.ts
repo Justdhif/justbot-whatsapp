@@ -34,13 +34,10 @@ export async function webhookRoutes(fastify: FastifyInstance) {
   fastify.post('/webhook', async (request: FastifyRequest, reply: FastifyReply) => {
     const body: any = request.body;
 
-    // Immediately respond HTTP 200 OK to WhatsApp API to acknowledge receipt
-    reply.status(200).send({ status: 'success' });
-
     try {
       if (body.object && body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
         const messageObj = body.entry[0].changes[0].value.messages[0];
-        const from = messageObj.from; // User WhatsApp Phone Number
+        const from = messageObj.from;
 
         if (messageObj.type === 'text') {
           const incomingText = messageObj.text.body;
@@ -49,12 +46,14 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           // Process message through module router
           const botReply = await processIncomingMessage(incomingText);
 
-          // Send response back to user
+          // Await sending message before returning response to keep serverless function alive
           await sendWhatsAppMessage(from, botReply);
         }
       }
     } catch (error) {
       logger.error({ error }, 'Error processing incoming WhatsApp webhook payload');
     }
+
+    return reply.status(200).send({ status: 'success' });
   });
 }

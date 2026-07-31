@@ -10,6 +10,20 @@ const app = Fastify({
 
 app.register(formbody);
 
+// Root route (Welcome page)
+app.get('/', async () => {
+  return {
+    name: 'JustBot WhatsApp Service',
+    status: 'online',
+    version: '1.0.0',
+    description: 'WhatsApp Bot Service powered by Fastify, TypeScript, Groq AI & Meta Cloud API',
+    endpoints: {
+      health: '/health',
+      webhook: '/webhook',
+    },
+  };
+});
+
 // Health check endpoint
 app.get('/health', async () => {
   return { status: 'ok', service: 'justbot-whatsapp-service', timestamp: new Date() };
