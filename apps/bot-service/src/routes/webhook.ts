@@ -2,8 +2,21 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
-import { sendWhatsAppMessage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
+import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
 import { getUserSession, setUserActiveMode } from '../utils/session.js';
+
+// Module Banner Images mapping
+const MODULE_BANNERS: Record<string, string> = {
+  coding: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop',
+  finance: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1000&auto=format&fit=crop',
+  creator: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop',
+  translate: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop',
+  ocr: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop',
+  pdf: 'https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=1000&auto=format&fit=crop',
+  email: 'https://images.unsplash.com/photo-1557200134-90327ee9fafa?q=80&w=1000&auto=format&fit=crop',
+  reminder: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1000&auto=format&fit=crop',
+  util: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1000&auto=format&fit=crop',
+};
 
 interface WebhookQuery {
   'hub.mode'?: string;
@@ -75,6 +88,12 @@ export async function webhookRoutes(fastify: FastifyInstance) {
             if (detail) {
               setUserActiveMode(from, selectedMode);
 
+              // Send Module Image Banner first!
+              const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';
+              const bannerCaption = `${detail.icon} *WELCOME TO MODE: ${detail.name.toUpperCase()}*`;
+              await sendWhatsAppImage(from, bannerUrl, bannerCaption);
+
+              // Send Mode Active Status Message with Exit Buttons
               const startedText = `🟢 *MODE ${detail.name.toUpperCase()} AKTIF!* 🟢
 ══════════════════════════════════════
 ${detail.icon} *Deskripsi*: ${detail.desc}
@@ -100,6 +119,12 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
             const detail = MODULE_DETAILS[selectedMode];
 
             if (detail) {
+              // Send Module Image Preview Banner first!
+              const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';
+              const bannerCaption = `${detail.icon} *PREVIEW MODUL: ${detail.name.toUpperCase()}*`;
+              await sendWhatsAppImage(from, bannerUrl, bannerCaption);
+
+              // Send Info Details & Start Mode Button
               const previewText = `📌 *INFORMASI MODUL: ${detail.name.toUpperCase()}* ${detail.icon}
 ══════════════════════════════════════
 ${detail.desc}
@@ -162,17 +187,14 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
           // 5. Normal chat / Mode Active Chat / Special Julia query processing
           const botReply = await processIncomingMessage(from, userText);
 
-          // Check if message is a special query (like Julia)
           const lowerUserText = userText.toLowerCase();
           const isSpecialQuery = lowerUserText.includes('jujul') || lowerUserText.includes('julia') || lowerUserText.includes('irya') || lowerUserText.includes('salsabillah');
 
-          // If user is in an active mode, attach Exit quick reply option
           if (session.activeMode && !isSpecialQuery) {
             const detail = MODULE_DETAILS[session.activeMode];
             const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
             await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
           } else {
-            // For special queries or normal fallback guide
             if (isSpecialQuery) {
               await sendWhatsAppMessage(from, botReply);
             } else {

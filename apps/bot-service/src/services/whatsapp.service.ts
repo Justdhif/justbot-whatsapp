@@ -40,6 +40,42 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
   }
 }
 
+// Send Image Message directly with Caption text
+export async function sendWhatsAppImage(to: string, imageUrl: string, captionText: string): Promise<boolean> {
+  try {
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'image',
+      image: {
+        link: imageUrl,
+        caption: captionText,
+      },
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Image message sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp image message'
+    );
+    return false;
+  }
+}
+
 // Send Interactive Quick Reply Buttons (Max 3 Buttons)
 export async function sendWhatsAppButtons(
   to: string,
