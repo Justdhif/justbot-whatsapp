@@ -4,6 +4,7 @@ import { logger } from '../utils/logger.js';
 import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
 import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
 import { getUserSession, setUserActiveMode } from '../utils/session.js';
+import { isBotOnline } from '../utils/schedule.js';
 
 // Module Banner Images mapping
 const MODULE_BANNERS: Record<string, string> = {
@@ -44,9 +45,15 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     return reply.status(400).send('Bad Request');
   });
 
-  // POST /webhook - Handle Incoming WhatsApp Messages & Mode State Machine
+  // POST /webhook - Handle Incoming WhatsApp Messages & Schedule Gatekeeper
   fastify.post('/webhook', async (request: FastifyRequest, reply: FastifyReply) => {
     const body: any = request.body;
+
+    // Gatekeeper: Check if Bot is currently in Operational Hours
+    if (!isBotOnline()) {
+      logger.info('🌙 Bot is currently OFF / Outside Operational Hours. Ignoring message to save free Meta quota.');
+      return reply.status(200).send({ status: 'offline', message: 'Bot is outside operational hours' });
+    }
 
     try {
       if (body.object && body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
