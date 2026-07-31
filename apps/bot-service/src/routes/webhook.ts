@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
+import { getHelpMenu } from '../modules/utilities/utilities.handler.js';
 import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
 import { getUserSession, setUserActiveMode } from '../utils/session.js';
 import { isBotOnline } from '../utils/schedule.js';
@@ -59,9 +60,40 @@ export async function webhookRoutes(fastify: FastifyInstance) {
         // Extract WhatsApp Profile Name from contact metadata sent by Meta
         const senderName = valueObj.contacts?.[0]?.profile?.name || '';
 
-        // Gatekeeper: Check if Bot is currently OFF / Outside Operational Hours
-        if (!isBotOnline()) {
-          logger.info({ from, senderName }, '🌙 Bot is currently OFF / Outside Operational Hours.');
+        // Dynamic Timezone detection based on phone number prefix or region
+        // By default, Indonesian numbers are +62 (WIB = UTC+7, WITA = UTC+8, WIT = UTC+9)
+        // Indonesia phone prefixes map closely to zones:
+        // WITA (Bali, NTB, NTT, Kalimantan Timur/Selatan/Utara, Sulawesi): e.g., Kalimantan/Sulawesi/Bali numbers
+        // WIT (Maluku, Papua): e.g., Maluku/Papua numbers
+        // Since granular prefix lookup is complex, we can parse standard Indonesian timezone offsets:
+        // We'll look at the user session or standard defaults:
+        const session = getUserSession(from);
+
+        // Simple heuristic for Indonesian regions if number matches common WITA / WIT prefixes
+        // Or default to user settings. Let's make it smart:
+        // WITA offset is +8, WIT offset is +9. Default WIB is +7.
+        // We will default to WIB +7 unless specified, but let's check Kaltim (prefix matches or user can link/configure)
+        // For Kaltim/WITA numbers, common prefixes can be mapped or we can do a smart lookup.
+        // For now, let's detect WITA (+8) if number matches Kalimantan Timur/Sulawesi/Bali regions if possible.
+        // Even simpler: since Balikpapan (Jujul's area) / Kalimantan Timur is WITA, let's check prefixes:
+        // Common WITA/WIT prefixes or numbers. Let's allow detecting WITA (+8) for Kaltim/Sulawesi, or default to WIB (+7)
+        let tzOffset = 7;
+        let tzName = 'WIB (Asia/Jakarta)';
+
+        // Common Kalimantan Timur & WITA prefixes (e.g. Kartu As/Simpati/XL Kaltim: 081254, 081347, 082154, 085247, 085347, etc.)
+        const isWitaPrefix = /^(6281254|6281347|6282154|6285247|6285347|6281349|6285246|6282153|6281253|6285250|6285251|6285252|628138|628538)/.test(from);
+        if (isWitaPrefix) {
+          tzOffset = 8;
+          tzName = 'WITA (Asia/Makassar)';
+        }
+
+        // Save to session so we can display it in !menu
+        session.timezoneOffset = tzOffset;
+        session.timezoneName = tzName;
+
+        // Gatekeeper: Check if Bot is currently OFF / Outside Operational Hours using user local timezone offset
+        if (!isBotOnline(tzOffset)) {
+          logger.info({ from, senderName, tzName }, '🌙 Bot is currently OFF / Outside Operational Hours.');
 
           if (!hasBeenNotifiedToday(from)) {
             markUserNotifiedToday(from);
@@ -72,8 +104,8 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
 Halo${nameGreeting}! Terima kasih telah menghubungi *JustBot AI*.
 
-Saat ini bot sedang *OFF* / di luar jam operasional.
-🕒 *Jam Operasional*: ${env.BOT_OPERATIONAL_START} - ${env.BOT_OPERATIONAL_END} WIB
+Saat ini bot sedang *OFF* / di luar jam operasional pada zona waktu Anda (*${tzName}*).
+🕒 *Jam Operasional*: ${env.BOT_OPERATIONAL_START} - ${env.BOT_OPERATIONAL_END} ${tzName.split(' ')[0]}
 
 Silakan hubungi kami kembali saat jam operasional aktif. Terima kasih! 🙏✨`;
 
@@ -179,9 +211,8 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
 
           // 4. ACTION: User asks for !menu
           if (lower === '!menu' || lower === '/help' || lower === 'help' || lower === 'menu') {
-            const nameGreeting = senderName ? `, *${senderName}*` : '';
-            const bodyText = `Selamat datang di *JustBot AI*${nameGreeting}! 🤖✨\nSilakan pilih modul fitur yang ingin Anda jelajahi di bawah ini:`;
-
+            const menuText = getHelpMenu(senderName, session.timezoneName);
+            
             const sections = [
               {
                 title: '⚡ KODING & PRODUKTIVITAS',
@@ -211,9 +242,9 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
 
             const headerTitle = session.activeMode
               ? `🤖 MENU (Mode Aktif: ${session.activeMode.toUpperCase()})`
-              : '🤖 JUSTBOT MULTI-MODULE MENU';
+              : '🤖 JUSTBOT MENU';
 
-            await sendWhatsAppInteractiveList(from, bodyText, '📋 Pilih Modul Bot', sections, headerTitle);
+            await sendWhatsAppInteractiveList(from, menuText, '📋 Pilih Modul Bot', sections, headerTitle);
             return reply.status(200).send({ status: 'success' });
           }
 

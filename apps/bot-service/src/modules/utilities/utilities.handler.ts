@@ -11,62 +11,38 @@ Aturan Respon:
   return await askGroqAI(userPrompt, systemPrompt);
 }
 
-export function getHelpMenu(): string {
-  return `┌────────────────────────────────────────┐
-│   🤖  *JUSTBOT WHATSAPP MULTI-MODULE*  🤖   │
-└────────────────────────────────────────┘
-══════════════════════════════════════════
-
-Pilih modul dengan mengirimkan perintah unik di bawah:
-
-💰 *FINANCE ENGINE*
- └─ Ketik: \`!finance <pertanyaan>\`
- └─ _Analisis keuangan, 50/30/20, & investasi_
-
-🎥 *CONTENT CREATOR STUDIO*
- └─ Ketik: \`!creator <topik/ide>\`
- └─ _Ide konten viral, script TikTok, & hashtag_
-
-📄 *PDF & DOCUMENT AI*
- └─ Ketik: \`!pdf <pertanyaan/dokumen>\`
- └─ _Ringkasan eksekutif & bedah file PDF_
-
-📷 *SMART OCR SCANNER*
- └─ Ketik: \`!ocr <teks_hasil_scan>\`
- └─ _Rapikan teks ekstraksi dari gambar/struk_
-
-💻 *DEV CODING ASSISTANT*
- └─ Ketik: \`!coding <kode/soal>\`
- └─ _Refactoring, snippet kode, & debug error_
-
-🌍 *POLYGLOT TRANSLATOR*
- └─ Ketik: \`!translate <teks>\`
- └─ _Terjemahan kontekstual antar bahasa_
-
-📝 *WRITING ASSISTANT*
- └─ Ketik: \`!write <topik/draft>\`
- └─ _Penulisan esai, artikel, & perbaikan tone_
-
-📊 *DATA ANALYTICS*
- └─ Ketik: \`!analytics <data/soal>\`
- └─ _Statistik, tren angka, & ringkasan data_
-
-📅 *AGENDA & REMINDER*
- └─ Ketik: \`!reminder <agenda>\`
- └─ _To-do list terstruktur & jadwal kegiatan_
-
-☁️ *CLOUD STORAGE MANAGER*
- └─ Ketik: \`!cloud <pertanyaan/file>\`
- └─ _Struktur pohon folder & panduan drive_
-
-📧 *EXECUTIVE EMAIL MAKER*
- └─ Ketik: \`!email <tujuan_email>\`
- └─ _Draf email profesional & surat resmi_
-
-🛠️ *SMART UTILITIES*
- └─ Ketik: \`!util <pertanyaan>\`
- └─ _Kalkulator, konversi satuan, & info umum_
-
-══════════════════════════════════════════
-💡 _Kirimkan pesan biasa tanpa perintah untuk berbicara langsung dengan AI General Assistant JustBot._`;
+export function getHelpMenu(senderName?: string, timezoneName?: string): string {
+  const greetingName = senderName ? ` ${senderName}` : '';
+  const tzDisplay = timezoneName || 'WIB (Asia/Jakarta)';
+  
+  return `╭────────────────────────────
+│  ⚡ *JUSTBOT AI MULTI-SERVICE* ⚡
+╰────────────────────────────
+╭───「 *USER INFO* 」
+│ 👤 *Nama:* ${greetingName || 'Guest User'}
+│ 🌍 *Timezone:* ${tzDisplay}
+│ 🟢 *Status:* Online
+╰────────────────────────────
+╭───「 *BOT INFO* 」
+│ 🤖 *Bot Name:* JustBot-Service
+│ 🔗 *Engine:* Fastify & Groq AI
+│ 📅 *Active Days:* Sab - Kam (Jumat Libur)
+│ 🕒 *Active Hours:* 08.00 - 22.00 WIB
+╰────────────────────────────
+╭───「 *LIST MENU BOT* 」
+├─  💰  *.finance* ── [CuanBuddy App]
+├─  💻  *.coding* ── [Dev Program]
+├─  🎥  *.creator* ── [Content & Hooks]
+├─  📄  *.pdf* ── [Analyze Document]
+├─  📷  *.ocr* ── [Extract Image Text]
+├─  🌍  *.translate* ── [Multi-Language]
+├─  📅  *.reminder* ── [Daily Task & Agenda]
+├─  📧  *.email* ── [Professional Writer]
+├─  🛠️  *.util* ── [General Utilities]
+╰────────────────────────────
+╭───「 *SHORTCUTS & COMMANDS* 」
+├─  🚀  *!menu* ── Menampilkan menu utama ini
+├─  ⏹️  *!exit* ── Keluar dari mode modul aktif
+╰────────────────────────────
+📌 *Tips*: Ketik nama modul dengan tanda seru (contoh: *!finance*) atau klik tombol daftar menu di bawah untuk mulai menjelajahi modul!`;
 }

@@ -1,6 +1,9 @@
 import { env } from '../config/env.js';
 
-export function isBotOnline(): boolean {
+/**
+ * Checks if the bot is online based on a given offset in hours (default: 7 for Asia/Jakarta / WIB)
+ */
+export function isBotOnline(offsetHours: number = 7): boolean {
   if (!env.BOT_ENABLE_SCHEDULE) {
     return true; // Schedule disabled, bot is always online
   }
@@ -8,12 +11,12 @@ export function isBotOnline(): boolean {
   // Get current UTC date
   const now = new Date();
 
-  // Convert UTC time explicitly to Asia/Jakarta (WIB = UTC + 7 hours)
-  const wibTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  // Convert UTC time explicitly to target local time
+  const localTime = new Date(now.getTime() + offsetHours * 60 * 60 * 1000);
 
-  const hour = wibTime.getUTCHours();
-  const minute = wibTime.getUTCMinutes();
-  const day = wibTime.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const hour = localTime.getUTCHours();
+  const minute = localTime.getUTCMinutes();
+  const day = localTime.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
   // Convert JS day (0=Sun, 1=Mon, ..., 6=Sat) to Schedule day (1=Mon, 2=Tue, ..., 6=Sat, 7=Sun)
   const currentDay = day === 0 ? 7 : day;
