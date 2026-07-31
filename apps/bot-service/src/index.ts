@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import formbody from '@fastify/formbody';
+import serverless from 'serverless-http';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
 import { webhookRoutes } from './routes/webhook.js';
@@ -10,7 +11,7 @@ const app = Fastify({
 
 app.register(formbody);
 
-// Root route (Welcome page)
+// Root route
 app.get('/', async () => {
   return {
     name: 'JustBot WhatsApp Service',
@@ -42,13 +43,15 @@ async function startServer() {
   }
 }
 
-// If running locally, start HTTP server
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+// If running locally
+if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY && !process.env.VERCEL) {
   startServer();
 }
 
-// Export Fastify handler for Vercel Serverless
+// Export handler compatible for both Vercel & Netlify Serverless Functions
 export default async function handler(req: any, res: any) {
   await app.ready();
   app.server.emit('request', req, res);
 }
+
+export const netlifyHandler = serverless(app as any);
