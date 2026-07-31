@@ -4,10 +4,7 @@ import { handlePdfAiModule } from './pdf-ai/pdf-ai.handler.js';
 import { handleOcrModule } from './ocr/ocr.handler.js';
 import { handleCodingModule } from './coding/coding.handler.js';
 import { handleTranslatorModule } from './translator/translator.handler.js';
-import { handleWritingModule } from './writing/writing.handler.js';
-import { handleAnalyticsModule } from './analytics/analytics.handler.js';
 import { handleReminderModule } from './reminder/reminder.handler.js';
-import { handleCloudStorageModule } from './cloud-storage/cloud-storage.handler.js';
 import { handleEmailModule } from './email/email.handler.js';
 import { handleUtilitiesModule, getHelpMenu } from './utilities/utilities.handler.js';
 import { askGroqAI } from '../services/groq.service.js';
@@ -38,17 +35,8 @@ export async function processIncomingMessage(text: string): Promise<string> {
   if (lower.startsWith('!translate')) {
     return await handleTranslatorModule(trimmed.replace(/^!translate\s*/i, ''));
   }
-  if (lower.startsWith('!write')) {
-    return await handleWritingModule(trimmed.replace(/^!write\s*/i, ''));
-  }
-  if (lower.startsWith('!analytics')) {
-    return await handleAnalyticsModule(trimmed.replace(/^!analytics\s*/i, ''));
-  }
   if (lower.startsWith('!reminder')) {
     return await handleReminderModule(trimmed.replace(/^!reminder\s*/i, ''));
-  }
-  if (lower.startsWith('!cloud')) {
-    return await handleCloudStorageModule(trimmed.replace(/^!cloud\s*/i, ''));
   }
   if (lower.startsWith('!email')) {
     return await handleEmailModule(trimmed.replace(/^!email\s*/i, ''));
