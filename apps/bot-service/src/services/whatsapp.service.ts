@@ -4,6 +4,7 @@ import { logger } from '../utils/logger.js';
 
 const WA_API_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/messages`;
 
+// Send plain text message
 export async function sendWhatsAppMessage(to: string, messageText: string): Promise<boolean> {
   try {
     const payload = {
@@ -22,7 +23,7 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
         Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      timeout: 10000, // 10 seconds timeout
+      timeout: 10000,
     });
 
     logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Message sent successfully to WhatsApp');
@@ -34,6 +35,63 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
         errorResponse: error?.response?.data || error.message,
       },
       'Failed to send WhatsApp message'
+    );
+    return false;
+  }
+}
+
+// Send Interactive List Message (Up to 10 Options/Items) with Header Image/Text
+export async function sendWhatsAppInteractiveList(
+  to: string,
+  bodyText: string,
+  buttonTitle: string,
+  sections: { title: string; rows: { id: string; title: string; description?: string }[] }[],
+  headerText?: string
+): Promise<boolean> {
+  try {
+    const interactivePayload: any = {
+      type: 'list',
+      body: {
+        text: bodyText,
+      },
+      action: {
+        button: buttonTitle.slice(0, 20), // Button label (e.g. "Pilih Modul AI")
+        sections: sections,
+      },
+    };
+
+    if (headerText) {
+      interactivePayload.header = {
+        type: 'text',
+        text: headerText,
+      };
+    }
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'interactive',
+      interactive: interactivePayload,
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Interactive list message sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp interactive list message'
     );
     return false;
   }
