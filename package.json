@@ -1,0 +1,17 @@
+{
+  "name": "justbot-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JustBot WhatsApp Monorepo Workspace",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:bot": "npm --prefix apps/bot-service run dev",
+    "build:bot": "npm --prefix apps/bot-service run build",
+    "start:bot": "npm --prefix apps/bot-service run start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
