@@ -125,7 +125,7 @@ export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: 
   },
 };
 
-export async function processIncomingMessage(userId: string, text: string): Promise<string> {
+export async function processIncomingMessage(userId: string, text: string, senderName?: string): Promise<string> {
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
 
@@ -175,14 +175,16 @@ export async function processIncomingMessage(userId: string, text: string): Prom
   if (lower.startsWith('!email')) return await handleEmailModule(trimmed.replace(/^!email\s*/i, ''));
   if (lower.startsWith('!util')) return await handleUtilitiesModule(trimmed.replace(/^!util\s*/i, ''));
 
-  // Fallback Guide Response when user sends random text outside active mode
-  return `🤖 *JUSTBOT AI ASSISTANT* 🤖
-══════════════════════════════════════
+  // Intelligent Conversational AI Fallback with WhatsApp Profile Name Injection!
+  const namePrompt = senderName ? `Nama profil WhatsApp pengguna ini adalah "${senderName}". Sapa atau panggil namanya bila sesuai agar percakapan terasa personal.` : '';
 
-Halo! Maaf, perintah atau pesan yang Anda kirimkan belum dikenali.
+  const conversationalSystemPrompt = `Anda adalah 🤖 *JustBot AI*, asisten pintar WhatsApp yang sangat ramah, responsif, santai, cerdas, dan menyenangkan.
+${namePrompt}
 
-💡 *Petunjuk*:
-Untuk mulai menggunakan bot dan memilih modul fitur yang Anda inginkan (seperti *Coding, Finance, Translator, dll*), silakan ketik:
+Aturan Penting:
+1. Jawablah pesan pengguna secara LANGSUNG, ALAMI, DAN INTERAKTIF layaknya teman ngobrol yang asik di WhatsApp.
+2. Tanggapi dengan gaya santai namun sopan, gunakan emoji yang cocok (seperti 😭, ✌️, 😊, 🤖, ✨).
+3. Jika pengguna menyapa kasual (seperti 'p', 'halo', 'oi'), langsung sapa balik dengan hangat dan panggil nama profilnya bila ada!`;
 
-👉 \`!menu\` atau tekan tombol di bawah ini:`;
+  return await askGroqAI(trimmed, conversationalSystemPrompt);
 }

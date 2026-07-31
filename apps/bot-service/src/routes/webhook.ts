@@ -46,32 +46,36 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     return reply.status(400).send('Bad Request');
   });
 
-  // POST /webhook - Handle Incoming WhatsApp Messages & Offline One-Time Notifier
+  // POST /webhook - Handle Incoming WhatsApp Messages & Profile Name Extraction
   fastify.post('/webhook', async (request: FastifyRequest, reply: FastifyReply) => {
     const body: any = request.body;
 
     try {
       if (body.object && body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
-        const messageObj = body.entry[0].changes[0].value.messages[0];
+        const valueObj = body.entry[0].changes[0].value;
+        const messageObj = valueObj.messages[0];
         const from = messageObj.from;
+
+        // Extract WhatsApp Profile Name from contact metadata sent by Meta
+        const senderName = valueObj.contacts?.[0]?.profile?.name || '';
 
         // Gatekeeper: Check if Bot is currently OFF / Outside Operational Hours
         if (!isBotOnline()) {
-          logger.info({ from }, '🌙 Bot is currently OFF / Outside Operational Hours.');
+          logger.info({ from, senderName }, '🌙 Bot is currently OFF / Outside Operational Hours.');
 
-          // Send OFF notification ONLY ONCE per user per day to save Meta quota!
           if (!hasBeenNotifiedToday(from)) {
             markUserNotifiedToday(from);
 
-            const offMessage = `🌙 *JUSTBOT SEDANG OFF (LIDUR / DILUAR JAM OPERASIONAL)* 🌙
+            const nameGreeting = senderName ? ` ${senderName}` : '';
+            const offMessage = `🌙 *JUSTBOT SEDANG OFF (LIBUR / DILUAR JAM OPERASIONAL)* 🌙
 ══════════════════════════════════════
 
-Halo! Terima kasih telah menghubungi *JustBot AI*.
+Halo${nameGreeting}! Terima kasih telah menghubungi *JustBot AI*.
 
- Saat ini bot sedang *OFF* / di luar jam operasional.
+Saat ini bot sedang *OFF* / di luar jam operasional.
 🕒 *Jam Operasional*: ${env.BOT_OPERATIONAL_START} - ${env.BOT_OPERATIONAL_END} WIB
 
-Silakan hubungi kami kembali saat jam operasional aktif. Pesan Anda berikutnya saat bot OFF tidak akan direspon demi menghemat kuota. Terima kasih! 🙏✨`;
+Silakan hubungi kami kembali saat jam operasional aktif. Terima kasih! 🙏✨`;
 
             await sendWhatsAppMessage(from, offMessage);
           } else {
@@ -92,7 +96,7 @@ Silakan hubungi kami kembali saat jam operasional aktif. Pesan Anda berikutnya s
         }
 
         if (userText) {
-          logger.info({ from, userText }, 'Processing user message / selection');
+          logger.info({ from, senderName, userText }, 'Processing user message / selection');
 
           const trimmed = userText.trim();
           const lower = trimmed.toLowerCase();
@@ -102,7 +106,7 @@ Silakan hubungi kami kembali saat jam operasional aktif. Pesan Anda berikutnya s
           if (lower === 'action:exit' || lower === '!exit') {
             setUserActiveMode(from, null);
 
-            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan pilih modul baru atau ketik \`!menu\`.`;
+            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`!menu\` untuk memilih modul baru.`;
             const exitButtons = [{ id: '!menu', title: '📋 Buka Menu' }];
             await sendWhatsAppButtons(from, exitText, exitButtons, '🤖 MODE OFF');
             return reply.status(200).send({ status: 'success' });
@@ -126,7 +130,7 @@ Silakan hubungi kami kembali saat jam operasional aktif. Pesan Anda berikutnya s
 ══════════════════════════════════════
 ${detail.icon} *Deskripsi*: ${detail.desc}
 
-💡 *Status*: Sekarang Anda berada di mode khusus *${detail.name}*. Semua pertanyaan yang Anda kirim akan langsung dijawab oleh modul ini tanpa perlu mengetikkan perintah!
+💡 *Status*: Sekarang Anda berada di mode khusus *${detail.name}*. Semua pertanyaan yang Anda kirim akan langsung dijawab oleh modul ini!
 
 ══════════════════════════════════════
 👇 *Jika ingin keluar dari mode ini, klik tombol di bawah:*`;
@@ -175,7 +179,8 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
 
           // 4. ACTION: User asks for !menu
           if (lower === '!menu' || lower === '/help' || lower === 'help' || lower === 'menu') {
-            const bodyText = `Selamat datang di *JustBot AI*! 🤖✨\nSilakan pilih modul fitur yang ingin Anda jelajahi di bawah ini:`;
+            const nameGreeting = senderName ? `, *${senderName}*` : '';
+            const bodyText = `Selamat datang di *JustBot AI*${nameGreeting}! 🤖✨\nSilakan pilih modul fitur yang ingin Anda jelajahi di bawah ini:`;
 
             const sections = [
               {
@@ -212,8 +217,8 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
             return reply.status(200).send({ status: 'success' });
           }
 
-          // 5. Normal chat / Mode Active Chat / Special Julia query processing
-          const botReply = await processIncomingMessage(from, userText);
+          // 5. Intelligent Conversational AI Processing with Sender Profile Name!
+          const botReply = await processIncomingMessage(from, userText, senderName);
 
           const lowerUserText = userText.toLowerCase();
           const isSpecialQuery = lowerUserText.includes('jujul') || lowerUserText.includes('julia') || lowerUserText.includes('irya') || lowerUserText.includes('salsabillah');
@@ -223,12 +228,8 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
             const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
             await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
           } else {
-            if (isSpecialQuery) {
-              await sendWhatsAppMessage(from, botReply);
-            } else {
-              const fallbackButtons = [{ id: '!menu', title: '📋 Buka Menu Bot' }];
-              await sendWhatsAppButtons(from, botReply, fallbackButtons, '🤖 JUSTBOT GUIDANCE');
-            }
+            // Direct natural conversational response!
+            await sendWhatsAppMessage(from, botReply);
           }
         }
       }
