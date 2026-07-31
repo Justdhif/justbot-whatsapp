@@ -195,3 +195,40 @@ export async function sendWhatsAppInteractiveList(
     return false;
   }
 }
+
+// Send Sticker Message directly via WebP Link
+export async function sendWhatsAppSticker(to: string, stickerUrl: string): Promise<boolean> {
+  try {
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'sticker',
+      sticker: {
+        link: stickerUrl,
+      },
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 15000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Sticker message sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        stickerUrl,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp sticker'
+    );
+    return false;
+  }
+}
+

@@ -248,20 +248,24 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
             return reply.status(200).send({ status: 'success' });
           }
 
-          // 5. Intelligent Conversational AI Processing with Sender Profile Name!
-          const botReply = await processIncomingMessage(from, userText, senderName);
+           // 5. Intelligent Conversational AI Processing with Sender Profile Name!
+           const botReply = await processIncomingMessage(from, userText, senderName);
 
-          const lowerUserText = userText.toLowerCase();
-          const isSpecialQuery = lowerUserText.includes('jujul') || lowerUserText.includes('julia') || lowerUserText.includes('irya') || lowerUserText.includes('salsabillah');
+           if (botReply === 'action:processed') {
+             return reply.status(200).send({ status: 'success' });
+           }
 
-          if (session.activeMode && !isSpecialQuery) {
-            const detail = MODULE_DETAILS[session.activeMode];
-            const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
-            await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
-          } else {
-            // Direct natural conversational response!
-            await sendWhatsAppMessage(from, botReply);
-          }
+           const lowerUserText = userText.toLowerCase();
+           const isSpecialQuery = lowerUserText.includes('jujul') || lowerUserText.includes('julia') || lowerUserText.includes('irya') || lowerUserText.includes('salsabillah');
+
+           if (session.activeMode && !isSpecialQuery) {
+             const detail = MODULE_DETAILS[session.activeMode];
+             const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
+             await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
+           } else {
+             // Direct natural conversational response!
+             await sendWhatsAppMessage(from, botReply);
+           }
         }
       }
     } catch (error) {

@@ -7,6 +7,7 @@ import { handleTranslatorModule } from './translator/translator.handler.js';
 import { handleReminderModule } from './reminder/reminder.handler.js';
 import { handleEmailModule } from './email/email.handler.js';
 import { handleUtilitiesModule, getHelpMenu } from './utilities/utilities.handler.js';
+import { handleStickerModule, generateAndSendSticker } from './sticker/sticker.handler.js';
 import { getUserSession } from '../utils/session.js';
 import { askGroqAI } from '../services/groq.service.js';
 
@@ -174,6 +175,28 @@ export async function processIncomingMessage(userId: string, text: string, sende
   if (lower.startsWith('.reminder')) return await handleReminderModule(trimmed.replace(/^\.reminder\s*/i, ''));
   if (lower.startsWith('.email')) return await handleEmailModule(trimmed.replace(/^\.email\s*/i, ''));
   if (lower.startsWith('.util')) return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
+  
+  // Sticker commands
+  if (lower.startsWith('.bratvid')) {
+    const text = trimmed.replace(/^\.bratvid\s*/i, '');
+    await generateAndSendSticker(userId, 'bratvid', text || 'brat');
+    return 'action:processed';
+  }
+  if (lower.startsWith('.brat')) {
+    const text = trimmed.replace(/^\.brat\s*/i, '');
+    await generateAndSendSticker(userId, 'brat', text || 'brat');
+    return 'action:processed';
+  }
+  if (lower.startsWith('.qchat-ios')) {
+    const text = trimmed.replace(/^\.qchat-ios\s*/i, '');
+    await generateAndSendSticker(userId, 'qchat-ios', text || 'hello');
+    return 'action:processed';
+  }
+  if (lower.startsWith('.qchat')) {
+    const text = trimmed.replace(/^\.qchat\s*/i, '');
+    await generateAndSendSticker(userId, 'qchat', text || 'hello');
+    return 'action:processed';
+  }
 
   // Check 6-digit OTP code attempt even outside finance mode
   if (/^\d{6}$/.test(trimmed)) {
