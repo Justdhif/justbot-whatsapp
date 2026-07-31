@@ -5,16 +5,15 @@ export function isBotOnline(): boolean {
     return true; // Schedule disabled, bot is always online
   }
 
-  // Get current date & time explicitly formatted in Asia/Jakarta (WIB / UTC+7)
+  // Get current UTC date
   const now = new Date();
-  
-  // Create Intl.DateTimeFormat for Asia/Jakarta timezone
-  const jakartaTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
-  const jakartaDate = new Date(jakartaTimeStr);
 
-  const hour = jakartaDate.getHours();
-  const minute = jakartaDate.getMinutes();
-  const day = jakartaDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  // Convert UTC time explicitly to Asia/Jakarta (WIB = UTC + 7 hours)
+  const wibTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+
+  const hour = wibTime.getUTCHours();
+  const minute = wibTime.getUTCMinutes();
+  const day = wibTime.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
   // Convert JS day (0=Sun, 1=Mon, ..., 6=Sat) to Schedule day (1=Mon, 2=Tue, ..., 6=Sat, 7=Sun)
   const currentDay = day === 0 ? 7 : day;
