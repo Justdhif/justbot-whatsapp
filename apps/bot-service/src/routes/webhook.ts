@@ -5,6 +5,7 @@ import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
 import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
 import { getUserSession, setUserActiveMode } from '../utils/session.js';
 import { isBotOnline } from '../utils/schedule.js';
+import { hasBeenNotifiedToday, markUserNotifiedToday } from '../utils/offNotificationStore.js';
 
 // Module Banner Images mapping
 const MODULE_BANNERS: Record<string, string> = {
@@ -45,20 +46,40 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     return reply.status(400).send('Bad Request');
   });
 
-  // POST /webhook - Handle Incoming WhatsApp Messages & Schedule Gatekeeper
+  // POST /webhook - Handle Incoming WhatsApp Messages & Offline One-Time Notifier
   fastify.post('/webhook', async (request: FastifyRequest, reply: FastifyReply) => {
     const body: any = request.body;
-
-    // Gatekeeper: Check if Bot is currently in Operational Hours
-    if (!isBotOnline()) {
-      logger.info('🌙 Bot is currently OFF / Outside Operational Hours. Ignoring message to save free Meta quota.');
-      return reply.status(200).send({ status: 'offline', message: 'Bot is outside operational hours' });
-    }
 
     try {
       if (body.object && body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
         const messageObj = body.entry[0].changes[0].value.messages[0];
         const from = messageObj.from;
+
+        // Gatekeeper: Check if Bot is currently OFF / Outside Operational Hours
+        if (!isBotOnline()) {
+          logger.info({ from }, '🌙 Bot is currently OFF / Outside Operational Hours.');
+
+          // Send OFF notification ONLY ONCE per user per day to save Meta quota!
+          if (!hasBeenNotifiedToday(from)) {
+            markUserNotifiedToday(from);
+
+            const offMessage = `🌙 *JUSTBOT SEDANG OFF (LIDUR / DILUAR JAM OPERASIONAL)* 🌙
+══════════════════════════════════════
+
+Halo! Terima kasih telah menghubungi *JustBot AI*.
+
+ Saat ini bot sedang *OFF* / di luar jam operasional.
+🕒 *Jam Operasional*: ${env.BOT_OPERATIONAL_START} - ${env.BOT_OPERATIONAL_END} WIB
+
+Silakan hubungi kami kembali saat jam operasional aktif. Pesan Anda berikutnya saat bot OFF tidak akan direspon demi menghemat kuota. Terima kasih! 🙏✨`;
+
+            await sendWhatsAppMessage(from, offMessage);
+          } else {
+            logger.info({ from }, 'User already received OFF notification today. Ignoring subsequent messages.');
+          }
+
+          return reply.status(200).send({ status: 'offline', message: 'Bot is offline' });
+        }
 
         let userText = '';
 

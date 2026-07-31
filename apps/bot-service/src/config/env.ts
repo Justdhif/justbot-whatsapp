@@ -13,7 +13,7 @@ const envSchema = z.object({
   WA_CLOUD_API_ACCESS_TOKEN: z.string().min(1, 'WA_CLOUD_API_ACCESS_TOKEN is required'),
   
   BOT_OPERATIONAL_START: z.string().default('08:00'),
-  BOT_OPERATIONAL_END: z.string().default('22:00'),
+  BOT_OPERATIONAL_END: z.string().default('21:00'),
   BOT_OPERATIONAL_DAYS: z.string().default('1,2,3,4,7'),
   BOT_ENABLE_SCHEDULE: z.string().default('true').transform((val) => val.toLowerCase() === 'true'),
 });
