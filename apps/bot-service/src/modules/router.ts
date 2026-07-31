@@ -44,13 +44,13 @@ export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: 
     ],
   },
   finance: {
-    name: 'Finance Manager',
+    name: 'Finance Manager (CuanBuddy)',
     icon: '💰',
-    desc: 'Mode khusus manajemen keuangan, budgeting 50/30/20, & saran investasi.',
+    desc: 'Mode khusus manajemen keuangan & pencatatan transaksi terintegrasi CuanBuddy App.',
     capabilities: [
-      'Perencanaan penganggaran gaji & alokasi tabungan',
-      'Perhitungan & kalkulasi investasi tingkat dasar',
-      'Pencatatan pengeluaran & tips hemat finansial',
+      'Menghubungkan akun CuanBuddy via 6-digit OTP',
+      'Pencatatan pengeluaran & pemasukan otomatis',
+      'Perencanaan penganggaran gaji (50/30/20) & investasi',
     ],
   },
   creator: {
@@ -144,7 +144,7 @@ export async function processIncomingMessage(userId: string, text: string, sende
       case 'coding':
         return await handleCodingModule(trimmed);
       case 'finance':
-        return await handleFinanceModule(trimmed);
+        return await handleFinanceModule(trimmed, userId, senderName);
       case 'creator':
         return await handleCreatorModule(trimmed);
       case 'translate':
@@ -165,7 +165,7 @@ export async function processIncomingMessage(userId: string, text: string, sende
   }
 
   // Handle explicit one-shot prefix commands if not in active mode
-  if (lower.startsWith('!finance')) return await handleFinanceModule(trimmed.replace(/^!finance\s*/i, ''));
+  if (lower.startsWith('!finance')) return await handleFinanceModule(trimmed.replace(/^!finance\s*/i, ''), userId, senderName);
   if (lower.startsWith('!creator')) return await handleCreatorModule(trimmed.replace(/^!creator\s*/i, ''));
   if (lower.startsWith('!pdf')) return await handlePdfAiModule(trimmed.replace(/^!pdf\s*/i, ''));
   if (lower.startsWith('!ocr')) return await handleOcrModule(trimmed.replace(/^!ocr\s*/i, ''));
@@ -174,6 +174,11 @@ export async function processIncomingMessage(userId: string, text: string, sende
   if (lower.startsWith('!reminder')) return await handleReminderModule(trimmed.replace(/^!reminder\s*/i, ''));
   if (lower.startsWith('!email')) return await handleEmailModule(trimmed.replace(/^!email\s*/i, ''));
   if (lower.startsWith('!util')) return await handleUtilitiesModule(trimmed.replace(/^!util\s*/i, ''));
+
+  // Check 6-digit OTP code attempt even outside finance mode
+  if (/^\d{6}$/.test(trimmed)) {
+    return await handleFinanceModule(trimmed, userId, senderName);
+  }
 
   // Intelligent Conversational AI Fallback with WhatsApp Profile Name Injection!
   const namePrompt = senderName ? `Nama profil WhatsApp pengguna ini adalah "${senderName}". Sapa atau panggil namanya bila sesuai agar percakapan terasa personal.` : '';
