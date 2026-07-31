@@ -1,6 +1,5 @@
 import { handleFinanceModule } from './finance/finance.handler.js';
 import { handleCreatorModule } from './creator/creator.handler.js';
-import { handleClipperModule } from './clipper/clipper.handler.js';
 import { handlePdfAiModule } from './pdf-ai/pdf-ai.handler.js';
 import { handleOcrModule } from './ocr/ocr.handler.js';
 import { handleCodingModule } from './coding/coding.handler.js';
@@ -26,9 +25,6 @@ export async function processIncomingMessage(text: string): Promise<string> {
   }
   if (lower.startsWith('!creator')) {
     return await handleCreatorModule(trimmed.replace(/^!creator\s*/i, ''));
-  }
-  if (lower.startsWith('!clipper')) {
-    return await handleClipperModule(trimmed.replace(/^!clipper\s*/i, ''));
   }
   if (lower.startsWith('!pdf')) {
     return await handlePdfAiModule(trimmed.replace(/^!pdf\s*/i, ''));
@@ -61,6 +57,7 @@ export async function processIncomingMessage(text: string): Promise<string> {
     return await handleUtilitiesModule(trimmed.replace(/^!util\s*/i, ''));
   }
 
-  // Fallback to General AI Assistant
-  return await askGroqAI(trimmed);
+  // Fallback to General AI Assistant with aesthetic system prompt
+  const generalSystemPrompt = `Anda adalah 🤖 *JUSTBOT GENERAL AI ASSISTANT*. Berikan respon yang ramah, efisien, bermakna, dan rapi menggunakan emojifikasi serta pembatas garis estetik di WhatsApp.`;
+  return await askGroqAI(trimmed, generalSystemPrompt);
 }
