@@ -92,10 +92,10 @@ Buat file `.env` di dalam folder `apps/bot-service/.env`:
 PORT=3000
 HOST=0.0.0.0
 
-GROQ_API_KEY=gsk_your_groq_api_key
-WA_VERIFY_TOKEN=justbot_wa_verify_secret
-WA_PHONE_NUMBER_ID=1217685628094838
-WA_CLOUD_API_ACCESS_TOKEN=your_permanent_access_token
+GROQ_API_KEY=your_groq_api_key_here
+WA_VERIFY_TOKEN=your_whatsapp_verify_token_here
+WA_PHONE_NUMBER_ID=your_whatsapp_phone_number_id_here
+WA_CLOUD_API_ACCESS_TOKEN=your_whatsapp_cloud_api_access_token_here
 
 # Operational Hours Config (WIB)
 BOT_ENABLE_SCHEDULE=true
