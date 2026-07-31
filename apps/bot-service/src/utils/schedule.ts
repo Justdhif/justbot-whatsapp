@@ -5,41 +5,20 @@ export function isBotOnline(): boolean {
     return true; // Schedule disabled, bot is always online
   }
 
-  // Get current date & time in Asia/Jakarta timezone (WIB)
+  // Get current date & time explicitly formatted in Asia/Jakarta (WIB / UTC+7)
   const now = new Date();
-  const options: Intl.DateTimeFormatOptions = {
-    timeZone: 'Asia/Jakarta',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: false,
-    weekday: 'short',
-  };
+  
+  // Create Intl.DateTimeFormat for Asia/Jakarta timezone
+  const jakartaTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
+  const jakartaDate = new Date(jakartaTimeStr);
 
-  const formatter = new Intl.DateTimeFormat('en-US', options);
-  const parts = formatter.formatToParts(now);
+  const hour = jakartaDate.getHours();
+  const minute = jakartaDate.getMinutes();
+  const day = jakartaDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-  let hour = 0;
-  let minute = 0;
-  let dayName = '';
+  // Convert JS day (0=Sun, 1=Mon, ..., 6=Sat) to Schedule day (1=Mon, 2=Tue, ..., 6=Sat, 7=Sun)
+  const currentDay = day === 0 ? 7 : day;
 
-  for (const part of parts) {
-    if (part.type === 'hour') hour = parseInt(part.value, 10);
-    if (part.type === 'minute') minute = parseInt(part.value, 10);
-    if (part.type === 'weekday') dayName = part.value;
-  }
-
-  // Day mapping: Sun=7, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
-  const dayMap: Record<string, number> = {
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-    Sun: 7,
-  };
-
-  const currentDay = dayMap[dayName] || 1;
   const allowedDays = env.BOT_OPERATIONAL_DAYS.split(',').map((d) => parseInt(d.trim(), 10));
 
   if (!allowedDays.includes(currentDay)) {
