@@ -40,12 +40,12 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
   }
 }
 
-// Send Image Message with Caption & Quick Reply Buttons (Max 3 Buttons)
-export async function sendWhatsAppImageWithButtons(
+// Send Interactive Quick Reply Buttons (Max 3 Buttons)
+export async function sendWhatsAppButtons(
   to: string,
-  imageUrl: string,
-  captionText: string,
-  buttons: { id: string; title: string }[]
+  bodyText: string,
+  buttons: { id: string; title: string }[],
+  headerText?: string
 ): Promise<boolean> {
   try {
     const actionButtons = buttons.map((b) => ({
@@ -56,26 +56,29 @@ export async function sendWhatsAppImageWithButtons(
       },
     }));
 
+    const interactivePayload: any = {
+      type: 'button',
+      body: {
+        text: bodyText,
+      },
+      action: {
+        buttons: actionButtons,
+      },
+    };
+
+    if (headerText) {
+      interactivePayload.header = {
+        type: 'text',
+        text: headerText,
+      };
+    }
+
     const payload = {
       messaging_product: 'whatsapp',
       recipient_type: 'individual',
       to: to,
       type: 'interactive',
-      interactive: {
-        type: 'button',
-        header: {
-          type: 'image',
-          image: {
-            link: imageUrl,
-          },
-        },
-        body: {
-          text: captionText,
-        },
-        action: {
-          buttons: actionButtons,
-        },
-      },
+      interactive: interactivePayload,
     };
 
     const response = await axios.post(WA_API_URL, payload, {
@@ -86,7 +89,7 @@ export async function sendWhatsAppImageWithButtons(
       timeout: 10000,
     });
 
-    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Interactive image + buttons sent successfully to WhatsApp');
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Interactive buttons sent successfully to WhatsApp');
     return true;
   } catch (error: any) {
     logger.error(
@@ -94,7 +97,64 @@ export async function sendWhatsAppImageWithButtons(
         to,
         errorResponse: error?.response?.data || error.message,
       },
-      'Failed to send WhatsApp interactive image + buttons'
+      'Failed to send WhatsApp interactive buttons'
+    );
+    return false;
+  }
+}
+
+// Send Interactive List Message (Up to 10 Options/Items)
+export async function sendWhatsAppInteractiveList(
+  to: string,
+  bodyText: string,
+  buttonTitle: string,
+  sections: { title: string; rows: { id: string; title: string; description?: string }[] }[],
+  headerText?: string
+): Promise<boolean> {
+  try {
+    const interactivePayload: any = {
+      type: 'list',
+      body: {
+        text: bodyText,
+      },
+      action: {
+        button: buttonTitle.slice(0, 20),
+        sections: sections,
+      },
+    };
+
+    if (headerText) {
+      interactivePayload.header = {
+        type: 'text',
+        text: headerText,
+      };
+    }
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'interactive',
+      interactive: interactivePayload,
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Interactive list message sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp interactive list message'
     );
     return false;
   }

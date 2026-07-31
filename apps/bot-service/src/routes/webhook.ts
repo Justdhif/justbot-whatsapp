@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
-import { processIncomingMessage } from '../modules/router.js';
-import { sendWhatsAppMessage, sendWhatsAppImageWithButtons } from '../services/whatsapp.service.js';
+import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
+import { sendWhatsAppMessage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
+import { getUserSession, setUserActiveMode } from '../utils/session.js';
 
 interface WebhookQuery {
   'hub.mode'?: string;
@@ -30,7 +31,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     return reply.status(400).send('Bad Request');
   });
 
-  // POST /webhook - Handle Incoming WhatsApp Messages & Interactive Clicks
+  // POST /webhook - Handle Incoming WhatsApp Messages & Mode State Machine
   fastify.post('/webhook', async (request: FastifyRequest, reply: FastifyReply) => {
     const body: any = request.body;
 
@@ -45,46 +46,128 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           userText = messageObj.text.body;
         } else if (messageObj.type === 'interactive' && messageObj.interactive?.button_reply) {
           userText = messageObj.interactive.button_reply.id || messageObj.interactive.button_reply.title;
+        } else if (messageObj.type === 'interactive' && messageObj.interactive?.list_reply) {
+          userText = messageObj.interactive.list_reply.id || messageObj.interactive.list_reply.title;
         }
 
         if (userText) {
-          logger.info({ from, userText }, 'Processing user message / button click');
+          logger.info({ from, userText }, 'Processing user message / selection');
 
           const trimmed = userText.trim();
           const lower = trimmed.toLowerCase();
+          const session = getUserSession(from);
 
-          // !menu command -> Send Banner Image + Text Menu dengan 8 Modul Pilihan Utama!
+          // 1. ACTION: User clicks "EXIT MODE"
+          if (lower === 'action:exit' || lower === '!exit') {
+            setUserActiveMode(from, null);
+
+            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Semua pertanyaan selanjutnya akan dijawab oleh *JustBot General AI*.\n\nKetik \`!menu\` kapan saja untuk memilih modul lain!`;
+            await sendWhatsAppMessage(from, exitText);
+            return reply.status(200).send({ status: 'success' });
+          }
+
+          // 2. ACTION: User clicks "START MODE" (e.g. "action:start:coding")
+          if (lower.startsWith('action:start:')) {
+            const selectedMode = lower.replace('action:start:', '');
+            const detail = MODULE_DETAILS[selectedMode];
+
+            if (detail) {
+              setUserActiveMode(from, selectedMode);
+
+              const startedText = `🟢 *MODE ${detail.name.toUpperCase()} AKTIF!* 🟢
+══════════════════════════════════════
+${detail.icon} *Deskripsi*: ${detail.desc}
+
+💡 *Status*: Sekarang Anda berada di mode khusus *${detail.name}*. Setiap pesan/pertanyaan yang Anda kirim akan langsung dijawab fokus oleh AI modul ini tanpa perlu mengetikkan perintah!
+
+══════════════════════════════════════
+👇 *Jika ingin ganti/keluar modul, klik tombol di bawah:*`;
+
+              const exitButtons = [
+                { id: 'action:exit', title: '🔴 Exit Mode' },
+                { id: '!menu', title: '📋 Buka Menu' },
+              ];
+
+              await sendWhatsAppButtons(from, startedText, exitButtons, '🚀 MODE STATUS');
+              return reply.status(200).send({ status: 'success' });
+            }
+          }
+
+          // 3. ACTION: User selects module from LIST MENU (e.g. "select:module:coding")
+          if (lower.startsWith('select:module:')) {
+            const selectedMode = lower.replace('select:module:', '');
+            const detail = MODULE_DETAILS[selectedMode];
+
+            if (detail) {
+              const previewText = `📌 *INFORMASI MODUL: ${detail.name.toUpperCase()}* ${detail.icon}
+══════════════════════════════════════
+${detail.desc}
+
+✨ *Kemampuan Utama*:
+${detail.capabilities.map((c) => ` • ${c}`).join('\n')}
+
+══════════════════════════════════════
+Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
+
+              const startButtons = [
+                { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
+                { id: '!menu', title: '📋 Kembali Ke Menu' },
+              ];
+
+              await sendWhatsAppButtons(from, previewText, startButtons, `✨ PREVIEW: ${detail.name}`);
+              return reply.status(200).send({ status: 'success' });
+            }
+          }
+
+          // 4. ACTION: User asks for !menu
           if (lower === '!menu' || lower === '/help' || lower === 'help' || lower === 'menu') {
-            const menuCaption = `🤖 *JUSTBOT AI ASSISTANT* 🤖
-══════════════════════════════════════
+            const bodyText = `Selamat datang di *JustBot AI*! 🤖✨\nSilakan pilih modul fitur yang ingin Anda jelajahi di bawah ini:`;
 
-Daftar modul fitur utama yang tersedia:
-
-💻 *Coding Assistant*: \`!coding <kode/error>\`
-💰 *Finance Manager*: \`!finance <pertanyaan>\`
-🎥 *Content Creator*: \`!creator <topik>\`
-🌍 *Polyglot Translator*: \`!translate <teks>\`
-📷 *OCR Scanner*: \`!ocr <teks_scan>\`
-📄 *PDF & Document AI*: \`!pdf <dokumen>\`
-📧 *Executive Email*: \`!email <tujuan>\`
-📅 *Agenda & Reminder*: \`!reminder <agenda>\`
-🛠️ *Smart Utilities*: \`!util <pertanyaan>\`
-
-══════════════════════════════════════
-👇 *Tekan tombol cepat di bawah:*`;
-
-            const buttons = [
-              { id: '!coding Buatkan snippet kode TypeScript', title: '💻 Coding AI' },
-              { id: '!finance Halo bot, pandu keuangan saya', title: '💰 Finance AI' },
-              { id: '!creator Berikan 3 ide konten viral', title: '🎥 Creator AI' },
+            const sections = [
+              {
+                title: '⚡ KODING & PRODUKTIVITAS',
+                rows: [
+                  { id: 'select:module:coding', title: '💻 Coding Assistant', description: 'Bantuan koding, refactoring & debug' },
+                  { id: 'select:module:pdf', title: '📄 PDF & Document AI', description: 'Ringkasan & analisis dokumen PDF' },
+                  { id: 'select:module:email', title: '📧 Executive Email', description: 'Draf email & surat resmi' },
+                ],
+              },
+              {
+                title: '💰 BISNIS & KREATIF',
+                rows: [
+                  { id: 'select:module:finance', title: '💰 Finance Manager', description: 'Perencanaan keuangan & 50/30/20' },
+                  { id: 'select:module:creator', title: '🎥 Content Creator', description: 'Ide konten viral & script TikTok' },
+                ],
+              },
+              {
+                title: '🛠️ TRANSLATE & HARIAN',
+                rows: [
+                  { id: 'select:module:translate', title: '🌍 Polyglot Translator', description: 'Terjemahan kontekstual multi-bahasa' },
+                  { id: 'select:module:ocr', title: '📷 OCR Scanner', description: 'Merapikan teks hasil scan' },
+                  { id: 'select:module:reminder', title: '📅 Agenda & Reminder', description: 'To-do list & jadwal kegiatan' },
+                  { id: 'select:module:util', title: '🛠️ Smart Utilities', description: 'Kalkulator & bantuan serbaguna' },
+                ],
+              },
             ];
 
-            // Banner Image URL Publik HD
-            const bannerUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';
+            // If user is currently in a mode, inform them
+            const headerTitle = session.activeMode
+              ? `🤖 MENU (Mode Aktif: ${session.activeMode.toUpperCase()})`
+              : '🤖 JUSTBOT MULTI-MODULE MENU';
 
-            await sendWhatsAppImageWithButtons(from, bannerUrl, menuCaption, buttons);
+            await sendWhatsAppInteractiveList(from, bodyText, '📋 Pilih Modul Bot', sections, headerTitle);
+            return reply.status(200).send({ status: 'success' });
+          }
+
+          // 5. Normal chat / Mode Active Chat processing
+          const botReply = await processIncomingMessage(from, userText);
+
+          // If user is in an active mode, attach a small indicator & Exit quick reply option
+          if (session.activeMode) {
+            const detail = MODULE_DETAILS[session.activeMode];
+            const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
+            await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
           } else {
-            const botReply = await processIncomingMessage(userText);
             await sendWhatsAppMessage(from, botReply);
           }
         }
