@@ -7,8 +7,29 @@ import { handleTranslatorModule } from './translator/translator.handler.js';
 import { handleReminderModule } from './reminder/reminder.handler.js';
 import { handleEmailModule } from './email/email.handler.js';
 import { handleUtilitiesModule, getHelpMenu } from './utilities/utilities.handler.js';
+import { getUserSession } from '../utils/session.js';
 import { askGroqAI } from '../services/groq.service.js';
-import { getUserSession, setUserActiveMode } from '../utils/session.js';
+
+// Special easter egg prompt for Julia Irya Salsabillah (Jujul)
+export function isJuliaQuery(text: string): boolean {
+  const lower = text.toLowerCase();
+  return lower.includes('jujul') || lower.includes('julia') || lower.includes('irya') || lower.includes('salsabillah');
+}
+
+export async function handleJuliaSpecialResponse(userPrompt: string): Promise<string> {
+  const systemPrompt = `Anda adalah 💖 *SPECIAL HEARTFUL ASSISTANT* di JustBot.
+Tugas Anda memberikan tanggapan pengenalan yang SANGAT ROMANTIS, PENUH PUJIAN, DAN MENYENTUH HATI tentang sosok istimewa bernama *Julia Irya Salsabillah* (yang akrab dipanggil *Jujul*).
+
+Fakta & Poin Penting Wajib yang Harus Disampaikan dengan Bahasa Indah & Puitis:
+1. *Nama Lengkap*: Julia Irya Salsabillah (Jujul).
+2. *Tanggal Lahir*: 16 Juli 2009.
+3. *Pendidikan saat ini*: SMKN 5 Balikpapan, Kalimantan Timur.
+4. *Poin Utama*: Dia adalah sosok perempuan luar biasa, indah, dan berharga yang selalu dibanggakan dan dikagumi oleh sang developer (Nadhif).
+
+Gunakan emoji romantis (🌸 💖 ✨ 👑 🌹), pembatas garis puitis (══════════════════════), dan nada bicara yang elegan, manis, serta menyentuh hati.`;
+
+  return await askGroqAI(userPrompt, systemPrompt);
+}
 
 // Module metadata for preview info
 export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: string; capabilities: string[] }> = {
@@ -107,6 +128,12 @@ export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: 
 export async function processIncomingMessage(userId: string, text: string): Promise<string> {
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
+
+  // Check if message is asking about Julia / Jujul
+  if (isJuliaQuery(trimmed)) {
+    return await handleJuliaSpecialResponse(trimmed);
+  }
+
   const session = getUserSession(userId);
 
   // Check if user is in an active mode session
@@ -148,7 +175,14 @@ export async function processIncomingMessage(userId: string, text: string): Prom
   if (lower.startsWith('!email')) return await handleEmailModule(trimmed.replace(/^!email\s*/i, ''));
   if (lower.startsWith('!util')) return await handleUtilitiesModule(trimmed.replace(/^!util\s*/i, ''));
 
-  // Fallback to General AI Assistant
-  const generalSystemPrompt = `Anda adalah 🤖 *JUSTBOT GENERAL AI ASSISTANT*. Berikan respon yang ramah, efisien, bermakna, dan rapi menggunakan emojifikasi serta pembatas garis estetik di WhatsApp.`;
-  return await askGroqAI(trimmed, generalSystemPrompt);
+  // Fallback Guide Response when user sends random text outside active mode
+  return `🤖 *JUSTBOT AI ASSISTANT* 🤖
+══════════════════════════════════════
+
+Halo! Maaf, perintah atau pesan yang Anda kirimkan belum dikenali.
+
+💡 *Petunjuk*:
+Untuk mulai menggunakan bot dan memilih modul fitur yang Anda inginkan (seperti *Coding, Finance, Translator, dll*), silakan ketik:
+
+👉 \`!menu\` atau tekan tombol di bawah ini:`;
 }

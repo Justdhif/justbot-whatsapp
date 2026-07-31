@@ -61,8 +61,9 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           if (lower === 'action:exit' || lower === '!exit') {
             setUserActiveMode(from, null);
 
-            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Semua pertanyaan selanjutnya akan dijawab oleh *JustBot General AI*.\n\nKetik \`!menu\` kapan saja untuk memilih modul lain!`;
-            await sendWhatsAppMessage(from, exitText);
+            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan pilih modul baru atau ketik \`!menu\`.`;
+            const exitButtons = [{ id: '!menu', title: '📋 Buka Menu' }];
+            await sendWhatsAppButtons(from, exitText, exitButtons, '🤖 MODE OFF');
             return reply.status(200).send({ status: 'success' });
           }
 
@@ -78,10 +79,10 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 ══════════════════════════════════════
 ${detail.icon} *Deskripsi*: ${detail.desc}
 
-💡 *Status*: Sekarang Anda berada di mode khusus *${detail.name}*. Setiap pesan/pertanyaan yang Anda kirim akan langsung dijawab fokus oleh AI modul ini tanpa perlu mengetikkan perintah!
+💡 *Status*: Sekarang Anda berada di mode khusus *${detail.name}*. Semua pertanyaan yang Anda kirim akan langsung dijawab oleh modul ini tanpa perlu mengetikkan perintah!
 
 ══════════════════════════════════════
-👇 *Jika ingin ganti/keluar modul, klik tombol di bawah:*`;
+👇 *Jika ingin keluar dari mode ini, klik tombol di bawah:*`;
 
               const exitButtons = [
                 { id: 'action:exit', title: '🔴 Exit Mode' },
@@ -150,7 +151,6 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
               },
             ];
 
-            // If user is currently in a mode, inform them
             const headerTitle = session.activeMode
               ? `🤖 MENU (Mode Aktif: ${session.activeMode.toUpperCase()})`
               : '🤖 JUSTBOT MULTI-MODULE MENU';
@@ -162,13 +162,15 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
           // 5. Normal chat / Mode Active Chat processing
           const botReply = await processIncomingMessage(from, userText);
 
-          // If user is in an active mode, attach a small indicator & Exit quick reply option
+          // If user is in an active mode, attach Exit quick reply option
           if (session.activeMode) {
             const detail = MODULE_DETAILS[session.activeMode];
             const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
             await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
           } else {
-            await sendWhatsAppMessage(from, botReply);
+            // If user sent unrecognized message outside active mode, send fallback guide + Quick Reply Button to open !menu directly!
+            const fallbackButtons = [{ id: '!menu', title: '📋 Buka Menu Bot' }];
+            await sendWhatsAppButtons(from, botReply, fallbackButtons, '🤖 JUSTBOT GUIDANCE');
           }
         }
       }
