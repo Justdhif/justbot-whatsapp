@@ -159,18 +159,26 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
             return reply.status(200).send({ status: 'success' });
           }
 
-          // 5. Normal chat / Mode Active Chat processing
+          // 5. Normal chat / Mode Active Chat / Special Julia query processing
           const botReply = await processIncomingMessage(from, userText);
 
+          // Check if message is a special query (like Julia)
+          const lowerUserText = userText.toLowerCase();
+          const isSpecialQuery = lowerUserText.includes('jujul') || lowerUserText.includes('julia') || lowerUserText.includes('irya') || lowerUserText.includes('salsabillah');
+
           // If user is in an active mode, attach Exit quick reply option
-          if (session.activeMode) {
+          if (session.activeMode && !isSpecialQuery) {
             const detail = MODULE_DETAILS[session.activeMode];
             const modeButtons = [{ id: 'action:exit', title: '🔴 Exit Mode' }];
             await sendWhatsAppButtons(from, botReply, modeButtons, `${detail?.icon || '🟢'} MODE: ${detail?.name || session.activeMode}`);
           } else {
-            // If user sent unrecognized message outside active mode, send fallback guide + Quick Reply Button to open !menu directly!
-            const fallbackButtons = [{ id: '!menu', title: '📋 Buka Menu Bot' }];
-            await sendWhatsAppButtons(from, botReply, fallbackButtons, '🤖 JUSTBOT GUIDANCE');
+            // For special queries or normal fallback guide
+            if (isSpecialQuery) {
+              await sendWhatsAppMessage(from, botReply);
+            } else {
+              const fallbackButtons = [{ id: '!menu', title: '📋 Buka Menu Bot' }];
+              await sendWhatsAppButtons(from, botReply, fallbackButtons, '🤖 JUSTBOT GUIDANCE');
+            }
           }
         }
       }
