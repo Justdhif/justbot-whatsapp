@@ -135,11 +135,11 @@ Silakan hubungi kami kembali saat jam operasional aktif. Terima kasih! 🙏✨`;
           const session = getUserSession(from);
 
           // 1. ACTION: User clicks "EXIT MODE"
-          if (lower === 'action:exit' || lower === '!exit') {
+          if (lower === 'action:exit' || lower === '.exit') {
             setUserActiveMode(from, null);
 
-            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`!menu\` untuk memilih modul baru.`;
-            const exitButtons = [{ id: '!menu', title: '📋 Buka Menu' }];
+            const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`.menu\` untuk memilih modul baru.`;
+            const exitButtons = [{ id: '.menu', title: '📋 Buka Menu' }];
             await sendWhatsAppButtons(from, exitText, exitButtons, '🤖 MODE OFF');
             return reply.status(200).send({ status: 'success' });
           }
@@ -169,7 +169,7 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
 
               const exitButtons = [
                 { id: 'action:exit', title: '🔴 Exit Mode' },
-                { id: '!menu', title: '📋 Buka Menu' },
+                { id: '.menu', title: '📋 Buka Menu' },
               ];
 
               await sendWhatsAppButtons(from, startedText, exitButtons, '🚀 MODE STATUS');
@@ -201,7 +201,7 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
 
               const startButtons = [
                 { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
-                { id: '!menu', title: '📋 Kembali Ke Menu' },
+                { id: '.menu', title: '📋 Kembali Ke Menu' },
               ];
 
               await sendWhatsAppButtons(from, previewText, startButtons, `✨ PREVIEW: ${detail.name}`);
@@ -209,8 +209,8 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
             }
           }
 
-          // 4. ACTION: User asks for !menu
-          if (lower === '!menu' || lower === '/help' || lower === 'help' || lower === 'menu') {
+          // 4. ACTION: User asks for .menu
+          if (lower === '.menu' || lower === '!menu' || lower === '/help' || lower === 'help' || lower === 'menu') {
             const menuText = getHelpMenu(senderName, session.timezoneName);
             
             const sections = [

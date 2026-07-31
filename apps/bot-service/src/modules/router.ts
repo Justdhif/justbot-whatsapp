@@ -164,16 +164,16 @@ export async function processIncomingMessage(userId: string, text: string, sende
     }
   }
 
-  // Handle explicit one-shot prefix commands if not in active mode
-  if (lower.startsWith('!finance')) return await handleFinanceModule(trimmed.replace(/^!finance\s*/i, ''), userId, senderName);
-  if (lower.startsWith('!creator')) return await handleCreatorModule(trimmed.replace(/^!creator\s*/i, ''));
-  if (lower.startsWith('!pdf')) return await handlePdfAiModule(trimmed.replace(/^!pdf\s*/i, ''));
-  if (lower.startsWith('!ocr')) return await handleOcrModule(trimmed.replace(/^!ocr\s*/i, ''));
-  if (lower.startsWith('!coding')) return await handleCodingModule(trimmed.replace(/^!coding\s*/i, ''));
-  if (lower.startsWith('!translate')) return await handleTranslatorModule(trimmed.replace(/^!translate\s*/i, ''));
-  if (lower.startsWith('!reminder')) return await handleReminderModule(trimmed.replace(/^!reminder\s*/i, ''));
-  if (lower.startsWith('!email')) return await handleEmailModule(trimmed.replace(/^!email\s*/i, ''));
-  if (lower.startsWith('!util')) return await handleUtilitiesModule(trimmed.replace(/^!util\s*/i, ''));
+  // Handle explicit one-shot prefix commands if not in active mode (e.g. .finance, .coding)
+  if (lower.startsWith('.finance')) return await handleFinanceModule(trimmed.replace(/^\.finance\s*/i, ''), userId, senderName);
+  if (lower.startsWith('.creator')) return await handleCreatorModule(trimmed.replace(/^\.creator\s*/i, ''));
+  if (lower.startsWith('.pdf')) return await handlePdfAiModule(trimmed.replace(/^\.pdf\s*/i, ''));
+  if (lower.startsWith('.ocr')) return await handleOcrModule(trimmed.replace(/^\.ocr\s*/i, ''));
+  if (lower.startsWith('.coding')) return await handleCodingModule(trimmed.replace(/^\.coding\s*/i, ''));
+  if (lower.startsWith('.translate')) return await handleTranslatorModule(trimmed.replace(/^\.translate\s*/i, ''));
+  if (lower.startsWith('.reminder')) return await handleReminderModule(trimmed.replace(/^\.reminder\s*/i, ''));
+  if (lower.startsWith('.email')) return await handleEmailModule(trimmed.replace(/^\.email\s*/i, ''));
+  if (lower.startsWith('.util')) return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
 
   // Check 6-digit OTP code attempt even outside finance mode
   if (/^\d{6}$/.test(trimmed)) {
