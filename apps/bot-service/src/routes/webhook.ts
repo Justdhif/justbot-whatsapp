@@ -13,8 +13,6 @@ import {
   sendWhatsAppImage,
   sendWhatsAppButtons,
   sendWhatsAppInteractiveList,
-  sendWhatsAppSticker,
-  uploadWhatsAppMedia,
 } from "../services/whatsapp.service.js";
 import { getUserSession, setUserActiveMode } from "../utils/session.js";
 import { isBotOnline } from "../utils/schedule.js";

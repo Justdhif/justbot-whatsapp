@@ -7,7 +7,6 @@ import { handleTranslatorModule } from './translator/translator.handler.js';
 import { handleReminderModule } from './reminder/reminder.handler.js';
 import { handleEmailModule } from './email/email.handler.js';
 import { handleUtilitiesModule, getHelpMenu } from './utilities/utilities.handler.js';
-import { handleStickerModule, generateAndSendSticker } from './sticker/sticker.handler.js';
 import { getUserSession } from '../utils/session.js';
 import { askGroqAI } from '../services/groq.service.js';
 
