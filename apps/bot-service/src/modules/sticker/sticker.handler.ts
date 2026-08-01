@@ -34,7 +34,7 @@ Silakan gunakan perintah khusus berikut untuk membuat stiker secara instan:
 
 /**
  * Generates WebP sticker, downloads its buffer, and uploads it to Meta Cloud API.
- * This guarantees 100% delivery success rates across all WhatsApp clients.
+ * Uses highly-stable lolhuman API engine directly as fallback to avoid host-lookup failures.
  */
 export async function generateAndSendSticker(
   to: string,
@@ -46,19 +46,32 @@ export async function generateAndSendSticker(
     let stickerUrl = '';
 
     if (type === 'brat') {
-      stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`;
+      // Use Lolhuman Brat Generator directly (extremely fast and reliable WebP API)
+      stickerUrl = `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`;
     } else if (type === 'bratvid') {
+      // Animated Brat GIF generator fallback via stable fastrestapis CDN URL
       stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`;
     } else if (type === 'qchat') {
+      // WhatsApp Android Style Bubble chat sticker
       stickerUrl = `https://api.lolhuman.xyz/api/qc?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     } else if (type === 'qchat-ios') {
+      // WhatsApp iOS iMessage Style Bubble chat sticker
       stickerUrl = `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     }
 
     logger.info({ type, text, stickerUrl }, 'Generating sticker buffer via API');
 
-    // Download WebP buffer directly
-    const response = await axios.get(stickerUrl, { responseType: 'arraybuffer', timeout: 25000 });
+    // Download WebP buffer directly with fallback support
+    let response;
+    try {
+      response = await axios.get(stickerUrl, { responseType: 'arraybuffer', timeout: 25000 });
+    } catch (err: any) {
+      logger.warn({ err: err.message }, 'Failed primary generator API fetch. Falling back to alternative lolhuman Brat API endpoint');
+      // If primary domain fails (like DNS ENOTFOUND for fastrestapis), fallback to a reliable stable endpoint
+      const fallbackUrl = `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`;
+      response = await axios.get(fallbackUrl, { responseType: 'arraybuffer', timeout: 25000 });
+    }
+
     const buffer = Buffer.from(response.data);
 
     // Upload to Meta Cloud Media API
@@ -68,7 +81,7 @@ export async function generateAndSendSticker(
       return await sendWhatsAppSticker(to, mediaId, true);
     }
 
-    // Fallback if upload fails
+    // Last resort fallback
     logger.warn('Meta media upload failed, falling back to direct URL link delivery');
     return await sendWhatsAppSticker(to, stickerUrl, false);
   } catch (error: any) {
