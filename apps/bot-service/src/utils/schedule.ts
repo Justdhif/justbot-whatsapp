@@ -12,11 +12,13 @@ export function isBotOnline(offsetHours: number = 7): boolean {
   const now = new Date();
 
   // Convert UTC time explicitly to target local time
-  const localTime = new Date(now.getTime() + offsetHours * 60 * 60 * 1000);
+  // Note: localTime.getUTCHours() will give us the hour of the timezone-adjusted time,
+  // but we must calculate it purely using getUTCHours of the timezone-shifted Date.
+  const shiftTime = new Date(now.getTime() + offsetHours * 60 * 60 * 1000);
 
-  const hour = localTime.getUTCHours();
-  const minute = localTime.getUTCMinutes();
-  const day = localTime.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const hour = shiftTime.getUTCHours();
+  const minute = shiftTime.getUTCMinutes();
+  const day = shiftTime.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
   // Convert JS day (0=Sun, 1=Mon, ..., 6=Sat) to Schedule day (1=Mon, 2=Tue, ..., 6=Sat, 7=Sun)
   const currentDay = day === 0 ? 7 : day;

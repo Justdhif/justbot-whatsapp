@@ -440,8 +440,8 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
             ) {
               const menuText = getHelpMenu(senderName, session.timezoneName);
               
-              // Direct avatar image banner of the bot
-              const botAvatarBanner = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';
+              // Direct avatar image banner of the bot (highly reliable and lightweight)
+              const botAvatarBanner = 'https://picsum.photos/800/600';
               
               // Send banner image first, and place the pure menu text as its caption
               await sendWhatsAppImage(from, botAvatarBanner, menuText);
