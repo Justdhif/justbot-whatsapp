@@ -1,5 +1,7 @@
 import sharp from 'sharp';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { sendWhatsAppSticker, uploadWhatsAppMedia } from '../../services/whatsapp.service.js';
 import { logger } from '../../utils/logger.js';
 
@@ -132,6 +134,14 @@ let cachedFontBase64 = '';
 function getFontBase64(): string {
   if (cachedFontBase64) return cachedFontBase64;
   try {
+    const localFontPath = path.join(__dirname, '..', '..', 'assets', 'BratFont.ttf');
+    
+    if (fs.existsSync(localFontPath)) {
+      const buf = fs.readFileSync(localFontPath);
+      cachedFontBase64 = buf.toString('base64');
+      return cachedFontBase64;
+    }
+
     const paths = [
       'C:\\Windows\\Fonts\\ARIALNB.TTF',
       'C:\\Windows\\Fonts\\ARIALN.TTF',
