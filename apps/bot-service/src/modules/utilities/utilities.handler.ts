@@ -18,46 +18,72 @@ Aturan Respon:
 
 export function getHelpMenu(senderName?: string, timezoneName?: string): string {
   const greetingName = senderName ? ` ${senderName}` : '';
-  const tzDisplay = timezoneName || 'Asia/Jakarta';
+  const tzDisplay = timezoneName || 'WIB (Asia/Jakarta)';
   
-  const titleMain = changeFont('JUSTBOT AI', 'boldSans');
-  const titleUserInfo = changeFont('USER INFO', 'boldSans');
-  const titleBotInfo = changeFont('BOT INFO', 'boldSans');
-  const titleSkills = changeFont('BOT SKILLS', 'boldSans');
-  const titleApps = changeFont('INTEGRATED APPS', 'boldSans');
-  const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'boldSans');
+  const titleMain = changeFont('JUSTBOT AI MULTI-SERVICE', 'boldSansUppercase');
+  const titleUserInfo = changeFont('USER INFO', 'boldSansUppercase');
+  const titleBotInfo = changeFont('BOT INFO', 'boldSansUppercase');
+  const titleSkills = changeFont('BOT SKILLS', 'boldSansUppercase');
+  const titleApps = changeFont('INTEGRATED APPS', 'boldSansUppercase');
+  const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'boldSansUppercase');
+
+  // Generate subitems formatted in boldSansUppercase as seen in the mockup screenshot!
+  const labelName = changeFont('Nama', 'boldSansUppercase');
+  const labelTz = changeFont('Timezone', 'boldSansUppercase');
+  const labelStatus = changeFont('Status', 'boldSansUppercase');
+  const labelBotName = changeFont('Bot Name', 'boldSansUppercase');
+  const labelEngine = changeFont('Engine', 'boldSansUppercase');
+  const labelActive = changeFont('Active', 'boldSansUppercase');
+  const labelHours = changeFont('Hours', 'boldSansUppercase');
+
+  const skillFinance = changeFont('Konsultasi Keuangan', 'boldSansUppercase');
+  const skillCoding = changeFont('Coding & Debugging', 'boldSansUppercase');
+  const skillCreator = changeFont('Content Creator Script', 'boldSansUppercase');
+  const skillPdf = changeFont('Analisis PDF & Dokumen', 'boldSansUppercase');
+  const skillOcr = changeFont('Scan Teks Gambar (OCR)', 'boldSansUppercase');
+  const skillTranslate = changeFont('Penerjemah Bahasa', 'boldSansUppercase');
+  const skillReminder = changeFont('Pengingat & Agenda', 'boldSansUppercase');
+  const skillEmail = changeFont('Email & Surat Formal', 'boldSansUppercase');
+  const skillUtil = changeFont('Kalkulator & Konversi Satuan', 'boldSansUppercase');
+
+  const appCuanBuddy = changeFont('CuanBuddy App', 'boldSansUppercase');
+  
+  const descMenu = changeFont('Menampilkan menu utama', 'boldSansUppercase');
+  const descCuanBuddy = changeFont('Sambung & kelola CuanBuddy App', 'boldSansUppercase');
+  const descExit = changeFont('Keluar dari mode integrasi', 'boldSansUppercase');
 
   return `╭─── o「 ${titleMain} 」o
 │
 ├─── o(" ${titleUserInfo} ")
-│ 👤 *Nama:* ${greetingName || 'Guest User'}
-│ 🌍 *Timezone:* ${tzDisplay}
-│ 🟢 *Status:* Online
+│ 👤 *${labelName}:* ${greetingName || 'Guest User'}
+│ 🌍 *${labelTz}:* ${tzDisplay}
+│ 🟢 *${labelStatus}:* Online
 │
 ├─── o(" ${titleBotInfo} ")
-│ 🤖 *Bot Name:* JustBot-Service
-│ 🔗 *Engine:* Fastify & Groq AI
-│ 📅 *Active:* Sabtu - Kamis
-│ 🕒 *Hours:* 07.00 - 21.00 WIB
+├─✦ *${labelBotName}:* JustBot-Service
+├─✦ *${labelEngine}:* Fastify & Groq AI
+├─✦ *${labelActive}:* Sabtu - Kamis
+├─✦ *${labelHours}:* 07.00 - 21.00 WIB
 │
 ├─── o(" ${titleSkills} ")
-│ 💼 *Konsultasi Keuangan* 
-│ 💻 *Coding & Debugging*
-│ 🎥 *Content Creator Script*
-│ 📄 *Analisis PDF & Dokumen*
-│ 📷 *Scan Teks Gambar (OCR)*
-│ 🌍 *Penerjemah Bahasa*
-│ 📅 *Pengingat & Agenda*
-│ 📧 *Email & Surat Formal*
-│ 🛠️ *Kalkulator & Konversi Satuan*
+├─✦ *${skillFinance}* 
+├─✦ *${skillCoding}*
+├─✦ *${skillCreator}*
+├─✦ *${skillPdf}*
+├─✦ *${skillOcr}*
+├─✦ *${skillTranslate}*
+├─✦ *${skillReminder}*
+├─✦ *${skillEmail}*
+├─✦ *${skillUtil}*
 │
 ├─── o(" ${titleApps} ")
-├─  💳  *.cuanbuddy*
+├─✦ *${appCuanBuddy}*
 │
 ├─── o(" ${titleShortcuts} ")
-├─  🚀  *.menu* ─ Menampilkan menu utama
-├─  ⏹️  *.exit* ─ Keluar dari mode integrasi
+├─✦  *.menu* ── ${descMenu}
+├─✦  *.cuanbuddy* ── ${descCuanBuddy}
+├─✦  *.exit* ── ${descExit}
 ╰────────────────────────────
 
-📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin mengaktifkan integrasi aplikasi keuangan.`;
+📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
 }
