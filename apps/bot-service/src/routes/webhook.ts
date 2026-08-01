@@ -289,17 +289,44 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           }
 
           if (userText) {
-            logger.info(
-              { from, senderName, userText },
-              "Processing user message / selection",
-            );
+          logger.info({ from, senderName, userText }, 'Processing user message / selection');
 
-            const trimmed = userText.trim();
-            const lower = trimmed.toLowerCase();
-            const session = getUserSession(from);
+          const trimmed = userText.trim();
+          const lower = trimmed.toLowerCase();
+          const session = getUserSession(from);
 
-            // 1. ACTION: User clicks "EXIT MODE"
-            if (lower === "action:exit" || lower === ".exit") {
+          // Direct module activation command: shows Preview info screen with Start buttons first
+          const directCmdMode = lower.startsWith('.') ? lower.replace('.', '') : '';
+          if (directCmdMode && MODULE_DETAILS[directCmdMode]) {
+            const detail = MODULE_DETAILS[directCmdMode];
+            
+            // Send Module Image Preview Banner first!
+            const bannerUrl = MODULE_BANNERS[directCmdMode] || 'https://picsum.photos/800/600';
+            const bannerCaption = `${detail.icon} *PREVIEW MODUL: ${detail.name.toUpperCase()}*`;
+            await sendWhatsAppImage(from, bannerUrl, bannerCaption);
+
+            // Send Info Details & Start Mode Button
+            const previewText = `📌 *INFORMASI MODUL: ${detail.name.toUpperCase()}* ${detail.icon}
+══════════════════════════════════════
+${detail.desc}
+
+✨ *Kemampuan Utama*:
+${detail.capabilities.map((c) => ` • ${c}`).join('\n')}
+
+══════════════════════════════════════
+Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
+
+            const startButtons = [
+              { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
+              { id: '.menu', title: '📋 Kembali Ke Menu' },
+            ];
+
+            await sendWhatsAppButtons(from, previewText, startButtons, `✨ PREVIEW: ${detail.name}`);
+            return reply.status(200).send({ status: 'success' });
+          }
+
+          // 1. ACTION: User clicks "EXIT MODE"
+          if (lower === 'action:exit' || lower === '.exit') {
               setUserActiveMode(from, null);
 
               const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`.menu\` untuk memilih modul baru.`;
