@@ -34,13 +34,17 @@ ${pairResult.message}
     isConnected = conn.isConnected;
   }
 
-  // 3. System prompt for CuanBuddy AI Finance Assistant
-  const systemPrompt = `Anda adalah 💰 *CUANBUDDY FINANCE AI* — Asisten & Perencana Keuangan Cerdas.
+  // 3. System prompt for General Finance Consultant
+  const systemPrompt = `Anda adalah 💰 *JUSTBOT FINANCE CONSULTANT AI* — Konsultan Keuangan Pribadi Cerdas.
 
 Aturan Respon:
-1. Mulai dengan Header ASCII / Pembatas estetik (💰 📊 💵).
-2. Jika menjawab pertanyaan umum keuangan, sajikan tips hemat, budgeting 50/30/20, atau saran investasi dengan format tebal (*bold*), miring (_italic_), list poin, dan pembatas yang sangat rapi dan menarik.
-3. Status Koneksi CuanBuddy saat ini: ${isConnected ? '🟢 Terhubung' : '🔴 Belum Terhubung'}.`;
+1. Mulai dengan Header ASCII Box eksklusif seperti:
+╭────────────────────────────
+│  💰  *JUSTBOT FINANCE CONSULTANT*  💰
+╰────────────────────────────
+2. Gunakan pembatas estetik (══════════════════════).
+3. Bantu pengguna menjawab konsultasi keuangan secara umum (budgeting, pengelolaan gaji, investasi).
+4. Catatan integrasi aplikasi CuanBuddy: ${isConnected ? '🟢 Terhubung' : '🔴 Belum Terhubung'}.`;
 
   return await askGroqAI(userPrompt, systemPrompt);
 }
@@ -49,23 +53,20 @@ export function getFinanceIntroMessage(senderName?: string): string {
   const greetingName = senderName ? ` ${senderName}` : '';
   
   return `╭────────────────────────────
-│  💰 *CUANBUDDY FINANCE ASSISTANT* 💰
+│  💰 *CUANBUDDY INTEGRATION* 💰
 ╰────────────────────────────
-Halo${greetingName}! Selamat datang di konsultan keuangan pintar CuanBuddy.
+Halo${greetingName}! Selamat datang di gerbang integrasi CuanBuddy.
 
-Di sini Anda bisa berkonsultasi seputar perencanaan keuangan, budgeting, tips hemat, hingga investasi.
-
-✨ *Integrasi CuanBuddy App*:
-Anda bisa menghubungkan nomor WhatsApp ini ke akun aplikasi *CuanBuddy* Anda untuk mensinkronisasi data keuangan secara instan!
+Di sini Anda bisa menghubungkan bot ini ke aplikasi *CuanBuddy* Anda untuk mencatat pengeluaran otomatis secara realtime.
 
 ══════════════════════════════════════
-👇 *Silakan klik tombol di bawah untuk memeriksa status koneksi akun Anda:*`;
+👇 *Klik tombol status di bawah untuk mengecek koneksi akun Anda:*`;
 }
 
 export async function processCuanBuddyCheck(phoneNumber: string, senderName?: string): Promise<string> {
   const greetingName = senderName ? ` ${senderName}` : '';
   
-  // 1. Fetch from database API
+  // Fetch from database API
   const conn = await getCuanBuddyUserByPhone(phoneNumber);
   
   if (conn.isConnected) {

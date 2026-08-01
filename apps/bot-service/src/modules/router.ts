@@ -45,13 +45,13 @@ export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: 
     ],
   },
   finance: {
-    name: 'Finance Manager (CuanBuddy)',
+    name: 'Finance Consultant',
     icon: '💰',
-    desc: 'Mode khusus manajemen keuangan & pencatatan transaksi terintegrasi CuanBuddy App.',
+    desc: 'Mode khusus konsultasi keuangan pribadi, perencanaan anggaran, tips hemat, & investasi.',
     capabilities: [
-      'Menghubungkan akun CuanBuddy via 6-digit OTP',
-      'Pencatatan pengeluaran & pemasukan otomatis',
-      'Perencanaan penganggaran gaji (50/30/20) & investasi',
+      'Menyusun perencanaan anggaran (budgeting 50/30/20)',
+      'Saran investasi cerdas & alokasi aset',
+      'Tips praktis menghemat pengeluaran bulanan',
     ],
   },
   creator: {

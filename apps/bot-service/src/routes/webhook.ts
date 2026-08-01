@@ -300,28 +300,38 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           if (directCmdMode && MODULE_DETAILS[directCmdMode]) {
             const detail = MODULE_DETAILS[directCmdMode];
             
-            // Send Module Image Preview Banner first!
+            // Send Module Image Preview Banner first! (Highly reliable picsum source)
             const bannerUrl = MODULE_BANNERS[directCmdMode] || 'https://picsum.photos/800/600';
-            const bannerCaption = `${detail.icon} *PREVIEW MODUL: ${detail.name.toUpperCase()}*`;
+            const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
             await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-            // Send Info Details & Start Mode Button
-            const previewText = `📌 *INFORMASI MODUL: ${detail.name.toUpperCase()}* ${detail.icon}
-══════════════════════════════════════
+            // Send Info Details with Premium ASCII formatting
+            const previewText = `╭────────────────────────────
+│  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
+╰────────────────────────────
 ${detail.desc}
 
 ✨ *Kemampuan Utama*:
-${detail.capabilities.map((c) => ` • ${c}`).join('\n')}
-
+${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
-Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
+Tekan tombol di bawah untuk memulai modul ini:`;
 
-            const startButtons = [
-              { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
-              { id: '.menu', title: '📋 Kembali Ke Menu' },
-            ];
+            // Customize buttons for Finance module to include a CuanBuddy check button
+            let startButtons = [];
+            if (directCmdMode === 'finance') {
+              startButtons = [
+                { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
+                { id: 'action:cuanbuddy:check', title: '💳 CuanBuddy' },
+                { id: '.menu', title: '📋 Kembali' }
+              ];
+            } else {
+              startButtons = [
+                { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
+                { id: '.menu', title: '📋 Kembali Ke Menu' }
+              ];
+            }
 
-            await sendWhatsAppButtons(from, previewText, startButtons, `✨ PREVIEW: ${detail.name}`);
+            await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
             return reply.status(200).send({ status: 'success' });
           }
 
@@ -416,44 +426,44 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
             }
 
             // 3. ACTION: User selects module from LIST MENU (e.g. "select:module:coding")
-            if (lower.startsWith("select:module:")) {
-              const selectedMode = lower.replace("select:module:", "");
+            if (lower.startsWith('select:module:')) {
+              const selectedMode = lower.replace('select:module:', '');
               const detail = MODULE_DETAILS[selectedMode];
 
               if (detail) {
                 // Send Module Image Preview Banner first!
-                const bannerUrl =
-                  MODULE_BANNERS[selectedMode] ||
-                  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop";
-                const bannerCaption = `${detail.icon} *PREVIEW MODUL: ${detail.name.toUpperCase()}*`;
+                const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://picsum.photos/800/600';
+                const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
                 await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-                // Send Info Details & Start Mode Button
-                const previewText = `📌 *INFORMASI MODUL: ${detail.name.toUpperCase()}* ${detail.icon}
-══════════════════════════════════════
+                // Send Info Details with Premium ASCII formatting
+                const previewText = `╭────────────────────────────
+│  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
+╰────────────────────────────
 ${detail.desc}
 
 ✨ *Kemampuan Utama*:
-${detail.capabilities.map((c) => ` • ${c}`).join("\n")}
-
+${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
-Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
+Tekan tombol di bawah untuk memulai modul ini:`;
 
-                const startButtons = [
-                  {
-                    id: `action:start:${selectedMode}`,
-                    title: "🚀 Start Mode",
-                  },
-                  { id: ".menu", title: "📋 Kembali Ke Menu" },
-                ];
+                // Customize buttons for Finance module to include a CuanBuddy check button
+                let startButtons = [];
+                if (selectedMode === 'finance') {
+                  startButtons = [
+                    { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
+                    { id: 'action:cuanbuddy:check', title: '💳 CuanBuddy' },
+                    { id: '.menu', title: '📋 Kembali' }
+                  ];
+                } else {
+                  startButtons = [
+                    { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
+                    { id: '.menu', title: '📋 Kembali Ke Menu' }
+                  ];
+                }
 
-                await sendWhatsAppButtons(
-                  from,
-                  previewText,
-                  startButtons,
-                  `✨ PREVIEW: ${detail.name}`,
-                );
-                return reply.status(200).send({ status: "success" });
+                await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
+                return reply.status(200).send({ status: 'success' });
               }
             }
 
