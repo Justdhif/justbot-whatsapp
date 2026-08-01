@@ -129,31 +129,111 @@ function getStickerTheme(type: StickerCommandType): { background: string; textCo
 async function createLocalBratSticker(text: string, type: StickerCommandType): Promise<Buffer> {
   const theme = getStickerTheme(type);
   const lines = wrapStickerText(text.toUpperCase(), 11);
-  const lineHeight = 78;
-  const fontSize = lines.length <= 2 ? 82 : lines.length === 3 ? 72 : 60;
   const width = 512;
   const height = 512;
-  const textBlockHeight = lines.length * lineHeight;
-  const startY = Math.round((height - textBlockHeight) / 2 + fontSize / 2);
-
-  const textNodes = lines
-    .map((line, index) => {
-      const y = startY + index * lineHeight;
-      return `<text x="256" y="${y}" font-size="${fontSize}" letter-spacing="-1">${escapeXml(line)}</text>`;
-    })
-    .join('\n');
   const svgNamespace = 'http:' + String.fromCharCode(47, 47) + 'www.w3.org/2000/svg';
+  const textSvg = buildBlockTextSvg(lines, theme.textColor, width, height);
 
   const svg = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<svg xmlns="' + svgNamespace + '" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">',
     '  <rect width="100%" height="100%" fill="' + theme.background + '" />',
     '  <rect x="20" y="20" width="472" height="472" rx="36" ry="36" fill="none" stroke="' + theme.accent + '" stroke-width="5" opacity="0.22" />',
-    '  <g fill="' + theme.textColor + '" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">',
-    '    ' + textNodes,
-    '  </g>',
+    textSvg,
     '</svg>',
   ].join('\n');
 
   return await sharp(Buffer.from(svg, 'utf8')).webp({ quality: 92 }).toBuffer();
+}
+
+type BlockGlyph = string[];
+
+const BLOCK_FONT: Record<string, BlockGlyph> = {
+  A: ['  #  ', ' # # ', '#   #', '#####', '#   #', '#   #', '#   #'],
+  B: ['#### ', '#   #', '#   #', '#### ', '#   #', '#   #', '#### '],
+  C: [' ####', '#    ', '#    ', '#    ', '#    ', '#    ', ' ####'],
+  D: ['#### ', '#   #', '#   #', '#   #', '#   #', '#   #', '#### '],
+  E: ['#####', '#    ', '#    ', '#####', '#    ', '#    ', '#####'],
+  F: ['#####', '#    ', '#    ', '#####', '#    ', '#    ', '#    '],
+  G: [' ####', '#    ', '#    ', '#  ##', '#   #', '#   #', ' ####'],
+  H: ['#   #', '#   #', '#   #', '#####', '#   #', '#   #', '#   #'],
+  I: ['#####', '  #  ', '  #  ', '  #  ', '  #  ', '  #  ', '#####'],
+  J: ['#####', '   # ', '   # ', '   # ', '#  # ', '#  # ', ' ##  '],
+  K: ['#   #', '#  # ', '# #  ', '##   ', '# #  ', '#  # ', '#   #'],
+  L: ['#    ', '#    ', '#    ', '#    ', '#    ', '#    ', '#####'],
+  M: ['#   #', '## ##', '# # #', '#   #', '#   #', '#   #', '#   #'],
+  N: ['#   #', '##  #', '# # #', '#  ##', '#   #', '#   #', '#   #'],
+  O: [' ### ', '#   #', '#   #', '#   #', '#   #', '#   #', ' ### '],
+  P: ['#### ', '#   #', '#   #', '#### ', '#    ', '#    ', '#    '],
+  Q: [' ### ', '#   #', '#   #', '#   #', '# # #', '#  # ', ' ## #'],
+  R: ['#### ', '#   #', '#   #', '#### ', '# #  ', '#  # ', '#   #'],
+  S: [' ####', '#    ', '#    ', ' ### ', '    #', '    #', '#### '],
+  T: ['#####', '  #  ', '  #  ', '  #  ', '  #  ', '  #  ', '  #  '],
+  U: ['#   #', '#   #', '#   #', '#   #', '#   #', '#   #', ' ### '],
+  V: ['#   #', '#   #', '#   #', '#   #', ' # # ', ' # # ', '  #  '],
+  W: ['#   #', '#   #', '#   #', '# # #', '# # #', '## ##', '#   #'],
+  X: ['#   #', ' # # ', '  #  ', '  #  ', '  #  ', ' # # ', '#   #'],
+  Y: ['#   #', ' # # ', '  #  ', '  #  ', '  #  ', '  #  ', '  #  '],
+  Z: ['#####', '   # ', '  #  ', ' #   ', '#    ', '#    ', '#####'],
+  '0': [' ### ', '#   #', '#  ##', '# # #', '##  #', '#   #', ' ### '],
+  '1': ['  #  ', ' ##  ', '# #  ', '  #  ', '  #  ', '  #  ', '#####'],
+  '2': [' ### ', '#   #', '    #', '   # ', '  #  ', ' #   ', '#####'],
+  '3': [' ### ', '#   #', '    #', ' ### ', '    #', '#   #', ' ### '],
+  '4': ['   # ', '  ## ', ' # # ', '#  # ', '#####', '   # ', '   # '],
+  '5': ['#####', '#    ', '#    ', '#### ', '    #', '#   #', ' ### '],
+  '6': [' ### ', '#   #', '#    ', '#### ', '#   #', '#   #', ' ### '],
+  '7': ['#####', '    #', '   # ', '  #  ', '  #  ', '  #  ', '  #  '],
+  '8': [' ### ', '#   #', '#   #', ' ### ', '#   #', '#   #', ' ### '],
+  '9': [' ### ', '#   #', '#   #', ' ####', '    #', '#   #', ' ### '],
+  ' ': ['     ', '     ', '     ', '     ', '     ', '     ', '     '],
+  '.': ['     ', '     ', '     ', '     ', '     ', ' ##  ', ' ##  '],
+  '!': ['  #  ', '  #  ', '  #  ', '  #  ', '  #  ', '     ', '  #  '],
+  '?': [' ### ', '#   #', '    #', '   # ', '  #  ', '     ', '  #  '],
+  '-': ['     ', '     ', '     ', '#####', '     ', '     ', '     '],
+};
+
+function buildBlockTextSvg(lines: string[], color: string, width: number, height: number): string {
+  const charWidth = 5;
+  const charHeight = 7;
+  const pixelsPerCell = 18;
+  const letterSpacing = 4;
+  const lineSpacing = 16;
+  const wrapped = lines.length > 0 ? lines : [''];
+
+  const renderedLines = wrapped.map((line) => {
+    const cells = Array.from(line).map((character) => BLOCK_FONT[character] || BLOCK_FONT['?']);
+    const lineWidth = cells.length * (charWidth * pixelsPerCell + letterSpacing) - letterSpacing;
+    return { cells, lineWidth };
+  });
+
+  const totalHeight = renderedLines.length * (charHeight * pixelsPerCell + lineSpacing) - lineSpacing;
+  const topOffset = Math.max(0, Math.round((height - totalHeight) / 2));
+
+  const rects: string[] = [];
+
+  for (let lineIndex = 0; lineIndex < renderedLines.length; lineIndex += 1) {
+    const { cells, lineWidth } = renderedLines[lineIndex];
+    const leftOffset = Math.max(0, Math.round((width - lineWidth) / 2));
+    const baseY = topOffset + lineIndex * (charHeight * pixelsPerCell + lineSpacing);
+
+    for (let charIndex = 0; charIndex < cells.length; charIndex += 1) {
+      const glyph = cells[charIndex];
+      const baseX = leftOffset + charIndex * (charWidth * pixelsPerCell + letterSpacing);
+
+      for (let row = 0; row < glyph.length; row += 1) {
+        const rowText = glyph[row];
+        for (let col = 0; col < rowText.length; col += 1) {
+          if (rowText[col] !== '#') {
+            continue;
+          }
+
+          rects.push(
+            `<rect x="${baseX + col * pixelsPerCell}" y="${baseY + row * pixelsPerCell}" width="${pixelsPerCell}" height="${pixelsPerCell}" fill="${color}" rx="4" ry="4" />`,
+          );
+        }
+      }
+    }
+  }
+
+  return `<g>${rects.join('')}</g>`;
 }
