@@ -2,9 +2,10 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
+import axios from 'axios';
 import { getHelpMenu } from '../modules/utilities/utilities.handler.js';
 import { getFinanceIntroMessage, processCuanBuddyCheck } from '../modules/finance/finance.handler.js';
-import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
+import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList, sendWhatsAppSticker } from '../services/whatsapp.service.js';
 import { getUserSession, setUserActiveMode } from '../utils/session.js';
 import { isBotOnline } from '../utils/schedule.js';
 import { hasBeenNotifiedToday, markUserNotifiedToday } from '../utils/offNotificationStore.js';
@@ -126,6 +127,77 @@ Silakan hubungi kami kembali saat jam operasional aktif. Terima kasih! 🙏✨`;
           userText = messageObj.interactive.button_reply.id || messageObj.interactive.button_reply.title;
         } else if (messageObj.type === 'interactive' && messageObj.interactive?.list_reply) {
           userText = messageObj.interactive.list_reply.id || messageObj.interactive.list_reply.title;
+        } else if (messageObj.type === 'image') {
+          const caption = messageObj.image?.caption?.trim()?.toLowerCase() || '';
+          
+          // Only trigger sticker creation if user includes .s or .sticker command in image caption
+          if (caption === '.s' || caption === '.sticker') {
+            const imageId = messageObj.image.id;
+            logger.info({ from, imageId }, 'User sent an image with sticker command. Downloading and converting...');
+
+            // Send loading/acknowledgment text first
+            await sendWhatsAppMessage(from, '⏳ _Mengunduh gambar dan membuat stiker Anda, mohon tunggu..._');
+
+            try {
+              // Get media URL from Meta Cloud API
+              const mediaResponse = await axios.get(`https://graph.facebook.com/v20.0/${imageId}`, {
+                headers: {
+                  Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+                },
+              });
+
+              const rawImageUrl = mediaResponse.data?.url;
+
+              if (rawImageUrl) {
+                // Fetch the image buffer directly using axios with Auth header
+                const imageBufferResponse = await axios.get(rawImageUrl, {
+                  headers: {
+                    Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+                  },
+                  responseType: 'arraybuffer',
+                });
+
+                // Encode image buffer to Base64 to convert to WebP sticker via rendering microservice
+                const base64Image = Buffer.from(imageBufferResponse.data).toString('base64');
+                
+                // We use Lolhuman free sticker engine to dynamically build transparent WhatsApp WebP sticker
+                const stickerApiUrl = `https://api.lolhuman.xyz/api/convert/towebp?apikey=free`;
+                
+                // Call Converter API
+                const formData = new URLSearchParams();
+                formData.append('img', `data:image/jpeg;base64,${base64Image}`);
+                
+                const stickerConvertResponse = await axios.post(stickerApiUrl, formData, {
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                });
+
+                const finishedStickerUrl = stickerConvertResponse.data?.result;
+
+                if (finishedStickerUrl) {
+                  await sendWhatsAppSticker(from, finishedStickerUrl);
+                } else {
+                  await sendWhatsAppMessage(from, '❌ Gagal mengonversi gambar menjadi stiker. Coba gunakan gambar dengan resolusi lebih rendah.');
+                }
+              } else {
+                await sendWhatsAppMessage(from, '❌ Gagal mengambil gambar dari WhatsApp.');
+              }
+            } catch (err: any) {
+              logger.error({ err: err.message }, 'Failed to convert user image to sticker');
+              await sendWhatsAppMessage(from, '❌ Terjadi kesalahan saat mengolah gambar Anda.');
+            }
+          } else {
+            // Forward image message context to standard router if no sticker command is present
+            // (e.g. if the user just sends a photo for general chat or OCR/PDF modules)
+            const textToProcess = caption || 'kiriman gambar';
+            const botReply = await processIncomingMessage(from, textToProcess, senderName);
+            if (botReply !== 'action:processed') {
+              await sendWhatsAppMessage(from, botReply);
+            }
+          }
+
+          return reply.status(200).send({ status: 'success' });
         }
 
         if (userText) {
