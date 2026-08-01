@@ -439,44 +439,12 @@ Tekan tombol *🚀 Start Mode* di bawah untuk masuk ke mode ini:`;
               lower === "menu"
             ) {
               const menuText = getHelpMenu(senderName, session.timezoneName);
-
-            const sections = [
-              {
-                title: '⚡ KODING & PRODUKTIVITAS',
-                rows: [
-                  { id: 'select:module:coding', title: '💻 Coding Assistant', description: 'Bantuan koding, refactoring & debug' },
-                  { id: 'select:module:pdf', title: '📄 PDF & Document AI', description: 'Ringkasan & analisis dokumen PDF' },
-                  { id: 'select:module:email', title: '📧 Executive Email', description: 'Draf email & surat resmi' },
-                ],
-              },
-              {
-                title: '💰 BISNIS & KREATIF',
-                rows: [
-                  { id: 'select:module:finance', title: '💰 Finance Manager', description: 'Perencanaan keuangan & 50/30/20' },
-                  { id: 'select:module:creator', title: '🎥 Content Creator', description: 'Ide konten viral & script TikTok' },
-                ],
-              },
-              {
-                title: '🌍 TRANSLATE & HARIAN',
-                rows: [
-                  { id: 'select:module:translate', title: '🌍 Polyglot Translator', description: 'Terjemahan kontekstual multi-bahasa' },
-                  { id: 'select:module:ocr', title: '📷 OCR Scanner', description: 'Merapikan teks hasil scan' },
-                  { id: 'select:module:reminder', title: '📅 Agenda & Reminder', description: 'To-do list & jadwal kegiatan' },
-                ],
-              },
-            ];
-
-              const headerTitle = session.activeMode
-                ? `🤖 MENU (Mode Aktif: ${session.activeMode.toUpperCase()})`
-                : "🤖 JUSTBOT MENU";
-
-              await sendWhatsAppInteractiveList(
-                from,
-                menuText,
-                "📋 Pilih Modul Bot",
-                sections,
-                headerTitle,
-              );
+              
+              // Direct avatar image banner of the bot
+              const botAvatarBanner = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop';
+              
+              // Send banner image first, and place the pure menu text as its caption
+              await sendWhatsAppImage(from, botAvatarBanner, menuText);
               return reply.status(200).send({ status: "success" });
             }
 
