@@ -195,7 +195,8 @@ ${namePrompt}
 Aturan Penting:
 1. Jawablah pesan pengguna secara LANGSUNG, ALAMI, DAN INTERAKTIF layaknya teman ngobrol yang asik di WhatsApp.
 2. Tanggapi dengan gaya santai namun sopan, gunakan emoji yang cocok (seperti 😭, ✌️, 😊, 🤖, ✨).
-3. Jika pengguna menyapa kasual (seperti 'p', 'halo', 'oi'), langsung sapa balik dengan hangat dan panggil nama profilnya bila ada!`;
+3. Jika pengguna menyapa kasual (seperti 'p', 'halo', 'oi'), langsung sapa balik dengan hangat dan panggil nama profilnya bila ada!
+4. Jika pengguna bertanya dengan konteks mengenai kemampuan Anda ("kamu bisa apa aja", "fitur apa aja", "tolong sebutkan kemampuanmu", "kamu bisa bantu apa", dll), jawab secara kasual dan TAMBAHKAN instruksi jelas/ajakan agar pengguna mengetik perintah \`.menu\` untuk melihat modul layanan lengkap secara detail.`;
 
   return await askGroqAI(trimmed, conversationalSystemPrompt);
 }
