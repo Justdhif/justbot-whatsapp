@@ -20,12 +20,12 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const greetingName = senderName ? ` ${senderName}` : '';
   const tzDisplay = timezoneName || 'WIB (Asia/Jakarta)';
   
-  const titleMain = changeFont('JUSTBOT AI MULTI-SERVICE', 'smallCaps');
+  const titleMain = changeFont('JUSTBOT AI', 'smallCaps');
   const titleUserInfo = changeFont('USER INFO', 'smallCaps');
   const titleBotInfo = changeFont('BOT INFO', 'smallCaps');
   const titleSkills = changeFont('BOT SKILLS', 'smallCaps');
   const titleApps = changeFont('INTEGRATED APPS', 'smallCaps');
-  const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'smallCaps');
+  const titleShortcuts = changeFont('COMMANDS', 'smallCaps');
 
   const labelName = changeFont('Nama', 'smallCaps');
   const labelTz = changeFont('Timezone', 'smallCaps');
@@ -43,7 +43,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const skillTranslate = changeFont('Penerjemah Bahasa', 'smallCaps');
   const skillReminder = changeFont('Pengingat & Agenda', 'smallCaps');
   const skillEmail = changeFont('Email & Surat Formal', 'smallCaps');
-  const skillUtil = changeFont('Kalkulator & Konversi Satuan', 'smallCaps');
+  const skillUtil = changeFont('Kalkulator & Konversi', 'smallCaps');
 
   const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
   
@@ -62,7 +62,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─✦ *${labelBotName}:* JustBot-Service
 ├─✦ *${labelEngine}:* Fastify & Groq AI
 ├─✦ *${labelActive}:* Sabtu - Kamis
-├─✦ *${labelHours}:* 07.00 - 21.00 WIB
+├─✦ *${labelHours}:* 07.00 - 21.00
 │
 ├─── o(" ${titleSkills} ")
 ├─✦ *${skillFinance}* 
@@ -79,9 +79,9 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─✦ *${appCuanBuddy}*
 │
 ├─── o(" ${titleShortcuts} ")
-├─✦  *.menu* ── ${descMenu}
-├─✦  *.cuanbuddy* ── ${descCuanBuddy}
-├─✦  *.exit* ── ${descExit}
+├─✦  *.menu* ─ ${descMenu}
+├─✦  *.cuanbuddy* ─ ${descCuanBuddy}
+├─✦  *.exit* ─ ${descExit}
 ╰────────────────────────────
 
 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
