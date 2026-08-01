@@ -113,16 +113,7 @@ export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: 
       'Estimasi alokasi waktu kegiatan',
     ],
   },
-  util: {
-    name: 'Smart Utilities',
-    icon: '🛠️',
-    desc: 'Mode kalkulasi cepat, konversi satuan & pengetahuan umum.',
-    capabilities: [
-      'Kalkulasi matematis & logika cepat',
-      'Konversi satuan/mata uang',
-      'Jawaban pertanyaan umum serbaguna',
-    ],
-  },
+
   cuanbuddy: {
     name: 'CuanBuddy App',
     icon: '💳',
@@ -167,8 +158,6 @@ export async function processIncomingMessage(userId: string, text: string, sende
         return await handleEmailModule(trimmed);
       case 'reminder':
         return await handleReminderModule(trimmed);
-      case 'util':
-        return await handleUtilitiesModule(trimmed);
       default:
         break;
     }
@@ -176,7 +165,17 @@ export async function processIncomingMessage(userId: string, text: string, sende
 
   
   
-  if (lower.startsWith('.util')) return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
+  // If the user types math equations or queries starting with .util, direct it to utilities helper
+  if (lower.startsWith('.util')) {
+    return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
+  }
+  
+  // Math heuristic check (e.g. contains numbers and operators like +, -, *, /, or equals sign)
+  // to intelligently auto-route calculations to utilities module without needing .util command
+  const isMathExpression = /^[0-9+\-*/().\s]+$/.test(trimmed) && trimmed.length > 2;
+  if (isMathExpression) {
+    return await handleUtilitiesModule(trimmed);
+  }
   
   
   

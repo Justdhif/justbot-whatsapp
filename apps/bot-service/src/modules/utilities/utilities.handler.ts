@@ -54,7 +54,7 @@ export function getHelpMenu(
 ├─  🌍  *.translate*
 ├─  📅  *.reminder*
 ├─  📧  *.email*
-├─  🛠️  *.util*
+├─  🛠️  *util* (kalkulator & info)
 │
 ├─── o(" ${titleApps} ")
 ├─  💳  *.cuanbuddy*
