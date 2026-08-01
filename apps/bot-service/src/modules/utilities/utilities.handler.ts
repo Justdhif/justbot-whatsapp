@@ -24,6 +24,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const titleUserInfo = changeFont('USER INFO', 'boldSans');
   const titleBotInfo = changeFont('BOT INFO', 'boldSans');
   const titleModules = changeFont('LIST MODULES', 'boldSans');
+  const titleApps = changeFont('INTEGRATED APPS', 'boldSans');
   const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'boldSans');
 
   return `╭─── o「 ${titleMain} 」o
@@ -40,7 +41,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │ 🕒 *Hours:* 07.00 - 21.00 WIB
 │
 ├─── o「 ${titleModules} 」
-├─  💰  *.finance* ── [CuanBuddy]
+├─  💼  *.finance* ── [Finance Consultant]
 ├─  💻  *.coding* ── [Dev Program]
 ├─  🎥  *.creator* ── [Content Creator]
 ├─  📄  *.pdf* ── [Analyze Document]
@@ -50,10 +51,13 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─  📧  *.email* ── [Professional Writer]
 ├─  🛠️  *.util* ── [Smart Utilities]
 │
+├─── o「 ${titleApps} 」
+├─  💳  *.cuanbuddy* ── [CuanBuddy App]
+│
 ├─── o「 ${titleShortcuts} 」
 ├─  🚀  *.menu* ── Menampilkan menu utama
 ├─  ⏹️  *.exit* ── Keluar dari mode modul
 ╰────────────────────────────
 
-📌 *Tips*: Anda bisa masuk ke salah satu modul fitur di atas dengan mengetikkan langsung perintahnya (contoh: \`.finance\` atau \`.util\`) untuk memunculkan panel kontrol modul.`;
+📌 *Tips*: Anda bisa masuk ke salah satu modul fitur di atas dengan mengetikkan langsung perintahnya (contoh: \`.finance\` atau \`.cuanbuddy\`) untuk memunculkan panel kontrol modul.`;
 }

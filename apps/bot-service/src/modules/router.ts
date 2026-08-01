@@ -124,6 +124,16 @@ export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: 
       'Jawaban pertanyaan umum serbaguna',
     ],
   },
+  cuanbuddy: {
+    name: 'CuanBuddy App',
+    icon: '💳',
+    desc: 'Modul Integrasi dan Sinkronisasi Catatan Transaksi Otomatis Ke Aplikasi Keuangan CuanBuddy.',
+    capabilities: [
+      'Integrasi realtime nomor WhatsApp via 6-digit OTP',
+      'Pencatatan pengeluaran dan pendapatan otomatis langsung dari obrolan',
+      'Sinkronisasi dashboard data transaksi keuangan terpadu',
+    ],
+  },
 };
 
 export async function processIncomingMessage(userId: string, text: string, senderName?: string): Promise<string> {

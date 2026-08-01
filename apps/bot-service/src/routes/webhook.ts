@@ -214,20 +214,11 @@ ${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
-            // Customize buttons for Finance module to include a CuanBuddy check button
-            let startButtons = [];
-            if (directCmdMode === 'finance') {
-              startButtons = [
-                { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
-                { id: 'action:cuanbuddy:check', title: '💳 CuanBuddy' },
-                { id: '.menu', title: '📋 Kembali' }
-              ];
-            } else {
-              startButtons = [
-                { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
-                { id: '.menu', title: '📋 Kembali Ke Menu' }
-              ];
-            }
+            // Customize preview buttons: CuanBuddy has its own standalone preview page now
+            let startButtons = [
+              { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
+              { id: '.menu', title: '📋 Kembali Ke Menu' }
+            ];
 
             await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
             return reply.status(200).send({ status: 'success' });
@@ -251,6 +242,46 @@ Tekan tombol di bawah untuk memulai modul ini:`;
             // 2. ACTION: User clicks "START MODE" (e.g. "action:start:coding")
             if (lower.startsWith("action:start:")) {
               const selectedMode = lower.replace("action:start:", "");
+              
+              // Special silent connection check validation for CuanBuddy start activation!
+              if (selectedMode === "cuanbuddy") {
+                const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memverifikasi koneksi WhatsApp Anda dengan akun CuanBuddy..._`;
+                await sendWhatsAppMessage(from, loadingMsg);
+
+                const verificationResult = await processCuanBuddyCheck(from, senderName);
+                
+                // If the verification string contains "WELCOME BACK", it means the account is successfully linked!
+                if (verificationResult.includes("WELCOME BACK")) {
+                  setUserActiveMode(from, "finance"); // Activate CuanBuddy transactional sync mode
+                  
+                  const linkedSuccessText = `🟢 *INTEGRASI CUANBUDDY AKTIF!* 🟢
+══════════════════════════════════════
+Status: Akun Anda terverifikasi dan tersambung!
+
+Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mode ini akan otomatis tercatat ke dashboard CuanBuddy Anda secara realtime.
+
+👇 *Jika ingin keluar dari mode ini, klik tombol di bawah:*`;
+
+                  const linkedButtons = [
+                    { id: "action:exit", title: "🔴 Exit Mode" },
+                    { id: ".menu", title: "📋 Buka Menu" },
+                  ];
+                  await sendWhatsAppButtons(from, linkedSuccessText, linkedButtons, "🟢 CUANBUDDY ACTIVE");
+                } else {
+                  // Not connected yet, reject mode entry and show setup instructions
+                  const menuButtons = [
+                    { id: ".menu", title: "📋 Buka Menu" },
+                  ];
+                  await sendWhatsAppButtons(
+                    from,
+                    verificationResult,
+                    menuButtons,
+                    "❌ KONEKSI GAGAL",
+                  );
+                }
+                return reply.status(200).send({ status: "success" });
+              }
+
               const detail = MODULE_DETAILS[selectedMode];
 
               if (detail) {
@@ -345,20 +376,10 @@ ${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
-                // Customize buttons for Finance module to include a CuanBuddy check button
-                let startButtons = [];
-                if (selectedMode === 'finance') {
-                  startButtons = [
-                    { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
-                    { id: 'action:cuanbuddy:check', title: '💳 CuanBuddy' },
-                    { id: '.menu', title: '📋 Kembali' }
-                  ];
-                } else {
-                  startButtons = [
-                    { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
-                    { id: '.menu', title: '📋 Kembali Ke Menu' }
-                  ];
-                }
+                let startButtons = [
+                  { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
+                  { id: '.menu', title: '📋 Kembali Ke Menu' }
+                ];
 
                 await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
                 return reply.status(200).send({ status: 'success' });
