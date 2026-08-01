@@ -142,15 +142,18 @@ async function createLocalBratSticker(text: string, type: StickerCommandType): P
       return `<text x="256" y="${y}" font-size="${fontSize}" letter-spacing="-1">${escapeXml(line)}</text>`;
     })
     .join('\n');
+  const svgNamespace = 'http:' + String.fromCharCode(47, 47) + 'www.w3.org/2000/svg';
 
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http:
-  <rect width="100%" height="100%" fill="${theme.background}" />
-  <rect x="20" y="20" width="472" height="472" rx="36" ry="36" fill="none" stroke="${theme.accent}" stroke-width="5" opacity="0.22" />
-  <g fill="${theme.textColor}" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
-    ${textNodes}
-  </g>
-</svg>`;
+  const svg = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<svg xmlns="' + svgNamespace + '" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">',
+    '  <rect width="100%" height="100%" fill="' + theme.background + '" />',
+    '  <rect x="20" y="20" width="472" height="472" rx="36" ry="36" fill="none" stroke="' + theme.accent + '" stroke-width="5" opacity="0.22" />',
+    '  <g fill="' + theme.textColor + '" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">',
+    '    ' + textNodes,
+    '  </g>',
+    '</svg>',
+  ].join('\n');
 
-  return await sharp(Buffer.from(svg.trim(), 'utf8')).webp({ quality: 92 }).toBuffer();
+  return await sharp(Buffer.from(svg, 'utf8')).webp({ quality: 92 }).toBuffer();
 }
