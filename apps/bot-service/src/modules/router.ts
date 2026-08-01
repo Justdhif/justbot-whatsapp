@@ -165,13 +165,13 @@ export async function processIncomingMessage(userId: string, text: string, sende
 
   
   
-  // If the user types math equations or queries starting with .util, direct it to utilities helper
+  
   if (lower.startsWith('.util')) {
     return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
   }
   
-  // Math heuristic check (e.g. contains numbers and operators like +, -, *, /, or equals sign)
-  // to intelligently auto-route calculations to utilities module without needing .util command
+  
+  
   const isMathExpression = /^[0-9+\-*/().\s]+$/.test(trimmed) && trimmed.length > 2;
   if (isMathExpression) {
     return await handleUtilitiesModule(trimmed);

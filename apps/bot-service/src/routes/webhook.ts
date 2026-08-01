@@ -4,6 +4,7 @@ import { logger } from "../utils/logger.js";
 import { processIncomingMessage, MODULE_DETAILS } from "../modules/router.js";
 import axios from "axios";
 import { getHelpMenu } from "../modules/utilities/utilities.handler.js";
+import { generateAndSendSticker, getStickerHelpMessage, parseStickerCommand } from "../modules/sticker/sticker.handler.js";
 import {
   getFinanceIntroMessage,
   processCuanBuddyCheck,
@@ -190,6 +191,29 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           const trimmed = userText.trim();
           const lower = trimmed.toLowerCase();
           const session = getUserSession(from);
+
+          const stickerCommand = parseStickerCommand(trimmed);
+          if (stickerCommand) {
+            if (!stickerCommand.text) {
+              await sendWhatsAppMessage(from, getStickerHelpMessage());
+              return reply.status(200).send({ status: 'success' });
+            }
+
+            const stickerGenerated = await generateAndSendSticker(
+              from,
+              stickerCommand.type,
+              stickerCommand.text,
+            );
+
+            if (!stickerGenerated) {
+              await sendWhatsAppMessage(
+                from,
+                'Maaf, saya gagal membuat sticker saat ini. Coba lagi beberapa saat atau gunakan teks yang lebih singkat.',
+              );
+            }
+
+            return reply.status(200).send({ status: 'success' });
+          }
 
           
           const directCmdMode = lower.startsWith('.') ? lower.replace('.', '') : '';
