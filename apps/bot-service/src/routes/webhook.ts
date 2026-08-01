@@ -13,9 +13,11 @@ import {
   sendWhatsAppImage,
   sendWhatsAppButtons,
   sendWhatsAppInteractiveList,
+  sendWhatsAppStickerBuffer,
 } from "../services/whatsapp.service.js";
 import { getUserSession, setUserActiveMode } from "../utils/session.js";
 import { isBotOnline } from "../utils/schedule.js";
+import { generateBratSticker } from "../services/brat.service.js";
 import {
   hasBeenNotifiedToday,
   markUserNotifiedToday,
@@ -191,7 +193,33 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           const lower = trimmed.toLowerCase();
           const session = getUserSession(from);
 
-          
+          const bratMatch = trimmed.match(/^(?:!|\.|\/)?brat(?:\s+([\s\S]+))?$/i);
+          if (bratMatch) {
+            const bratText = bratMatch[1]?.trim();
+
+            if (!bratText) {
+              await sendWhatsAppMessage(
+                from,
+                `🖼️ *JUSTBOT BRAT STICKER*\n\nGunakan:\n\`!brat teks kamu\`\n\nContoh:\n\`!brat woi hello\`\n\`!brat lorem ipsum dolor sit\``,
+              );
+              return reply.status(200).send({ status: 'success' });
+            }
+
+            try {
+              const stickerBuffer = await generateBratSticker(bratText);
+              const sent = await sendWhatsAppStickerBuffer(from, stickerBuffer);
+
+              if (!sent) {
+                await sendWhatsAppMessage(from, '❌ Gagal mengirim Brat sticker. Silakan coba lagi.');
+              }
+            } catch (error) {
+              logger.error({ error, from }, 'Failed to generate Brat sticker');
+              await sendWhatsAppMessage(from, '❌ Gagal membuat Brat sticker. Pastikan teks tidak kosong lalu coba lagi.');
+            }
+
+            return reply.status(200).send({ status: 'success' });
+          }
+
           const directCmdMode = lower.startsWith('.') ? lower.replace('.', '') : '';
           if (directCmdMode && MODULE_DETAILS[directCmdMode]) {
             const detail = MODULE_DETAILS[directCmdMode];

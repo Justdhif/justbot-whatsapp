@@ -166,7 +166,7 @@ export async function processIncomingMessage(userId: string, text: string, sende
   
   
   
-  // Intelligently auto-route math calculations, unit conversions, or fact-finding queries to utilities module conversatonally
+  
   const isUtilityQuery = 
     /^[0-9+\-*/().\s]+$/.test(trimmed) && trimmed.length > 2 || 
     /\b(konversi|hitung|berapa|kurangi|tambah|kali|bagi|kilo|mil|celcius|fahrenheit|usd|rupiah|idr|kurs|meter|cm|luas|volume)\b/i.test(lower);
