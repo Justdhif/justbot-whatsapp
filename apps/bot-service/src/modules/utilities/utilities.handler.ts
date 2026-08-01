@@ -48,15 +48,12 @@ export function getHelpMenu(
 ├─  📅  *.reminder*
 ├─  📧  *.email*
 ├─  🛠️  *util* (kalkulator & info)
-├─  🎨  *.brat* (sticker generator)
 │
 ├─── o(" INTEGRATED APPS ")
 ├─  💳  *.cuanbuddy*
 │
 ├─── o(" SHORTCUTS & COMMANDS ")
 ├─  🚀  *.menu* - Menampilkan menu utama
-├─  🎨  *.brat <teks>* - Generate sticker brat
-├─  🎬  *.bratvid <teks>* - Generate brat video sticker
 ├─  ⏹️  *.exit* - Keluar dari mode modul
 ╰────────────────────────────
 
