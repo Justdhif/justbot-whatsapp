@@ -5,8 +5,12 @@ export async function handleUtilitiesModule(userPrompt: string): Promise<string>
 Tugas Anda membantu kalkulasi cepat, konversi mata uang/satuan, dan bantuan serbaguna harian.
 
 Aturan Respon:
-1. Mulai dengan Header ASCII / Banner Peralatan (🛠️ ⚙️ 🔧 💡).
-2. Sajikan kalkulasi & solusi dengan sangat rapi dan praktis.`;
+1. Mulai dengan Header ASCII Box eksklusif seperti:
+╭────────────────────────────
+│  🛠️  *JUSTBOT SMART UTILITIES*  🛠️
+╰────────────────────────────
+2. Gunakan pembatas estetik (══════════════════════).
+3. Sajikan kalkulasi & solusi dengan sangat rapi dan praktis.`;
 
   return await askGroqAI(userPrompt, systemPrompt);
 }
@@ -29,7 +33,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │ 📅 *Active Days:* Sab - Kam (Jumat Libur)
 │ 🕒 *Active Hours:* 08.00 - 22.00 WIB
 ╰────────────────────────────
-╭───「 *LIST MENU BOT* 」
+╭───「 *INTERACTIVE MODULES (MODES)* 」
 ├─  💰  *.finance* ── [CuanBuddy App]
 ├─  💻  *.coding* ── [Dev Program]
 ├─  🎥  *.creator* ── [Content & Hooks]
@@ -38,11 +42,18 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─  🌍  *.translate* ── [Multi-Language]
 ├─  📅  *.reminder* ── [Daily Task & Agenda]
 ├─  📧  *.email* ── [Professional Writer]
-├─  🛠️  *.util* ── [General Utilities]
+╰────────────────────────────
+╭───「 *COMMAND ONLY MODULES* 」
+├─  🛠️  *.util <soal>* ── [Kalkulator & Konversi]
+├─  🎨  *.brat <teks>* ── [Brat Sticker]
+├─  🎬  *.bratvid <teks>* ── [Animated Brat]
+├─  💬  *.qchat <teks>* ── [Android Bubble]
+├─  🍏  *.qchat-ios <teks>* ── [iOS Bubble]
+├─  📸  *kirim gambar + .s* ── [Photo Sticker]
 ╰────────────────────────────
 ╭───「 *SHORTCUTS & COMMANDS* 」
-├─  🚀  *!menu* ── Menampilkan menu utama ini
-├─  ⏹️  *!exit* ── Keluar dari mode modul aktif
+├─  🚀  *.menu* ── Menampilkan menu utama ini
+├─  ⏹️  *.exit* ── Keluar dari mode modul aktif
 ╰────────────────────────────
-📌 *Tips*: Ketik nama modul dengan tanda seru (contoh: *!finance*) atau klik tombol daftar menu di bawah untuk mulai menjelajahi modul!`;
+📌 *Tips*: Anda bisa masuk ke Mode Interaktif dengan memilih modul dari tombol menu di bawah, atau langsung menggunakan command instan bertanda titik (.) di chat.`;
 }
