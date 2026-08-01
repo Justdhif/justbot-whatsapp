@@ -270,55 +270,6 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
                 }
                 return reply.status(200).send({ status: "success" });
               }
-
-              const detail = MODULE_DETAILS[selectedMode];
-
-              if (detail) {
-                setUserActiveMode(from, selectedMode);
-
-                const bannerUrl =
-                  MODULE_BANNERS[selectedMode] ||
-                  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop";
-                const bannerCaption = `${detail.icon} *WELCOME TO MODE: ${detail.name.toUpperCase()}*`;
-                await sendWhatsAppImage(from, bannerUrl, bannerCaption);
-
-                if (selectedMode === "finance") {
-                  const introText = getFinanceIntroMessage(senderName);
-                  const introButtons = [
-                    { id: "action:cuanbuddy:check", title: "🔍 Check Status" },
-                    { id: "action:exit", title: "🔴 Exit Mode" },
-                  ];
-                  await sendWhatsAppButtons(
-                    from,
-                    introText,
-                    introButtons,
-                    "💰 CUANBUDDY FINANCE",
-                  );
-                  return reply.status(200).send({ status: "success" });
-                }
-
-                const startedText = `🟢 *MODE ${detail.name.toUpperCase()} AKTIF!* 🟢
-══════════════════════════════════════
-${detail.icon} *Deskripsi*: ${detail.desc}
-
-💡 *Status*: Sekarang Anda berada di mode khusus *${detail.name}*. Semua pertanyaan yang Anda kirim akan langsung dijawab oleh modul ini!
-
-══════════════════════════════════════
-👇 *Jika ingin keluar dari mode ini, klik tombol di bawah:*`;
-
-                const exitButtons = [
-                  { id: "action:exit", title: "🔴 Exit Mode" },
-                  { id: ".menu", title: "📋 Buka Menu" },
-                ];
-
-                await sendWhatsAppButtons(
-                  from,
-                  startedText,
-                  exitButtons,
-                  "🚀 MODE STATUS",
-                );
-                return reply.status(200).send({ status: "success" });
-              }
             }
 
             if (lower === "action:cuanbuddy:check") {
