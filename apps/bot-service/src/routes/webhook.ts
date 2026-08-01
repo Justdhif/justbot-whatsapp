@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { processIncomingMessage, MODULE_DETAILS } from '../modules/router.js';
 import { getHelpMenu } from '../modules/utilities/utilities.handler.js';
+import { getFinanceIntroMessage, processCuanBuddyCheck } from '../modules/finance/finance.handler.js';
 import { sendWhatsAppMessage, sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppInteractiveList } from '../services/whatsapp.service.js';
 import { getUserSession, setUserActiveMode } from '../utils/session.js';
 import { isBotOnline } from '../utils/schedule.js';
@@ -157,6 +158,17 @@ Silakan hubungi kami kembali saat jam operasional aktif. Terima kasih! 🙏✨`;
               const bannerCaption = `${detail.icon} *WELCOME TO MODE: ${detail.name.toUpperCase()}*`;
               await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
+              // Special onboarding layout for Finance module
+              if (selectedMode === 'finance') {
+                const introText = getFinanceIntroMessage(senderName);
+                const introButtons = [
+                  { id: 'action:cuanbuddy:check', title: '🔍 Check Status' },
+                  { id: 'action:exit', title: '🔴 Exit Mode' }
+                ];
+                await sendWhatsAppButtons(from, introText, introButtons, '💰 CUANBUDDY FINANCE');
+                return reply.status(200).send({ status: 'success' });
+              }
+
               // Send Mode Active Status Message with Exit Buttons
               const startedText = `🟢 *MODE ${detail.name.toUpperCase()} AKTIF!* 🟢
 ══════════════════════════════════════
@@ -175,6 +187,20 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
               await sendWhatsAppButtons(from, startedText, exitButtons, '🚀 MODE STATUS');
               return reply.status(200).send({ status: 'success' });
             }
+          }
+
+          // Special action: Check CuanBuddy status and verify connection dynamically
+          if (lower === 'action:cuanbuddy:check') {
+            const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memproses dan mengambil data Anda dari CuanBuddy App..._`;
+            await sendWhatsAppMessage(from, loadingMsg);
+            
+            const resultMsg = await processCuanBuddyCheck(from, senderName);
+            const menuButtons = [
+              { id: 'action:exit', title: '🔴 Exit Mode' },
+              { id: '.menu', title: '📋 Buka Menu' }
+            ];
+            await sendWhatsAppButtons(from, resultMsg, menuButtons, '💳 CUANBUDDY STATUS');
+            return reply.status(200).send({ status: 'success' });
           }
 
           // 3. ACTION: User selects module from LIST MENU (e.g. "select:module:coding")
