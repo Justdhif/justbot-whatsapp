@@ -169,27 +169,8 @@ export async function processIncomingMessage(userId: string, text: string, sende
   // (Other interactive modules .coding, .finance, etc. are intercepted in webhook.ts to show start buttons)
   if (lower.startsWith('.util')) return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
   
-  // Sticker commands
-  if (lower.startsWith('.bratvid')) {
-    const text = trimmed.replace(/^\.bratvid\s*/i, '');
-    await generateAndSendSticker(userId, 'bratvid', text || 'brat');
-    return 'action:processed';
-  }
-  if (lower.startsWith('.brat')) {
-    const text = trimmed.replace(/^\.brat\s*/i, '');
-    await generateAndSendSticker(userId, 'brat', text || 'brat');
-    return 'action:processed';
-  }
-  if (lower.startsWith('.qchat-ios')) {
-    const text = trimmed.replace(/^\.qchat-ios\s*/i, '');
-    await generateAndSendSticker(userId, 'qchat-ios', text || 'hello');
-    return 'action:processed';
-  }
-  if (lower.startsWith('.qchat')) {
-    const text = trimmed.replace(/^\.qchat\s*/i, '');
-    await generateAndSendSticker(userId, 'qchat', text || 'hello');
-    return 'action:processed';
-  }
+  // Sticker commands have been removed
+  
 
   // Check 6-digit OTP code attempt even outside finance mode
   if (/^\d{6}$/.test(trimmed)) {

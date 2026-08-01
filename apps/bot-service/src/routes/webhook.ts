@@ -173,134 +173,17 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             userText =
               messageObj.interactive.button_reply.id ||
               messageObj.interactive.button_reply.title;
-          } else if (
-            messageObj.type === "interactive" &&
-            messageObj.interactive?.list_reply
-          ) {
-            userText =
-              messageObj.interactive.list_reply.id ||
-              messageObj.interactive.list_reply.title;
           } else if (messageObj.type === "image") {
-            const caption =
-              messageObj.image?.caption?.trim()?.toLowerCase() || "";
-
-            // Only trigger sticker creation if user includes .s or .sticker command in image caption
-            if (caption === ".s" || caption === ".sticker") {
-              const imageId = messageObj.image.id;
-              logger.info(
-                { from, imageId },
-                "User sent an image with sticker command. Downloading and converting...",
-              );
-
-              // Send loading/acknowledgment text first
-              await sendWhatsAppMessage(
-                from,
-                "⏳ _Mengunduh gambar dan membuat stiker Anda, mohon tunggu..._",
-              );
-
-              try {
-                // Get media URL from Meta Cloud API
-                const mediaResponse = await axios.get(
-                  `https://graph.facebook.com/v20.0/${imageId}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
-                    },
-                  },
-                );
-
-                const rawImageUrl = mediaResponse.data?.url;
-
-                if (rawImageUrl) {
-                  // Fetch the image buffer directly using axios with Auth header
-                  const imageBufferResponse = await axios.get(rawImageUrl, {
-                    headers: {
-                      Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
-                    },
-                    responseType: "arraybuffer",
-                  });
-
-                  // Encode image buffer to Base64 to convert to WebP sticker via rendering microservice
-                  const base64Image = Buffer.from(
-                    imageBufferResponse.data,
-                  ).toString("base64");
-
-                  // We use Lolhuman free sticker engine to dynamically build transparent WhatsApp WebP sticker
-                  const stickerApiUrl = `https://api.lolhuman.xyz/api/convert/towebp?apikey=free`;
-
-                  // Call Converter API
-                  const formData = new URLSearchParams();
-                  formData.append(
-                    "img",
-                    `data:image/jpeg;base64,${base64Image}`,
-                  );
-
-                  const stickerConvertResponse = await axios.post(
-                    stickerApiUrl,
-                    formData,
-                    {
-                      headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                      },
-                    },
-                  );
-
-                  const finishedStickerUrl =
-                    stickerConvertResponse.data?.result;
-
-                  if (finishedStickerUrl) {
-                    // Download WebP buffer from converter result
-                    const webpBufferRes = await axios.get(finishedStickerUrl, {
-                      responseType: 'arraybuffer',
-                      timeout: 20000
-                    });
-                    const webpBuffer = Buffer.from(webpBufferRes.data);
-
-                    // Upload buffer to Meta Media API to obtain media ID
-                    const mediaId = await uploadWhatsAppMedia(webpBuffer, 'image/webp');
-                    if (mediaId) {
-                      await sendWhatsAppSticker(from, mediaId, true);
-                    } else {
-                      // Fallback to URL delivery
-                      await sendWhatsAppSticker(from, finishedStickerUrl, false);
-                    }
-                  } else {
-                    await sendWhatsAppMessage(
-                      from,
-                      "❌ Gagal mengonversi gambar menjadi stiker. Coba gunakan gambar dengan resolusi lebih rendah.",
-                    );
-                  }
-                } else {
-                  await sendWhatsAppMessage(
-                    from,
-                    "❌ Gagal mengambil gambar dari WhatsApp.",
-                  );
-                }
-              } catch (err: any) {
-                logger.error(
-                  { err: err.message },
-                  "Failed to convert user image to sticker",
-                );
-                await sendWhatsAppMessage(
-                  from,
-                  "❌ Terjadi kesalahan saat mengolah gambar Anda.",
-                );
-              }
-            } else {
-              // Forward image message context to standard router if no sticker command is present
-              // (e.g. if the user just sends a photo for general chat or OCR/PDF modules)
-              const textToProcess = caption || "kiriman gambar";
-              const botReply = await processIncomingMessage(
-                from,
-                textToProcess,
-                senderName,
-              );
-              if (botReply !== "action:processed") {
-                await sendWhatsAppMessage(from, botReply);
-              }
-            }
-
-            return reply.status(200).send({ status: "success" });
+             const imageCaption = messageObj.image?.caption || "kiriman gambar";
+             const botReply = await processIncomingMessage(
+               from,
+               imageCaption,
+               senderName,
+             );
+             if (botReply !== "action:processed") {
+               await sendWhatsAppMessage(from, botReply);
+             }
+             return reply.status(200).send({ status: "success" });
           }
 
           if (userText) {

@@ -23,8 +23,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const titleMain = changeFont('JUSTBOT AI MULTI-SERVICE', 'boldSans');
   const titleUserInfo = changeFont('USER INFO', 'boldSans');
   const titleBotInfo = changeFont('BOT INFO', 'boldSans');
-  const titleInteractive = changeFont('INTERACTIVE MODULES', 'boldSans');
-  const titleCommandOnly = changeFont('COMMAND ONLY MODULES', 'boldSans');
+  const titleModules = changeFont('LIST MODULES', 'boldSans');
   const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'boldSans');
 
   return `╭─── o「 ${titleMain} 」o
@@ -40,7 +39,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │ 📅 *Active:* Sab - Kam (Jumat Libur)
 │ 🕒 *Hours:* 07.00 - 21.00 WIB
 │
-├─── o「 ${titleInteractive} 」
+├─── o「 ${titleModules} 」
 ├─  💰  *.finance* ── [CuanBuddy]
 ├─  💻  *.coding* ── [Dev Program]
 ├─  🎥  *.creator* ── [Content Creator]
@@ -49,19 +48,12 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─  🌍  *.translate* ── [Multi-Language]
 ├─  📅  *.reminder* ── [Daily Task]
 ├─  📧  *.email* ── [Professional Writer]
-│
-├─── o「 ${titleCommandOnly} 」
-├─  🛠️  *.util <soal>* ── [Kalkulator]
-├─  🎨  *.brat <teks>* ── [Brat Sticker]
-├─  🎬  *.bratvid <teks>* ── [Brat Video]
-├─  💬  *.qchat <teks>* ── [Bubble Chat]
-├─  🍏  *.qchat-ios <teks>* ── [iOS Bubble]
-├─  📸  *kirim gambar + .s* ── [Sticker]
+├─  🛠️  *.util* ── [Smart Utilities]
 │
 ├─── o「 ${titleShortcuts} 」
 ├─  🚀  *.menu* ── Menampilkan menu utama
 ├─  ⏹️  *.exit* ── Keluar dari mode modul
 ╰────────────────────────────
 
-📌 *Tips*: Anda bisa masuk ke Mode Interaktif dengan memilih modul dari tombol menu di bawah, atau langsung menggunakan command instan bertanda titik (.) di chat.`;
+📌 *Tips*: Anda bisa masuk ke salah satu modul fitur di atas dengan mengetikkan langsung perintahnya (contoh: \`.finance\` atau \`.util\`) untuk memunculkan panel kontrol modul.`;
 }
