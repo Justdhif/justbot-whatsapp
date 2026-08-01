@@ -15,9 +15,9 @@ const envSchema = z.object({
   // CuanBuddy Backend API Base URL
   CUANBUDDY_API_BASE_URL: z.string().default('https://cuan-buddy-api.vercel.app'),
 
-  // Bot Operational Hours (Format 24 Jam in WIB/UTC+7, e.g. 08:00 to 22:00)
-  BOT_OPERATIONAL_START: z.string().default('08:00'),
-  BOT_OPERATIONAL_END: z.string().default('22:00'),
+  // Bot Operational Hours (Format 24 Jam in WIB/UTC+7, e.g. 07:00 to 21:00)
+  BOT_OPERATIONAL_START: z.string().default('07:00'),
+  BOT_OPERATIONAL_END: z.string().default('21:00'),
   // Hari Aktif: 1=Mon, 2=Tue, 3=Wed, 4=Thu, 6=Sat, 7=Sun (Hari Jumat 5 OFF secara default)
   BOT_OPERATIONAL_DAYS: z.string().default('1,2,3,4,6,7'),
   BOT_ENABLE_SCHEDULE: z.string().default('true').transform((val) => val.toLowerCase() === 'true'),

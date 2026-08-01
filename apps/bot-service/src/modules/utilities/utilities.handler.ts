@@ -31,7 +31,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │ 🤖 *Bot Name:* JustBot-Service
 │ 🔗 *Engine:* Fastify & Groq AI
 │ 📅 *Active Days:* Sab - Kam (Jumat Libur)
-│ 🕒 *Active Hours:* 08.00 - 22.00 WIB
+│ 🕒 *Active Hours:* 07.00 - 21.00 WIB
 ╰────────────────────────────
 ╭───「 *INTERACTIVE MODULES (MODES)* 」
 ├─  💰  *.finance* ── [CuanBuddy App]
