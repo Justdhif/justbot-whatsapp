@@ -126,114 +126,171 @@ function getStickerTheme(type: StickerCommandType): { background: string; textCo
   }
 }
 
+const CHARACTER_WIDTHS: Record<string, number> = {
+  A: 0.667, B: 0.667, C: 0.722, D: 0.722, E: 0.667, F: 0.611, G: 0.778, H: 0.722, I: 0.278, J: 0.5,
+  K: 0.667, L: 0.556, M: 0.833, N: 0.722, O: 0.778, P: 0.667, Q: 0.778, R: 0.722, S: 0.667, T: 0.611,
+  U: 0.722, V: 0.667, W: 0.944, X: 0.667, Y: 0.667, Z: 0.611,
+  a: 0.556, b: 0.556, c: 0.5,   d: 0.556, e: 0.556, f: 0.278, g: 0.556, h: 0.556, i: 0.222, j: 0.222,
+  k: 0.5,   l: 0.222, m: 0.833, n: 0.556, o: 0.556, p: 0.556, q: 0.556, r: 0.333, s: 0.5,   t: 0.278,
+  u: 0.556, v: 0.5,   w: 0.722, x: 0.5,   y: 0.5,   z: 0.5,
+  '0': 0.556, '1': 0.556, '2': 0.556, '3': 0.556, '4': 0.556, '5': 0.556, '6': 0.556, '7': 0.556, '8': 0.556, '9': 0.556,
+  ' ': 0.278, '.': 0.278, ',': 0.278, ';': 0.278, ':': 0.278, '!': 0.278, '?': 0.556,
+  '-': 0.333, '_': 0.556, '+': 0.584, '=': 0.584, '/': 0.278, '\\': 0.278, '|': 0.278,
+  '(': 0.333, ')': 0.333, '[': 0.278, ']': 0.278, '{': 0.333, '}': 0.333,
+  '"': 0.355, "'": 0.191, '`': 0.333, '@': 1.012, '#': 0.556, '$': 0.556, '%': 0.889, '^': 0.469,
+  '&': 0.667, '*': 0.389
+};
+
+function getCharWidth(char: string): number {
+  return CHARACTER_WIDTHS[char] !== undefined ? CHARACTER_WIDTHS[char] : 0.5;
+}
+
+function getWordWidth(word: string, fontSize: number): number {
+  let width = 0;
+  for (let i = 0; i < word.length; i++) {
+    width += getCharWidth(word[i]) * fontSize;
+  }
+  return width;
+}
+
+function wrapText(text: string, fontSize: number, maxWidth: number): string[][] {
+  const paragraphs = text.split(/\r?\n/);
+  const allLines: string[][] = [];
+
+  for (const para of paragraphs) {
+    const words = para.split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      allLines.push([]);
+      continue;
+    }
+
+    let currentLine: string[] = [];
+    let currentLineWidth = 0;
+    const spaceWidth = 0.278 * fontSize;
+
+    for (const word of words) {
+      const wordWidth = getWordWidth(word, fontSize);
+      if (currentLine.length === 0) {
+        currentLine.push(word);
+        currentLineWidth = wordWidth;
+      } else {
+        const candidateWidth = currentLineWidth + spaceWidth + wordWidth;
+        if (candidateWidth <= maxWidth) {
+          currentLine.push(word);
+          currentLineWidth = candidateWidth;
+        } else {
+          allLines.push(currentLine);
+          currentLine = [word];
+          currentLineWidth = wordWidth;
+        }
+      }
+    }
+    if (currentLine.length > 0) {
+      allLines.push(currentLine);
+    }
+  }
+
+  return allLines;
+}
+
+type TextCondition = 'SHORT' | 'MEDIUM' | 'LONG';
+
+function classifyText(text: string): TextCondition {
+  const words = text.split(/\s+/).filter(Boolean);
+  const linesAtLargeSize = wrapText(text, 52, 452); // 452 is 512 - 30 - 30
+  
+  if (linesAtLargeSize.length === 1) {
+    return 'SHORT';
+  }
+  
+  if (text.length >= 45) {
+    return 'LONG';
+  }
+  
+  return 'MEDIUM';
+}
+
+function determineLayout(text: string, condition: TextCondition) {
+  const maxWidth = 512 - 30 - 30; // 452px
+  const maxHeight = 512 - 30 - 30; // 452px
+  
+  let fontSize = (condition === 'SHORT' || condition === 'MEDIUM') ? 52 : 44;
+  let lines: string[][] = [];
+  let totalHeight = 0;
+  
+  while (fontSize >= 16) {
+    lines = wrapText(text, fontSize, maxWidth);
+    const lineHeight = fontSize * 1.25;
+    totalHeight = lines.length * lineHeight;
+    
+    if (totalHeight <= maxHeight || fontSize === 16) {
+      break;
+    }
+    fontSize -= 1;
+  }
+  
+  return { fontSize, lines, totalHeight };
+}
+
 async function createLocalBratSticker(text: string, type: StickerCommandType): Promise<Buffer> {
-  const theme = getStickerTheme(type);
-  const lines = wrapStickerText(text.toUpperCase(), 11);
+  const condition = classifyText(text);
+  const { fontSize, lines } = determineLayout(text, condition);
+  
   const width = 512;
   const height = 512;
-  const svgNamespace = 'http:' + String.fromCharCode(47, 47) + 'www.w3.org/2000/svg';
-  const textSvg = buildBlockTextSvg(lines, theme.textColor, width, height);
-
+  const paddingLeft = 30;
+  const paddingTop = 30;
+  const maxWidth = width - paddingLeft * 2;
+  const lineHeight = fontSize * 1.25;
+  
+  const textElements: string[] = [];
+  
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const line = lines[lineIndex];
+    if (line.length === 0) continue;
+    
+    const y = paddingTop + fontSize + lineIndex * lineHeight;
+    const shouldJustify = condition === 'LONG' && lineIndex < lines.length - 1 && line.length > 1;
+    
+    if (shouldJustify) {
+      let totalWordsWidth = 0;
+      for (const word of line) {
+        totalWordsWidth += getWordWidth(word, fontSize);
+      }
+      const remainingSpace = maxWidth - totalWordsWidth;
+      const spaceWidth = remainingSpace / (line.length - 1);
+      
+      let x = paddingLeft;
+      const tspans: string[] = [];
+      for (const word of line) {
+        tspans.push(`<tspan x="${x.toFixed(2)}">${escapeXml(word)}</tspan>`);
+        x += getWordWidth(word, fontSize) + spaceWidth;
+      }
+      
+      textElements.push(
+        `  <text y="${y.toFixed(2)}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="500" fill="#000000" filter="url(#blur)">${tspans.join('')}</text>`
+      );
+    } else {
+      const lineStr = line.join(' ');
+      textElements.push(
+        `  <text x="${paddingLeft}" y="${y.toFixed(2)}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="500" fill="#000000" filter="url(#blur)">${escapeXml(lineStr)}</text>`
+      );
+    }
+  }
+  
+  const svgNamespace = 'http://www.w3.org/2000/svg';
   const svg = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<svg xmlns="' + svgNamespace + '" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">',
-    '  <rect width="100%" height="100%" fill="' + theme.background + '" />',
-    '  <rect x="20" y="20" width="472" height="472" rx="36" ry="36" fill="none" stroke="' + theme.accent + '" stroke-width="5" opacity="0.22" />',
-    textSvg,
+    `<svg xmlns="${svgNamespace}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
+    '  <defs>',
+    '    <filter id="blur" x="-10%" y="-10%" width="120%" height="120%">',
+    '      <feGaussianBlur stdDeviation="1.3" />',
+    '    </filter>',
+    '  </defs>',
+    '  <rect width="100%" height="100%" fill="#FFFFFF" />',
+    ...textElements,
     '</svg>',
   ].join('\n');
 
   return await sharp(Buffer.from(svg, 'utf8')).webp({ quality: 92 }).toBuffer();
-}
-
-type BlockGlyph = string[];
-
-const BLOCK_FONT: Record<string, BlockGlyph> = {
-  A: ['  #  ', ' # # ', '#   #', '#####', '#   #', '#   #', '#   #'],
-  B: ['#### ', '#   #', '#   #', '#### ', '#   #', '#   #', '#### '],
-  C: [' ####', '#    ', '#    ', '#    ', '#    ', '#    ', ' ####'],
-  D: ['#### ', '#   #', '#   #', '#   #', '#   #', '#   #', '#### '],
-  E: ['#####', '#    ', '#    ', '#####', '#    ', '#    ', '#####'],
-  F: ['#####', '#    ', '#    ', '#####', '#    ', '#    ', '#    '],
-  G: [' ####', '#    ', '#    ', '#  ##', '#   #', '#   #', ' ####'],
-  H: ['#   #', '#   #', '#   #', '#####', '#   #', '#   #', '#   #'],
-  I: ['#####', '  #  ', '  #  ', '  #  ', '  #  ', '  #  ', '#####'],
-  J: ['#####', '   # ', '   # ', '   # ', '#  # ', '#  # ', ' ##  '],
-  K: ['#   #', '#  # ', '# #  ', '##   ', '# #  ', '#  # ', '#   #'],
-  L: ['#    ', '#    ', '#    ', '#    ', '#    ', '#    ', '#####'],
-  M: ['#   #', '## ##', '# # #', '#   #', '#   #', '#   #', '#   #'],
-  N: ['#   #', '##  #', '# # #', '#  ##', '#   #', '#   #', '#   #'],
-  O: [' ### ', '#   #', '#   #', '#   #', '#   #', '#   #', ' ### '],
-  P: ['#### ', '#   #', '#   #', '#### ', '#    ', '#    ', '#    '],
-  Q: [' ### ', '#   #', '#   #', '#   #', '# # #', '#  # ', ' ## #'],
-  R: ['#### ', '#   #', '#   #', '#### ', '# #  ', '#  # ', '#   #'],
-  S: [' ####', '#    ', '#    ', ' ### ', '    #', '    #', '#### '],
-  T: ['#####', '  #  ', '  #  ', '  #  ', '  #  ', '  #  ', '  #  '],
-  U: ['#   #', '#   #', '#   #', '#   #', '#   #', '#   #', ' ### '],
-  V: ['#   #', '#   #', '#   #', '#   #', ' # # ', ' # # ', '  #  '],
-  W: ['#   #', '#   #', '#   #', '# # #', '# # #', '## ##', '#   #'],
-  X: ['#   #', ' # # ', '  #  ', '  #  ', '  #  ', ' # # ', '#   #'],
-  Y: ['#   #', ' # # ', '  #  ', '  #  ', '  #  ', '  #  ', '  #  '],
-  Z: ['#####', '   # ', '  #  ', ' #   ', '#    ', '#    ', '#####'],
-  '0': [' ### ', '#   #', '#  ##', '# # #', '##  #', '#   #', ' ### '],
-  '1': ['  #  ', ' ##  ', '# #  ', '  #  ', '  #  ', '  #  ', '#####'],
-  '2': [' ### ', '#   #', '    #', '   # ', '  #  ', ' #   ', '#####'],
-  '3': [' ### ', '#   #', '    #', ' ### ', '    #', '#   #', ' ### '],
-  '4': ['   # ', '  ## ', ' # # ', '#  # ', '#####', '   # ', '   # '],
-  '5': ['#####', '#    ', '#    ', '#### ', '    #', '#   #', ' ### '],
-  '6': [' ### ', '#   #', '#    ', '#### ', '#   #', '#   #', ' ### '],
-  '7': ['#####', '    #', '   # ', '  #  ', '  #  ', '  #  ', '  #  '],
-  '8': [' ### ', '#   #', '#   #', ' ### ', '#   #', '#   #', ' ### '],
-  '9': [' ### ', '#   #', '#   #', ' ####', '    #', '#   #', ' ### '],
-  ' ': ['     ', '     ', '     ', '     ', '     ', '     ', '     '],
-  '.': ['     ', '     ', '     ', '     ', '     ', ' ##  ', ' ##  '],
-  '!': ['  #  ', '  #  ', '  #  ', '  #  ', '  #  ', '     ', '  #  '],
-  '?': [' ### ', '#   #', '    #', '   # ', '  #  ', '     ', '  #  '],
-  '-': ['     ', '     ', '     ', '#####', '     ', '     ', '     '],
-};
-
-function buildBlockTextSvg(lines: string[], color: string, width: number, height: number): string {
-  const charWidth = 5;
-  const charHeight = 7;
-  const pixelsPerCell = 18;
-  const letterSpacing = 4;
-  const lineSpacing = 16;
-  const wrapped = lines.length > 0 ? lines : [''];
-
-  const renderedLines = wrapped.map((line) => {
-    const cells = Array.from(line).map((character) => BLOCK_FONT[character] || BLOCK_FONT['?']);
-    const lineWidth = cells.length * (charWidth * pixelsPerCell + letterSpacing) - letterSpacing;
-    return { cells, lineWidth };
-  });
-
-  const totalHeight = renderedLines.length * (charHeight * pixelsPerCell + lineSpacing) - lineSpacing;
-  const topOffset = Math.max(0, Math.round((height - totalHeight) / 2));
-
-  const rects: string[] = [];
-
-  for (let lineIndex = 0; lineIndex < renderedLines.length; lineIndex += 1) {
-    const { cells, lineWidth } = renderedLines[lineIndex];
-    const leftOffset = Math.max(0, Math.round((width - lineWidth) / 2));
-    const baseY = topOffset + lineIndex * (charHeight * pixelsPerCell + lineSpacing);
-
-    for (let charIndex = 0; charIndex < cells.length; charIndex += 1) {
-      const glyph = cells[charIndex];
-      const baseX = leftOffset + charIndex * (charWidth * pixelsPerCell + letterSpacing);
-
-      for (let row = 0; row < glyph.length; row += 1) {
-        const rowText = glyph[row];
-        for (let col = 0; col < rowText.length; col += 1) {
-          if (rowText[col] !== '#') {
-            continue;
-          }
-
-          rects.push(
-            `<rect x="${baseX + col * pixelsPerCell}" y="${baseY + row * pixelsPerCell}" width="${pixelsPerCell}" height="${pixelsPerCell}" fill="${color}" rx="4" ry="4" />`,
-          );
-        }
-      }
-    }
-  }
-
-  return `<g>${rects.join('')}</g>`;
 }
