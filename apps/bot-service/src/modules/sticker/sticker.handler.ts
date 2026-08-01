@@ -34,7 +34,7 @@ Silakan gunakan perintah khusus berikut untuk membuat stiker secara instan:
 
 /**
  * Generates WebP sticker, downloads its buffer, and uploads it to Meta Cloud API.
- * Uses highly-stable lolhuman API engine directly as fallback to avoid host-lookup failures.
+ * Uses highly-stable public WebP rendering engines with robust error fallback management.
  */
 export async function generateAndSendSticker(
   to: string,
@@ -46,10 +46,10 @@ export async function generateAndSendSticker(
     let stickerUrl = '';
 
     if (type === 'brat') {
-      // Use Lolhuman Brat Generator directly (extremely fast and reliable WebP API)
-      stickerUrl = `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`;
+      // Use premium stable Brat Text generator (instant WebP format)
+      stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`;
     } else if (type === 'bratvid') {
-      // Animated Brat GIF generator fallback via stable fastrestapis CDN URL
+      // Animated Brat GIF WebP generator
       stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`;
     } else if (type === 'qchat') {
       // WhatsApp Android Style Bubble chat sticker
@@ -66,10 +66,18 @@ export async function generateAndSendSticker(
     try {
       response = await axios.get(stickerUrl, { responseType: 'arraybuffer', timeout: 25000 });
     } catch (err: any) {
-      logger.warn({ err: err.message }, 'Failed primary generator API fetch. Falling back to alternative lolhuman Brat API endpoint');
-      // If primary domain fails (like DNS ENOTFOUND for fastrestapis), fallback to a reliable stable endpoint
-      const fallbackUrl = `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`;
-      response = await axios.get(fallbackUrl, { responseType: 'arraybuffer', timeout: 25000 });
+      logger.warn({ err: err.message }, 'Primary generator failed. Trying fallback CDN generator API...');
+      
+      // Fallback 1: Use another premium stable generator URL format
+      const fallbackUrl1 = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}`;
+      try {
+        response = await axios.get(fallbackUrl1, { responseType: 'arraybuffer', timeout: 25000 });
+      } catch (err2: any) {
+        logger.warn({ err: err2.message }, 'Fallback 1 failed. Trying Fallback 2 (Brat Generator Web)...');
+        // Fallback 2: Brat Generator alternative
+        const fallbackUrl2 = `https://aqul-brat.vercel.app/api/brat?text=${encodedText}`;
+        response = await axios.get(fallbackUrl2, { responseType: 'arraybuffer', timeout: 25000 });
+      }
     }
 
     const buffer = Buffer.from(response.data);
