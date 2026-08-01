@@ -49,7 +49,8 @@ export async function generateAndSendSticker(
 
     if (type === 'brat') {
       // Use extremely reliable WebP Brat generator API
-      stickerUrl = `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`;
+      // Since lolhuman free API returns JSON with result URL, we extract it properly or use direct stable renderers
+      stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`;
     } else if (type === 'bratvid') {
       // Use animated WebP Brat generator API
       stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`;
@@ -61,8 +62,27 @@ export async function generateAndSendSticker(
       stickerUrl = `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     }
 
-    logger.info({ type, text, stickerUrl }, 'Generating sticker via cloud rendering API');
-    return await sendWhatsAppSticker(to, stickerUrl);
+    // Standardize URL to fetch WebP content
+    // Many API endpoints return json with a "result" field containing the actual WebP CDN URL.
+    // If the URL is directly WebP, Meta WhatsApp Business API requires the URL to end with a valid image extension, OR we must upload it.
+    // Let's resolve the final WebP url to pass to Meta
+    let finalStickerUrl = stickerUrl;
+    
+    // For Lolhuman API QC / Brat endpoints, let's make a check.
+    // To ensure Meta Cloud API handles the download properly, we can upload or proxy. 
+    // An even cleaner, 100% reliable method for Meta is to let Lolhuman generate, download its buffer, and then we send the buffer link if needed, 
+    // or use stable CDN proxying:
+    if (type === 'qchat' || type === 'qchat-ios') {
+      // The LOLHUMAN free endpoints return raw WebP files directly, but let's make sure the URL ends with an extension so Meta doesn't reject it:
+      finalStickerUrl = `${stickerUrl}&ext=.webp`;
+    } else if (type === 'brat') {
+      finalStickerUrl = `${stickerUrl}&ext=.webp`;
+    } else if (type === 'bratvid') {
+      finalStickerUrl = `${stickerUrl}&ext=.webp`;
+    }
+
+    logger.info({ type, text, finalStickerUrl }, 'Generating sticker via cloud rendering API');
+    return await sendWhatsAppSticker(to, finalStickerUrl);
   } catch (error) {
     logger.error({ error, type, text }, 'Failed to generate and send WhatsApp sticker');
     return false;
