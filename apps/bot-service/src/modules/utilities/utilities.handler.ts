@@ -20,37 +20,36 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const greetingName = senderName ? ` ${senderName}` : '';
   const tzDisplay = timezoneName || 'WIB (Asia/Jakarta)';
   
-  const titleMain = changeFont('JUSTBOT AI MULTI-SERVICE', 'boldSansUppercase');
-  const titleUserInfo = changeFont('USER INFO', 'boldSansUppercase');
-  const titleBotInfo = changeFont('BOT INFO', 'boldSansUppercase');
-  const titleSkills = changeFont('BOT SKILLS', 'boldSansUppercase');
-  const titleApps = changeFont('INTEGRATED APPS', 'boldSansUppercase');
-  const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'boldSansUppercase');
+  const titleMain = changeFont('JUSTBOT AI MULTI-SERVICE', 'smallCaps');
+  const titleUserInfo = changeFont('USER INFO', 'smallCaps');
+  const titleBotInfo = changeFont('BOT INFO', 'smallCaps');
+  const titleSkills = changeFont('BOT SKILLS', 'smallCaps');
+  const titleApps = changeFont('INTEGRATED APPS', 'smallCaps');
+  const titleShortcuts = changeFont('SHORTCUTS & COMMANDS', 'smallCaps');
 
-  // Generate subitems formatted in boldSansUppercase as seen in the mockup screenshot!
-  const labelName = changeFont('Nama', 'boldSansUppercase');
-  const labelTz = changeFont('Timezone', 'boldSansUppercase');
-  const labelStatus = changeFont('Status', 'boldSansUppercase');
-  const labelBotName = changeFont('Bot Name', 'boldSansUppercase');
-  const labelEngine = changeFont('Engine', 'boldSansUppercase');
-  const labelActive = changeFont('Active', 'boldSansUppercase');
-  const labelHours = changeFont('Hours', 'boldSansUppercase');
+  const labelName = changeFont('Nama', 'smallCaps');
+  const labelTz = changeFont('Timezone', 'smallCaps');
+  const labelStatus = changeFont('Status', 'smallCaps');
+  const labelBotName = changeFont('Bot Name', 'smallCaps');
+  const labelEngine = changeFont('Engine', 'smallCaps');
+  const labelActive = changeFont('Active', 'smallCaps');
+  const labelHours = changeFont('Hours', 'smallCaps');
 
-  const skillFinance = changeFont('Konsultasi Keuangan', 'boldSansUppercase');
-  const skillCoding = changeFont('Coding & Debugging', 'boldSansUppercase');
-  const skillCreator = changeFont('Content Creator Script', 'boldSansUppercase');
-  const skillPdf = changeFont('Analisis PDF & Dokumen', 'boldSansUppercase');
-  const skillOcr = changeFont('Scan Teks Gambar (OCR)', 'boldSansUppercase');
-  const skillTranslate = changeFont('Penerjemah Bahasa', 'boldSansUppercase');
-  const skillReminder = changeFont('Pengingat & Agenda', 'boldSansUppercase');
-  const skillEmail = changeFont('Email & Surat Formal', 'boldSansUppercase');
-  const skillUtil = changeFont('Kalkulator & Konversi Satuan', 'boldSansUppercase');
+  const skillFinance = changeFont('Konsultasi Keuangan', 'smallCaps');
+  const skillCoding = changeFont('Coding & Debugging', 'smallCaps');
+  const skillCreator = changeFont('Content Creator Script', 'smallCaps');
+  const skillPdf = changeFont('Analisis PDF & Dokumen', 'smallCaps');
+  const skillOcr = changeFont('Scan Teks Gambar (OCR)', 'smallCaps');
+  const skillTranslate = changeFont('Penerjemah Bahasa', 'smallCaps');
+  const skillReminder = changeFont('Pengingat & Agenda', 'smallCaps');
+  const skillEmail = changeFont('Email & Surat Formal', 'smallCaps');
+  const skillUtil = changeFont('Kalkulator & Konversi Satuan', 'smallCaps');
 
-  const appCuanBuddy = changeFont('CuanBuddy App', 'boldSansUppercase');
+  const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
   
-  const descMenu = changeFont('Menampilkan menu utama', 'boldSansUppercase');
-  const descCuanBuddy = changeFont('Sambung & kelola CuanBuddy App', 'boldSansUppercase');
-  const descExit = changeFont('Keluar dari mode integrasi', 'boldSansUppercase');
+  const descMenu = changeFont('Menampilkan menu utama', 'smallCaps');
+  const descCuanBuddy = changeFont('Sambung & kelola CuanBuddy App', 'smallCaps');
+  const descExit = changeFont('Keluar dari mode integrasi', 'smallCaps');
 
   return `╭─── o「 ${titleMain} 」o
 │

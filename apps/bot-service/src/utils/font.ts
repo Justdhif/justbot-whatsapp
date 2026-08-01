@@ -21,16 +21,37 @@ const fonts = {
   },
   boldSansUppercase: {
     upper: 0x1D5D4,
-    lower: 0x1D5D4, // Maps lower characters to uppercase boldSans as seen in the mockup screenshot!
+    lower: 0x1D5D4,
     digits: 0x1D7EC,
+  },
+  smallCaps: {
+    // Maps standard letters to Unicode Small Capital symbols matching the 'SMLCAP' keyboard style!
+    A: 'ᴀ', B: 'ʙ', C: 'ᴄ', D: 'ᴅ', E: 'ᴇ', F: 'ꜰ', G: 'ɢ', H: 'ʜ', I: 'ɪ', J: 'ᴊ', K: 'ᴋ', L: 'ʟ', M: 'ᴍ',
+    N: 'ɴ', O: 'ᴏ', P: 'ᴘ', Q: 'ǫ', R: 'ʀ', S: 's', T: 'ᴛ', U: 'ᴜ', V: 'ᴠ', W: 'ᴡ', X: 'x', Y: 'ʏ', Z: 'ᴢ',
+    a: 'ᴀ', b: 'ʙ', c: 'ᴄ', d: 'ᴅ', e: 'ᴇ', f: 'ꜰ', g: 'ɢ', h: 'ʜ', i: 'ɪ', j: 'ᴊ', k: 'ᴋ', l: 'ʟ', m: 'ᴍ',
+    n: 'ɴ', o: 'ᴏ', p: 'ᴘ', q: 'ǫ', r: 'ʀ', s: 's', t: 'ᴛ', u: 'ᴜ', v: 'ᴠ', w: 'ᴡ', x: 'x', y: 'ʏ', z: 'ᴢ'
   }
 } as const;
 
 export type FontStyle = keyof typeof fonts;
 
 export function changeFont(text: string, style: FontStyle): string {
+  if (style === 'smallCaps') {
+    const map = fonts.smallCaps;
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (char in map) {
+        result += map[char as keyof typeof map];
+      } else {
+        result += char;
+      }
+    }
+    return result;
+  }
+
   const font = fonts[style];
-  if (!font) return text;
+  if (!font || !('upper' in font)) return text;
 
   let result = '';
   for (let i = 0; i < text.length; i++) {
@@ -49,7 +70,6 @@ export function changeFont(text: string, style: FontStyle): string {
     else if (charCode >= 97 && charCode <= 122) {
       const offset = charCode - 97;
       if (style === 'boldSansUppercase') {
-        // Map lowercase directly to uppercase boldSans equivalent offset
         result += String.fromCodePoint(font.upper + offset);
       } else if (style === 'italic' && charCode === 104) {
         result += 'ℎ';
@@ -57,7 +77,7 @@ export function changeFont(text: string, style: FontStyle): string {
         result += String.fromCodePoint(font.lower + offset);
       }
     }
-    else if (charCode >= 48 && charCode <= 57 && font.digits !== null) {
+    else if (charCode >= 48 && charCode <= 57 && 'digits' in font && font.digits !== null) {
       const offset = charCode - 48;
       result += String.fromCodePoint(font.digits + offset);
     }
