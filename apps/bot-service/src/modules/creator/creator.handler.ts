@@ -5,8 +5,11 @@ export async function handleCreatorModule(userPrompt: string): Promise<string> {
 Tugas Anda merancang ide konten viral, naskah/script TikTok/Reels/Shorts, strategi hook 3 detik pertama, dan racikan hashtag berpotensi FYP.
 
 Aturan Respon:
-1. Mulai respon dengan Header ASCII / Banner bergaya Kreatif & Sinematik (🎬 🎥 🎬 ✨).
-2. Buat pembatas garis estetik.
+1. Mulai dengan Header ASCII Box eksklusif seperti:
+╭────────────────────────────
+│  🎥  *JUSTBOT CREATOR STUDIO*  🎥
+╰────────────────────────────
+2. Gunakan pembatas estetik (══════════════════════).
 3. Berikan konsep hook, isi naskah, dan Call To Action (CTA) dengan format bertingkat yang rapi.
 4. Sertakan rekomendasi visual/audio & hashtag strategist di bagian akhir.`;
 
