@@ -1,5 +1,4 @@
 import { askGroqAI } from "../../services/groq.service.js";
-import { changeFont } from "../../utils/font.js";
 
 export async function handleUtilitiesModule(
   userPrompt: string,
@@ -24,28 +23,22 @@ export function getHelpMenu(
 ): string {
   const greetingName = senderName ? ` ${senderName}` : "";
   const tzDisplay = timezoneName || "WIB (Asia/Jakarta)";
-
-  const titleMain = changeFont("JUSTBOT AI MULTI-SERVICE", "boldSans");
-  const titleUserInfo = changeFont("USER INFO", "boldSans");
-  const titleBotInfo = changeFont("BOT INFO", "boldSans");
-  const titleModules = changeFont("LIST MODULES", "boldSans");
-  const titleApps = changeFont("INTEGRATED APPS", "boldSans");
-  const titleShortcuts = changeFont("SHORTCUTS & COMMANDS", "boldSans");
+  const titleMain = "JUSTBOT AI MULTI-SERVICE";
 
   return `╭─── o「 ${titleMain} 」o
 │
-├─── o(" ${titleUserInfo} ")
+├─── o(" USER INFO ")
 │ 👤 *Nama:* ${greetingName || "Guest User"}
 │ 🌍 *Timezone:* ${tzDisplay}
 │ 🟢 *Status:* Online
 │
-├─── o(" ${titleBotInfo} ")
+├─── o(" BOT INFO ")
 │ 🤖 *Bot Name:* JustBot-Service
 │ 🔗 *Engine:* Fastify & Groq AI
 │ 📅 *Active:* Sabtu - Kamis
 │ 🕒 *Hours:* 07.00 - 21.00 WIB
 │
-├─── o(" ${titleModules} ")
+├─── o(" LIST MODULES ")
 ├─  💼  *.finance*
 ├─  💻  *.coding*
 ├─  🎥  *.creator*
@@ -57,10 +50,10 @@ export function getHelpMenu(
 ├─  🛠️  *util* (kalkulator & info)
 ├─  🎨  *.brat* (sticker generator)
 │
-├─── o(" ${titleApps} ")
+├─── o(" INTEGRATED APPS ")
 ├─  💳  *.cuanbuddy*
 │
-├─── o(" ${titleShortcuts} ")
+├─── o(" SHORTCUTS & COMMANDS ")
 ├─  🚀  *.menu* - Menampilkan menu utama
 ├─  🎨  *.brat <teks>* - Generate sticker brat
 ├─  🎬  *.bratvid <teks>* - Generate brat video sticker
