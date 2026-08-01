@@ -36,7 +36,7 @@ Silakan gunakan perintah khusus berikut untuk membuat stiker secara instan:
 
 /**
  * High-performance sticker generator endpoint integration
- * We use reliable custom cloud rendering APIs to generate exact high-quality sticker formats
+ * We use highly-compatible lolhuman and fastrestapis fallback engines for absolute delivery reliability
  */
 export async function generateAndSendSticker(
   to: string,
@@ -48,17 +48,17 @@ export async function generateAndSendSticker(
     let stickerUrl = '';
 
     if (type === 'brat') {
-      // High-resolution white background Brat sticker rendering endpoint
-      stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`;
+      // Use extremely reliable WebP Brat generator API
+      stickerUrl = `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`;
     } else if (type === 'bratvid') {
-      // High-performance animated text sticker rendering endpoint
+      // Use animated WebP Brat generator API
       stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`;
     } else if (type === 'qchat') {
       // WhatsApp Android Style Bubble chat sticker
-      stickerUrl = `https://api.lolhuman.xyz/api/qc?apikey=free&text=${encodedText}&username=JustBot&avatar=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe`;
+      stickerUrl = `https://api.lolhuman.xyz/api/qc?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     } else if (type === 'qchat-ios') {
       // WhatsApp iOS iMessage Style Bubble chat sticker
-      stickerUrl = `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe`;
+      stickerUrl = `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     }
 
     logger.info({ type, text, stickerUrl }, 'Generating sticker via cloud rendering API');
