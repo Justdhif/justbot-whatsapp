@@ -191,16 +191,15 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           const lower = trimmed.toLowerCase();
           const session = getUserSession(from);
 
+          // Only intercept direct command triggers for CuanBuddy App preview
           const directCmdMode = lower.startsWith('.') ? lower.replace('.', '') : '';
-          if (directCmdMode && MODULE_DETAILS[directCmdMode]) {
+          if (directCmdMode === 'cuanbuddy' && MODULE_DETAILS[directCmdMode]) {
             const detail = MODULE_DETAILS[directCmdMode];
-            
             
             const bannerUrl = MODULE_BANNERS[directCmdMode] || 'https://picsum.photos/800/600';
             const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
             await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-            
             const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
 ╰────────────────────────────
@@ -211,7 +210,6 @@ ${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
-            
             let startButtons = [
               { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
               { id: '.menu', title: '📋 Kembali Ke Menu' }
@@ -352,18 +350,18 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
             }
 
             
+            // Only handle list selections for CuanBuddy (other general skills don't have start/modes screens anymore)
             if (lower.startsWith('select:module:')) {
               const selectedMode = lower.replace('select:module:', '');
-              const detail = MODULE_DETAILS[selectedMode];
+              
+              if (selectedMode === 'cuanbuddy') {
+                const detail = MODULE_DETAILS[selectedMode];
+                if (detail) {
+                  const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://picsum.photos/800/600';
+                  const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
+                  await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-              if (detail) {
-                
-                const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://picsum.photos/800/600';
-                const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
-                await sendWhatsAppImage(from, bannerUrl, bannerCaption);
-
-                
-                const previewText = `╭────────────────────────────
+                  const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
 ╰────────────────────────────
 ${detail.desc}
@@ -373,13 +371,14 @@ ${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
-                let startButtons = [
-                  { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
-                  { id: '.menu', title: '📋 Kembali Ke Menu' }
-                ];
+                  let startButtons = [
+                    { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
+                    { id: '.menu', title: '📋 Kembali Ke Menu' }
+                  ];
 
-                await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
-                return reply.status(200).send({ status: 'success' });
+                  await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
+                  return reply.status(200).send({ status: 'success' });
+                }
               }
             }
 

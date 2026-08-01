@@ -130,62 +130,76 @@ export async function processIncomingMessage(userId: string, text: string, sende
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
 
-  
   if (isJuliaQuery(trimmed)) {
     return await handleJuliaSpecialResponse(trimmed);
   }
 
   const session = getUserSession(userId);
 
-  
-  if (session.activeMode) {
-    const currentMode = session.activeMode;
-
-    switch (currentMode) {
-      case 'coding':
-        return await handleCodingModule(trimmed);
-      case 'finance':
-        return await handleFinanceModule(trimmed, userId, senderName);
-      case 'creator':
-        return await handleCreatorModule(trimmed);
-      case 'translate':
-        return await handleTranslatorModule(trimmed);
-      case 'ocr':
-        return await handleOcrModule(trimmed);
-      case 'pdf':
-        return await handlePdfAiModule(trimmed);
-      case 'email':
-        return await handleEmailModule(trimmed);
-      case 'reminder':
-        return await handleReminderModule(trimmed);
-      default:
-        break;
-    }
+  // If the user is in an active transactional sync mode (e.g. CuanBuddy transaction recording mode)
+  if (session.activeMode === 'finance') {
+    return await handleFinanceModule(trimmed, userId, senderName);
   }
 
-  
-  
-  
-  
+  // 1. CODING SKILL: Detect coding questions, code snippets, bugs, or program refactoring
+  const isCodingQuery = 
+    /\b(code|coding|program|function|compile|debug|error|typescript|javascript|python|html|css|json|refactor|database|git)\b/i.test(lower) ||
+    /({[\s\S]*\}|=>|const |let |var |import |def |class )/.test(trimmed);
+  if (isCodingQuery) {
+    return await handleCodingModule(trimmed);
+  }
+
+  // 2. CREATOR SKILL: Detect tiktok, reels, video script, hook, content writing, social media content ideas
+  const isCreatorQuery = /\b(tiktok|reels|shorts|konten|creator|hook|script|naskah|fyps|hashtag|caption|video)\b/i.test(lower);
+  if (isCreatorQuery) {
+    return await handleCreatorModule(trimmed);
+  }
+
+  // 3. TRANSLATOR SKILL: Detect translate, terjemahkan, kamus, or requests in foreign languages
+  const isTranslatorQuery = /\b(terjemahkan|translate|artinya|inggris|jepang|mandarin|bahasa|polyglot)\b/i.test(lower);
+  if (isTranslatorQuery) {
+    return await handleTranslatorModule(trimmed);
+  }
+
+  // 4. OCR SKILL: Detect requests to scan, extract text from image context
+  const isOcrQuery = /\b(ocr|scan|ekstrak|baca gambar|salin tulisan)\b/i.test(lower);
+  if (isOcrQuery) {
+    return await handleOcrModule(trimmed);
+  }
+
+  // 5. PDF SKILL: Detect pdf, summary, document analysis requests
+  const isPdfQuery = /\b(pdf|dokumen|rangkum|baca berkas|summary|ringkas)\b/i.test(lower);
+  if (isPdfQuery) {
+    return await handlePdfAiModule(trimmed);
+  }
+
+  // 6. EMAIL SKILL: Detect requests to write emails, formal letters, cuti, application drafts
+  const isEmailQuery = /\b(email|surel|surat resmi|draf surat|izin cuti|lamaran kerja|formal draft)\b/i.test(lower);
+  if (isEmailQuery) {
+    return await handleEmailModule(trimmed);
+  }
+
+  // 7. REMINDER SKILL: Detect task manager, todo list, schedules, reminders, agendas
+  const isReminderQuery = /\b(reminder|jadwal|agenda|todo|catatan kerja|tugas hari ini|prioritas)\b/i.test(lower);
+  if (isReminderQuery) {
+    return await handleReminderModule(trimmed);
+  }
+
+  // 8. UTILITIES SKILL: Detect calculations, unit conversions, math, fact-finding queries
   const isUtilityQuery = 
     /^[0-9+\-*/().\s]+$/.test(trimmed) && trimmed.length > 2 || 
-    /\b(konversi|hitung|berapa|kurangi|tambah|kali|bagi|kilo|mil|celcius|fahrenheit|usd|rupiah|idr|kurs|meter|cm|luas|volume)\b/i.test(lower);
-
+    /\b(konversi|hitung|berapa|kurangi|tambah|kali|bagi|kilo|mil|celcius|fahrenheit|usd|rupiah|idr|kurs|meter|cm|luas|volume|ibukota|tanggal|sejarah)\b/i.test(lower);
   if (isUtilityQuery) {
     return await handleUtilitiesModule(trimmed);
   }
-  
-  
-  
 
-  
+  // Handle 6-digit OTP verification codes (independent app pairing flow)
   if (/^\d{6}$/.test(trimmed)) {
     return await handleFinanceModule(trimmed, userId, senderName);
   }
 
-  
+  // Default Chatbot conversational response
   const namePrompt = senderName ? `Nama profil WhatsApp pengguna ini adalah "${senderName}". Sapa atau panggil namanya bila sesuai agar percakapan terasa personal.` : '';
-
   const conversationalSystemPrompt = `Anda adalah 🤖 *JustBot AI*, asisten pintar WhatsApp yang sangat ramah, responsif, santai, cerdas, dan menyenangkan.
 ${namePrompt}
 
