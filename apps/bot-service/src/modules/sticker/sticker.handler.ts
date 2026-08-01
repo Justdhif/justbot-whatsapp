@@ -43,41 +43,57 @@ export async function generateAndSendSticker(
 ): Promise<boolean> {
   try {
     const encodedText = encodeURIComponent(text);
-    let stickerUrl = '';
+    const stickerCandidates: string[] = [];
 
     if (type === 'brat') {
-      // Use premium stable Brat Text generator (instant WebP format)
-      stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`;
+      stickerCandidates.push(
+        `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`,
+        `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`,
+      );
     } else if (type === 'bratvid') {
-      // Animated Brat GIF WebP generator
-      stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`;
+      stickerCandidates.push(
+        `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`,
+        `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`,
+      );
     } else if (type === 'qchat') {
-      // WhatsApp Android Style Bubble chat sticker
-      stickerUrl = `https://api.lolhuman.xyz/api/qc?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
+      stickerCandidates.push(
+        `https://api.lolhuman.xyz/api/qc?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`,
+      );
     } else if (type === 'qchat-ios') {
-      // WhatsApp iOS iMessage Style Bubble chat sticker
-      stickerUrl = `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
+      stickerCandidates.push(
+        `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`,
+      );
     }
+
+    const stickerUrl = stickerCandidates[0] || '';
 
     logger.info({ type, text, stickerUrl }, 'Generating sticker buffer via API');
 
     // Download WebP buffer directly with fallback support
     let response;
-    try {
-      response = await axios.get(stickerUrl, { responseType: 'arraybuffer', timeout: 25000 });
-    } catch (err: any) {
-      logger.warn({ err: err.message }, 'Primary generator failed. Trying fallback CDN generator API...');
-      
-      // Fallback 1: Use another premium stable generator URL format
-      const fallbackUrl1 = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}`;
+    let lastError: any = null;
+
+    for (let index = 0; index < stickerCandidates.length; index += 1) {
+      const candidateUrl = stickerCandidates[index];
+
       try {
-        response = await axios.get(fallbackUrl1, { responseType: 'arraybuffer', timeout: 25000 });
-      } catch (err2: any) {
-        logger.warn({ err: err2.message }, 'Fallback 1 failed. Trying Fallback 2 (Brat Generator Web)...');
-        // Fallback 2: Brat Generator alternative
-        const fallbackUrl2 = `https://aqul-brat.vercel.app/api/brat?text=${encodedText}`;
-        response = await axios.get(fallbackUrl2, { responseType: 'arraybuffer', timeout: 25000 });
+        response = await axios.get(candidateUrl, { responseType: 'arraybuffer', timeout: 25000 });
+        logger.info({ candidateUrl }, 'Sticker generator candidate succeeded');
+        break;
+      } catch (err: any) {
+        lastError = err;
+        const isLastCandidate = index === stickerCandidates.length - 1;
+        logger.warn(
+          { err: err.message, candidateUrl },
+          isLastCandidate
+            ? 'All sticker generator candidates failed.'
+            : 'Sticker generator candidate failed. Trying next fallback...'
+        );
       }
+    }
+
+    if (!response) {
+      throw lastError || new Error('No sticker generator candidates succeeded');
     }
 
     const buffer = Buffer.from(response.data);
