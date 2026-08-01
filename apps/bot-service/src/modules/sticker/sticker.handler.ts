@@ -47,13 +47,17 @@ export async function generateAndSendSticker(
 
     if (type === 'brat') {
       stickerCandidates.push(
+        // API 1: Aqul Brat Vercel Endpoint (Uses direct text query parameter)
+        `https://aqul-brat.vercel.app/api/brat?text=${encodedText}`,
+        // API 2: FastRestAPIs Brat Generator
         `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`,
+        // API 3: Lolhuman Brat Generator fallback
         `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`,
       );
     } else if (type === 'bratvid') {
       stickerCandidates.push(
         `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`,
-        `https://api.lolhuman.xyz/api/brat?apikey=free&text=${encodedText}`,
+        `https://aqul-brat.vercel.app/api/brat?text=${encodedText}`,
       );
     } else if (type === 'qchat') {
       stickerCandidates.push(
@@ -92,8 +96,67 @@ export async function generateAndSendSticker(
       }
     }
 
+    // FALLBACK 3: Custom Node-Canvas Generator if all external APIs fail!
+    // We dynamic-import canvas to avoid build errors if the target user environment doesn't have native libraries.
+    // If not installed, we fallback to our clean error throw.
     if (!response) {
-      throw lastError || new Error('No sticker generator candidates succeeded');
+      try {
+        // Resolve canvas dynamically via require/import if exists
+        const CanvasModule = await import(
+          /* webpackIgnore: true */
+          // @ts-ignore
+          'canvas'
+        ).catch(() => null);
+
+        if (CanvasModule && CanvasModule.createCanvas) {
+          const canvas = CanvasModule.createCanvas(512, 512);
+          const ctx = canvas.getContext('2d');
+
+          // Draw Brat white background
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, 512, 512);
+
+          // Draw bold black centered text
+          ctx.fillStyle = '#000000';
+          ctx.font = 'bold 64px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          const words = text.split(' ');
+          let line = '';
+          const lines = [];
+          const maxWidth = 420;
+          const lineHeight = 75;
+
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+              lines.push(line);
+              line = words[n] + ' ';
+            } else {
+              line = testLine;
+            }
+          }
+          lines.push(line);
+
+          const startY = 256 - ((lines.length - 1) * lineHeight) / 2;
+          for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i].trim(), 256, startY + i * lineHeight);
+          }
+
+          const canvasBuffer = canvas.toBuffer('image/png');
+          const mediaId = await uploadWhatsAppMedia(canvasBuffer, 'image/png');
+          if (mediaId) {
+            logger.info('Brat sticker successfully generated via local Canvas fallback and uploaded to Meta');
+            return await sendWhatsAppSticker(to, mediaId, true);
+          }
+        }
+      } catch (canvasErr: any) {
+        logger.error({ canvasErr: canvasErr.message }, 'Canvas fallback generation failed');
+      }
+
+      throw lastError || new Error('No candidate url returned a response buffer');
     }
 
     const buffer = Buffer.from(response.data);
