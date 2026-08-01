@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import fs from 'fs';
 import { sendWhatsAppSticker, uploadWhatsAppMedia } from '../../services/whatsapp.service.js';
 import { logger } from '../../utils/logger.js';
 
@@ -126,6 +127,30 @@ function getStickerTheme(type: StickerCommandType): { background: string; textCo
   }
 }
 
+let cachedFontBase64 = '';
+
+function getFontBase64(): string {
+  if (cachedFontBase64) return cachedFontBase64;
+  try {
+    const paths = [
+      'C:\\Windows\\Fonts\\ARIALNB.TTF',
+      'C:\\Windows\\Fonts\\ARIALN.TTF',
+      'C:\\Windows\\Fonts\\arialbd.ttf',
+      'C:\\Windows\\Fonts\\arial.ttf'
+    ];
+    for (const p of paths) {
+      if (fs.existsSync(p)) {
+        const buf = fs.readFileSync(p);
+        cachedFontBase64 = buf.toString('base64');
+        return cachedFontBase64;
+      }
+    }
+  } catch (err) {
+    // Fallback
+  }
+  return '';
+}
+
 const CHARACTER_WIDTHS: Record<string, number> = {
   A: 0.667, B: 0.667, C: 0.722, D: 0.722, E: 0.667, F: 0.611, G: 0.778, H: 0.722, I: 0.278, J: 0.5,
   K: 0.667, L: 0.556, M: 0.833, N: 0.722, O: 0.778, P: 0.667, Q: 0.778, R: 0.722, S: 0.667, T: 0.611,
@@ -150,7 +175,8 @@ function getWordWidth(word: string, fontSize: number): number {
   for (let i = 0; i < word.length; i++) {
     width += getCharWidth(word[i]) * fontSize;
   }
-  return width;
+  // Scaling down since Arial Narrow is about 82% of standard Arial width
+  return width * 0.82;
 }
 
 function wrapText(text: string, fontSize: number, maxWidth: number): string[][] {
@@ -166,7 +192,7 @@ function wrapText(text: string, fontSize: number, maxWidth: number): string[][] 
 
     let currentLine: string[] = [];
     let currentLineWidth = 0;
-    const spaceWidth = 0.278 * fontSize;
+    const spaceWidth = 0.278 * fontSize * 0.82; // Space is also scaled
 
     for (const word of words) {
       const wordWidth = getWordWidth(word, fontSize);
@@ -268,21 +294,35 @@ async function createLocalBratSticker(text: string, type: StickerCommandType): P
       }
       
       textElements.push(
-        `  <text y="${y.toFixed(2)}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="500" fill="#000000" filter="url(#blur)">${tspans.join('')}</text>`
+        `  <text y="${y.toFixed(2)}" font-family="BratFont" font-size="${fontSize}" fill="#000000" filter="url(#blur)">${tspans.join('')}</text>`
       );
     } else {
       const lineStr = line.join(' ');
       textElements.push(
-        `  <text x="${paddingLeft}" y="${y.toFixed(2)}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="500" fill="#000000" filter="url(#blur)">${escapeXml(lineStr)}</text>`
+        `  <text x="${paddingLeft}" y="${y.toFixed(2)}" font-family="BratFont" font-size="${fontSize}" fill="#000000" filter="url(#blur)">${escapeXml(lineStr)}</text>`
       );
     }
   }
   
   const svgNamespace = 'http://www.w3.org/2000/svg';
+  
+  const fontBase64 = getFontBase64();
+  const fontStyle = fontBase64
+    ? `    <style>
+      @font-face {
+        font-family: 'BratFont';
+        src: url(data:font/ttf;charset=utf-8;base64,${fontBase64}) format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>`
+    : '';
+
   const svg = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     `<svg xmlns="${svgNamespace}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
     '  <defs>',
+    fontStyle,
     '    <filter id="blur" x="-10%" y="-10%" width="120%" height="120%">',
     '      <feGaussianBlur stdDeviation="1.3" />',
     '    </filter>',
