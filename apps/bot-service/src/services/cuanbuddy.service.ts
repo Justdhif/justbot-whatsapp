@@ -22,7 +22,7 @@ export interface CuanBuddyUser {
   email: string;
 }
 
-// 1. Verify 6-digit OTP code to pair WhatsApp Phone Number
+
 export async function pairWhatsAppWithOtp(phoneNumber: string, otp: string): Promise<{ success: boolean; message: string }> {
   try {
     const response = await cuanBuddyApi.post('/whatsapp/connect-otp/verify', {
@@ -42,7 +42,7 @@ export async function pairWhatsAppWithOtp(phoneNumber: string, otp: string): Pro
   }
 }
 
-// 2. Fetch CuanBuddy user profile by WhatsApp Phone Number
+
 export async function getCuanBuddyUserByPhone(phoneNumber: string): Promise<{ isConnected: boolean; user?: any }> {
   try {
     const response = await cuanBuddyApi.get(`/whatsapp/user-by-phone?phoneNumber=${phoneNumber}`);
@@ -55,7 +55,7 @@ export async function getCuanBuddyUserByPhone(phoneNumber: string): Promise<{ is
   }
 }
 
-// 3. Record transaction to CuanBuddy API
+
 export async function recordTransactionToCuanBuddy(
   phoneNumber: string,
   data: { amount: number; type: 'INCOME' | 'EXPENSE'; categoryName: string; note: string }

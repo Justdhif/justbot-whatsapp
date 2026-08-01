@@ -1,4 +1,4 @@
-// In-memory cache to track users who have received the OFF notification today
+
 const notifiedUsers: Record<string, string> = {};
 
 export function hasBeenNotifiedToday(userId: string): boolean {

@@ -10,7 +10,7 @@ import { handleUtilitiesModule, getHelpMenu } from './utilities/utilities.handle
 import { getUserSession } from '../utils/session.js';
 import { askGroqAI } from '../services/groq.service.js';
 
-// Special easter egg prompt for Julia Irya Salsabillah (Jujul)
+
 export function isJuliaQuery(text: string): boolean {
   const lower = text.toLowerCase();
   return lower.includes('jujul') || lower.includes('julia') || lower.includes('irya') || lower.includes('salsabillah');
@@ -31,7 +31,7 @@ Gunakan emoji romantis (🌸 💖 ✨ 👑 🌹), pembatas garis puitis (══�
   return await askGroqAI(userPrompt, systemPrompt);
 }
 
-// Module metadata for preview info
+
 export const MODULE_DETAILS: Record<string, { name: string; icon: string; desc: string; capabilities: string[] }> = {
   coding: {
     name: 'Coding Assistant',
@@ -139,14 +139,14 @@ export async function processIncomingMessage(userId: string, text: string, sende
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
 
-  // Check if message is asking about Julia / Jujul
+  
   if (isJuliaQuery(trimmed)) {
     return await handleJuliaSpecialResponse(trimmed);
   }
 
   const session = getUserSession(userId);
 
-  // Check if user is in an active mode session
+  
   if (session.activeMode) {
     const currentMode = session.activeMode;
 
@@ -174,19 +174,19 @@ export async function processIncomingMessage(userId: string, text: string, sende
     }
   }
 
-  // Handle explicit one-shot prefix commands if not in active mode (e.g. .util)
-  // (Other interactive modules .coding, .finance, etc. are intercepted in webhook.ts to show start buttons)
+  
+  
   if (lower.startsWith('.util')) return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
   
-  // Sticker commands have been removed
+  
   
 
-  // Check 6-digit OTP code attempt even outside finance mode
+  
   if (/^\d{6}$/.test(trimmed)) {
     return await handleFinanceModule(trimmed, userId, senderName);
   }
 
-  // Intelligent Conversational AI Fallback with WhatsApp Profile Name Injection!
+  
   const namePrompt = senderName ? `Nama profil WhatsApp pengguna ini adalah "${senderName}". Sapa atau panggil namanya bila sesuai agar percakapan terasa personal.` : '';
 
   const conversationalSystemPrompt = `Anda adalah 🤖 *JustBot AI*, asisten pintar WhatsApp yang sangat ramah, responsif, santai, cerdas, dan menyenangkan.

@@ -4,7 +4,7 @@ import { getCuanBuddyUserByPhone, pairWhatsAppWithOtp } from '../../services/cua
 export async function handleFinanceModule(userPrompt: string, phoneNumber?: string, senderName?: string): Promise<string> {
   const trimmed = userPrompt.trim();
 
-  // 1. Check if user is attempting OTP 6-digit verification
+  
   if (/^\d{6}$/.test(trimmed) && phoneNumber) {
     const pairResult = await pairWhatsAppWithOtp(phoneNumber, trimmed);
     if (pairResult.success) {
@@ -27,14 +27,14 @@ ${pairResult.message}
     }
   }
 
-  // 2. Check user's CuanBuddy connection status
+  
   let isConnected = false;
   if (phoneNumber) {
     const conn = await getCuanBuddyUserByPhone(phoneNumber);
     isConnected = conn.isConnected;
   }
 
-  // 3. System prompt for General Finance Consultant
+  
   const systemPrompt = `Anda adalah 💰 *JUSTBOT FINANCE CONSULTANT AI* — Konsultan Keuangan Pribadi Cerdas.
 
 Aturan Respon:
@@ -66,7 +66,7 @@ Di sini Anda bisa menghubungkan bot ini ke aplikasi *CuanBuddy* Anda untuk menca
 export async function processCuanBuddyCheck(phoneNumber: string, senderName?: string): Promise<string> {
   const greetingName = senderName ? ` ${senderName}` : '';
   
-  // Fetch from database API
+  
   const conn = await getCuanBuddyUserByPhone(phoneNumber);
   
   if (conn.isConnected) {

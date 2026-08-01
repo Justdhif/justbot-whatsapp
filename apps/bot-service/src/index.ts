@@ -11,7 +11,7 @@ const app = Fastify({
 
 app.register(formbody);
 
-// Root route
+
 app.get('/', async () => {
   return {
     name: 'JustBot WhatsApp Service',
@@ -25,12 +25,12 @@ app.get('/', async () => {
   };
 });
 
-// Health check endpoint
+
 app.get('/health', async () => {
   return { status: 'ok', service: 'justbot-whatsapp-service', timestamp: new Date() };
 });
 
-// Register Webhook routes
+
 app.register(webhookRoutes);
 
 async function startServer() {
@@ -43,12 +43,12 @@ async function startServer() {
   }
 }
 
-// If running locally
+
 if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY && !process.env.VERCEL) {
   startServer();
 }
 
-// Export handler compatible for both Vercel & Netlify Serverless Functions
+
 export default async function handler(req: any, res: any) {
   await app.ready();
   app.server.emit('request', req, res);

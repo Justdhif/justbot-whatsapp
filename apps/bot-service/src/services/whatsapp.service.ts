@@ -5,7 +5,7 @@ import { logger } from '../utils/logger.js';
 const WA_API_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/messages`;
 const WA_MEDIA_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/media`;
 
-// Send plain text message
+
 export async function sendWhatsAppMessage(to: string, messageText: string): Promise<boolean> {
   try {
     const payload = {
@@ -41,7 +41,7 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
   }
 }
 
-// Send Image Message directly with Caption text
+
 export async function sendWhatsAppImage(to: string, imageUrl: string, captionText: string): Promise<boolean> {
   try {
     const payload = {
@@ -77,7 +77,7 @@ export async function sendWhatsAppImage(to: string, imageUrl: string, captionTex
   }
 }
 
-// Send Interactive Quick Reply Buttons (Max 3 Buttons)
+
 export async function sendWhatsAppButtons(
   to: string,
   bodyText: string,
@@ -140,7 +140,7 @@ export async function sendWhatsAppButtons(
   }
 }
 
-// Send Interactive List Message (Up to 10 Options/Items)
+
 export async function sendWhatsAppInteractiveList(
   to: string,
   bodyText: string,

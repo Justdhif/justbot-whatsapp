@@ -21,7 +21,7 @@ import {
   markUserNotifiedToday,
 } from "../utils/offNotificationStore.js";
 
-// Module Banner Images mapping
+
 const MODULE_BANNERS: Record<string, string> = {
   coding:
     "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop",
@@ -47,7 +47,7 @@ interface WebhookQuery {
 }
 
 export async function webhookRoutes(fastify: FastifyInstance) {
-  // GET /webhook - Meta WhatsApp Webhook Verification
+  
   fastify.get(
     "/webhook",
     async (
@@ -72,7 +72,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // POST /webhook - Handle Incoming WhatsApp Messages & Profile Name Extraction
+  
   fastify.post(
     "/webhook",
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -87,30 +87,30 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           const messageObj = valueObj.messages[0];
           const from = messageObj.from;
 
-          // Extract WhatsApp Profile Name from contact metadata sent by Meta
+          
           const senderName = valueObj.contacts?.[0]?.profile?.name || "";
 
-          // Dynamic Timezone detection based on phone number prefix or region
-          // By default, Indonesian numbers are +62 (WIB = UTC+7, WITA = UTC+8, WIT = UTC+9)
-          // Indonesia phone prefixes map closely to zones:
-          // WITA (Bali, NTB, NTT, Kalimantan Timur/Selatan/Utara, Sulawesi): e.g., Kalimantan/Sulawesi/Bali numbers
-          // WIT (Maluku, Papua): e.g., Maluku/Papua numbers
-          // Since granular prefix lookup is complex, we can parse standard Indonesian timezone offsets:
-          // We'll look at the user session or standard defaults:
+          
+          
+          
+          
+          
+          
+          
           const session = getUserSession(from);
 
-          // Simple heuristic for Indonesian regions if number matches common WITA / WIT prefixes
-          // Or default to user settings. Let's make it smart:
-          // WITA offset is +8, WIT offset is +9. Default WIB is +7.
-          // We will default to WIB +7 unless specified, but let's check Kaltim (prefix matches or user can link/configure)
-          // For Kaltim/WITA numbers, common prefixes can be mapped or we can do a smart lookup.
-          // For now, let's detect WITA (+8) if number matches Kalimantan Timur/Sulawesi/Bali regions if possible.
-          // Even simpler: since Balikpapan (Jujul's area) / Kalimantan Timur is WITA, let's check prefixes:
-          // Common WITA/WIT prefixes or numbers. Let's allow detecting WITA (+8) for Kaltim/Sulawesi, or default to WIB (+7)
+          
+          
+          
+          
+          
+          
+          
+          
           let tzOffset = 7;
           let tzName = "WIB (Asia/Jakarta)";
 
-          // Common Kalimantan Timur & WITA prefixes (e.g. Kartu As/Simpati/XL Kaltim: 081254, 081347, 082154, 085247, 085347, etc.)
+          
           const isWitaPrefix =
             /^(6281254|6281347|6282154|6285247|6285347|6281349|6285246|6282153|6281253|6285250|6285251|6285252|628138|628538)/.test(
               from,
@@ -120,11 +120,11 @@ export async function webhookRoutes(fastify: FastifyInstance) {
             tzName = "WITA (Asia/Makassar)";
           }
 
-          // Save to session so we can display it in !menu
+          
           session.timezoneOffset = tzOffset;
           session.timezoneName = tzName;
 
-          // Gatekeeper: Check if Bot is currently OFF / Outside Operational Hours using user local timezone offset
+          
           if (!isBotOnline(tzOffset)) {
             logger.info(
               { from, senderName, tzName },
@@ -191,17 +191,17 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           const lower = trimmed.toLowerCase();
           const session = getUserSession(from);
 
-          // Direct module activation command: shows Preview info screen with Start buttons first
+          
           const directCmdMode = lower.startsWith('.') ? lower.replace('.', '') : '';
           if (directCmdMode && MODULE_DETAILS[directCmdMode]) {
             const detail = MODULE_DETAILS[directCmdMode];
             
-            // Send Module Image Preview Banner first! (Highly reliable picsum source)
+            
             const bannerUrl = MODULE_BANNERS[directCmdMode] || 'https://picsum.photos/800/600';
             const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
             await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-            // Send Info Details with Premium ASCII formatting
+            
             const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
 ╰────────────────────────────
@@ -212,7 +212,7 @@ ${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
-            // Customize preview buttons: CuanBuddy has its own standalone preview page now
+            
             let startButtons = [
               { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
               { id: '.menu', title: '📋 Kembali Ke Menu' }
@@ -222,7 +222,7 @@ Tekan tombol di bawah untuk memulai modul ini:`;
             return reply.status(200).send({ status: 'success' });
           }
 
-          // 1. ACTION: User clicks "EXIT MODE"
+          
           if (lower === 'action:exit' || lower === '.exit') {
               setUserActiveMode(from, null);
 
@@ -237,20 +237,20 @@ Tekan tombol di bawah untuk memulai modul ini:`;
               return reply.status(200).send({ status: "success" });
             }
 
-            // 2. ACTION: User clicks "START MODE" (e.g. "action:start:coding")
+            
             if (lower.startsWith("action:start:")) {
               const selectedMode = lower.replace("action:start:", "");
               
-              // Special silent connection check validation for CuanBuddy start activation!
+              
               if (selectedMode === "cuanbuddy") {
                 const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memverifikasi koneksi WhatsApp Anda dengan akun CuanBuddy..._`;
                 await sendWhatsAppMessage(from, loadingMsg);
 
                 const verificationResult = await processCuanBuddyCheck(from, senderName);
                 
-                // If the verification string contains "WELCOME BACK", it means the account is successfully linked!
+                
                 if (verificationResult.includes("WELCOME BACK")) {
-                  setUserActiveMode(from, "finance"); // Activate CuanBuddy transactional sync mode
+                  setUserActiveMode(from, "finance"); 
                   
                   const linkedSuccessText = `🟢 *INTEGRASI CUANBUDDY AKTIF!* 🟢
 ══════════════════════════════════════
@@ -266,7 +266,7 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
                   ];
                   await sendWhatsAppButtons(from, linkedSuccessText, linkedButtons, "🟢 CUANBUDDY ACTIVE");
                 } else {
-                  // Not connected yet, reject mode entry and show setup instructions
+                  
                   const menuButtons = [
                     { id: ".menu", title: "📋 Buka Menu" },
                   ];
@@ -285,14 +285,14 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
               if (detail) {
                 setUserActiveMode(from, selectedMode);
 
-                // Send Module Image Banner first!
+                
                 const bannerUrl =
                   MODULE_BANNERS[selectedMode] ||
                   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop";
                 const bannerCaption = `${detail.icon} *WELCOME TO MODE: ${detail.name.toUpperCase()}*`;
                 await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-                // Special onboarding layout for Finance module
+                
                 if (selectedMode === "finance") {
                   const introText = getFinanceIntroMessage(senderName);
                   const introButtons = [
@@ -308,7 +308,7 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
                   return reply.status(200).send({ status: "success" });
                 }
 
-                // Send Mode Active Status Message with Exit Buttons
+                
                 const startedText = `🟢 *MODE ${detail.name.toUpperCase()} AKTIF!* 🟢
 ══════════════════════════════════════
 ${detail.icon} *Deskripsi*: ${detail.desc}
@@ -333,7 +333,7 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
               }
             }
 
-            // Special action: Check CuanBuddy status and verify connection dynamically
+            
             if (lower === "action:cuanbuddy:check") {
               const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memproses dan mengambil data Anda dari CuanBuddy App..._`;
               await sendWhatsAppMessage(from, loadingMsg);
@@ -352,18 +352,18 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
               return reply.status(200).send({ status: "success" });
             }
 
-            // 3. ACTION: User selects module from LIST MENU (e.g. "select:module:coding")
+            
             if (lower.startsWith('select:module:')) {
               const selectedMode = lower.replace('select:module:', '');
               const detail = MODULE_DETAILS[selectedMode];
 
               if (detail) {
-                // Send Module Image Preview Banner first!
+                
                 const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://picsum.photos/800/600';
                 const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
                 await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-                // Send Info Details with Premium ASCII formatting
+                
                 const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
 ╰────────────────────────────
@@ -384,7 +384,7 @@ Tekan tombol di bawah untuk memulai modul ini:`;
               }
             }
 
-            // 4. ACTION: User asks for .menu
+            
             if (
               lower === ".menu" ||
               lower === "!menu" ||
@@ -394,15 +394,15 @@ Tekan tombol di bawah untuk memulai modul ini:`;
             ) {
               const menuText = getHelpMenu(senderName, session.timezoneName);
               
-              // Direct avatar image banner of the bot (highly reliable and lightweight)
+              
               const botAvatarBanner = 'https://picsum.photos/800/600';
               
-              // Send banner image first, and place the pure menu text as its caption
+              
               await sendWhatsAppImage(from, botAvatarBanner, menuText);
               return reply.status(200).send({ status: "success" });
             }
 
-            // 5. Intelligent Conversational AI Processing with Sender Profile Name!
+            
             const botReply = await processIncomingMessage(
               from,
               userText,
@@ -432,7 +432,7 @@ Tekan tombol di bawah untuk memulai modul ini:`;
                 `${detail?.icon || "🟢"} MODE: ${detail?.name || session.activeMode}`,
               );
             } else {
-              // Direct natural conversational response!
+              
               await sendWhatsAppMessage(from, botReply);
             }
           }

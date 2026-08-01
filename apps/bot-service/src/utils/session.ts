@@ -1,8 +1,8 @@
-// In-Memory User Session Storage for Active Bot Modes
+
 export interface UserSession {
-  activeMode: string | null; // e.g. 'coding', 'finance', 'creator', etc.
-  timezoneOffset: number;    // UTC offset in hours, defaults to 7 (WIB / Asia/Jakarta)
-  timezoneName: string;      // Readable name, e.g. 'Asia/Jakarta (WIB)'
+  activeMode: string | null; 
+  timezoneOffset: number;    
+  timezoneName: string;      
   updatedAt: number;
 }
 
