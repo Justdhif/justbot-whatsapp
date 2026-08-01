@@ -48,7 +48,6 @@ export function getHelpMenu(
 ├─  📅  *.reminder*
 ├─  📧  *.email*
 ├─  🛠️  *util* (kalkulator & info)
-├─  🖼️  *!brat <teks>* - buat sticker bertema BRAT
 │
 ├─── o(" INTEGRATED APPS ")
 ├─  💳  *.cuanbuddy*
