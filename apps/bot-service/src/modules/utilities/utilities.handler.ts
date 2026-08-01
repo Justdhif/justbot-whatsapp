@@ -57,5 +57,5 @@ export function getHelpMenu(
 ├─  ⏹️  *.exit* - Keluar dari mode modul
 ╰────────────────────────────
 
-📌 *Tips*: Anda bisa masuk ke salah satu modul fitur di atas dengan mengetikkan langsung perintahnya (contoh: \`.finance\` atau \`.cuanbuddy\`) untuk memunculkan panel kontrol modul.`;
+📌 *Tips*: Anda bisa masuk ke salah satu modul fitur di atas dengan mengetikkan langsung perintahnya (contoh: \`.finance\` atau \`.cuanbuddy\`). Khusus untuk perhitungan matematika & konversi satuan, Anda bisa langsung mengetikkannya di chat tanpa command apa pun!`;
 }

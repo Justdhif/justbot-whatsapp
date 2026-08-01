@@ -166,14 +166,12 @@ export async function processIncomingMessage(userId: string, text: string, sende
   
   
   
-  if (lower.startsWith('.util')) {
-    return await handleUtilitiesModule(trimmed.replace(/^\.util\s*/i, ''));
-  }
-  
-  
-  
-  const isMathExpression = /^[0-9+\-*/().\s]+$/.test(trimmed) && trimmed.length > 2;
-  if (isMathExpression) {
+  // Intelligently auto-route math calculations, unit conversions, or fact-finding queries to utilities module conversatonally
+  const isUtilityQuery = 
+    /^[0-9+\-*/().\s]+$/.test(trimmed) && trimmed.length > 2 || 
+    /\b(konversi|hitung|berapa|kurangi|tambah|kali|bagi|kilo|mil|celcius|fahrenheit|usd|rupiah|idr|kurs|meter|cm|luas|volume)\b/i.test(lower);
+
+  if (isUtilityQuery) {
     return await handleUtilitiesModule(trimmed);
   }
   
