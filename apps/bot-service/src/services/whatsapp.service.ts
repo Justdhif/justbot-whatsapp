@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 
 const WA_API_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/messages`;
+const WA_MEDIA_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/media`;
 
 // Send plain text message
 export async function sendWhatsAppMessage(to: string, messageText: string): Promise<boolean> {
@@ -196,17 +197,49 @@ export async function sendWhatsAppInteractiveList(
   }
 }
 
-// Send Sticker Message directly via WebP Link
-export async function sendWhatsAppSticker(to: string, stickerUrl: string): Promise<boolean> {
+// Upload local WebP buffer to Meta media endpoint and obtain a valid media ID
+export async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string = 'image/webp'): Promise<string | null> {
   try {
+    const formData = new FormData();
+    // Meta expects a blob for the file field
+    const blob = new Blob([buffer], { type: mimeType });
+    formData.append('file', blob, 'sticker.webp');
+    formData.append('messaging_product', 'whatsapp');
+    formData.append('type', 'sticker');
+
+    const response = await axios.post(WA_MEDIA_URL, formData, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+      },
+      timeout: 30000,
+    });
+
+    return response.data?.id || null;
+  } catch (error: any) {
+    logger.error(
+      { errorResponse: error?.response?.data || error.message },
+      'Failed to upload media to WhatsApp Cloud API'
+    );
+    return null;
+  }
+}
+
+// Send Sticker Message directly via WebP Link or Media ID
+export async function sendWhatsAppSticker(to: string, stickerUrlOrId: string, isMediaId: boolean = false): Promise<boolean> {
+  try {
+    const stickerPayloadObj: any = {};
+    if (isMediaId) {
+      stickerPayloadObj.id = stickerUrlOrId;
+    } else {
+      stickerPayloadObj.link = stickerUrlOrId;
+    }
+
     const payload = {
       messaging_product: 'whatsapp',
       recipient_type: 'individual',
       to: to,
       type: 'sticker',
-      sticker: {
-        link: stickerUrl,
-      },
+      sticker: stickerPayloadObj,
     };
 
     const response = await axios.post(WA_API_URL, payload, {
@@ -223,7 +256,7 @@ export async function sendWhatsAppSticker(to: string, stickerUrl: string): Promi
     logger.error(
       {
         to,
-        stickerUrl,
+        stickerUrlOrId,
         errorResponse: error?.response?.data || error.message,
       },
       'Failed to send WhatsApp sticker'
@@ -231,4 +264,3 @@ export async function sendWhatsAppSticker(to: string, stickerUrl: string): Promi
     return false;
   }
 }
-

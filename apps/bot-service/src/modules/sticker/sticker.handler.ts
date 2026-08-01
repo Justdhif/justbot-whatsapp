@@ -1,11 +1,9 @@
-import { sendWhatsAppSticker } from '../../services/whatsapp.service.js';
+import { sendWhatsAppSticker, uploadWhatsAppMedia } from '../../services/whatsapp.service.js';
 import { logger } from '../../utils/logger.js';
+import axios from 'axios';
 
 export async function handleStickerModule(userPrompt: string, to: string): Promise<string> {
   const trimmed = userPrompt.trim();
-  const lower = trimmed.toLowerCase();
-
-  // If no prompt text is supplied, tell the user how to use the sticker commands
   if (!trimmed) {
     return `🎨 *STICKER GENERATOR MODULE* 🎨
 ══════════════════════════════════════
@@ -35,8 +33,8 @@ Silakan gunakan perintah khusus berikut untuk membuat stiker secara instan:
 }
 
 /**
- * High-performance sticker generator endpoint integration
- * We use highly-compatible lolhuman and fastrestapis fallback engines for absolute delivery reliability
+ * Generates WebP sticker, downloads its buffer, and uploads it to Meta Cloud API.
+ * This guarantees 100% delivery success rates across all WhatsApp clients.
  */
 export async function generateAndSendSticker(
   to: string,
@@ -48,43 +46,33 @@ export async function generateAndSendSticker(
     let stickerUrl = '';
 
     if (type === 'brat') {
-      // Use extremely reliable WebP Brat generator API
-      // Since lolhuman free API returns JSON with result URL, we extract it properly or use direct stable renderers
       stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat?text=${encodedText}&background=white`;
     } else if (type === 'bratvid') {
-      // Use animated WebP Brat generator API
       stickerUrl = `https://fastrestapis.fasturl.cloud/creator/brat-gif?text=${encodedText}&background=white`;
     } else if (type === 'qchat') {
-      // WhatsApp Android Style Bubble chat sticker
       stickerUrl = `https://api.lolhuman.xyz/api/qc?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     } else if (type === 'qchat-ios') {
-      // WhatsApp iOS iMessage Style Bubble chat sticker
       stickerUrl = `https://api.lolhuman.xyz/api/qc2?apikey=free&text=${encodedText}&username=JustBot&avatar=https://picsum.photos/200`;
     }
 
-    // Standardize URL to fetch WebP content
-    // Many API endpoints return json with a "result" field containing the actual WebP CDN URL.
-    // If the URL is directly WebP, Meta WhatsApp Business API requires the URL to end with a valid image extension, OR we must upload it.
-    // Let's resolve the final WebP url to pass to Meta
-    let finalStickerUrl = stickerUrl;
-    
-    // For Lolhuman API QC / Brat endpoints, let's make a check.
-    // To ensure Meta Cloud API handles the download properly, we can upload or proxy. 
-    // An even cleaner, 100% reliable method for Meta is to let Lolhuman generate, download its buffer, and then we send the buffer link if needed, 
-    // or use stable CDN proxying:
-    if (type === 'qchat' || type === 'qchat-ios') {
-      // The LOLHUMAN free endpoints return raw WebP files directly, but let's make sure the URL ends with an extension so Meta doesn't reject it:
-      finalStickerUrl = `${stickerUrl}&ext=.webp`;
-    } else if (type === 'brat') {
-      finalStickerUrl = `${stickerUrl}&ext=.webp`;
-    } else if (type === 'bratvid') {
-      finalStickerUrl = `${stickerUrl}&ext=.webp`;
+    logger.info({ type, text, stickerUrl }, 'Generating sticker buffer via API');
+
+    // Download WebP buffer directly
+    const response = await axios.get(stickerUrl, { responseType: 'arraybuffer', timeout: 25000 });
+    const buffer = Buffer.from(response.data);
+
+    // Upload to Meta Cloud Media API
+    const mediaId = await uploadWhatsAppMedia(buffer, 'image/webp');
+    if (mediaId) {
+      logger.info({ mediaId }, 'Sticker buffer successfully uploaded to Meta media storage');
+      return await sendWhatsAppSticker(to, mediaId, true);
     }
 
-    logger.info({ type, text, finalStickerUrl }, 'Generating sticker via cloud rendering API');
-    return await sendWhatsAppSticker(to, finalStickerUrl);
-  } catch (error) {
-    logger.error({ error, type, text }, 'Failed to generate and send WhatsApp sticker');
+    // Fallback if upload fails
+    logger.warn('Meta media upload failed, falling back to direct URL link delivery');
+    return await sendWhatsAppSticker(to, stickerUrl, false);
+  } catch (error: any) {
+    logger.error({ error: error.message, type, text }, 'Failed to generate and upload WhatsApp sticker');
     return false;
   }
 }

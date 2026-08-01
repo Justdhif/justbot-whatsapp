@@ -14,6 +14,7 @@ import {
   sendWhatsAppButtons,
   sendWhatsAppInteractiveList,
   sendWhatsAppSticker,
+  uploadWhatsAppMedia,
 } from "../services/whatsapp.service.js";
 import { getUserSession, setUserActiveMode } from "../utils/session.js";
 import { isBotOnline } from "../utils/schedule.js";
@@ -248,7 +249,21 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
                     stickerConvertResponse.data?.result;
 
                   if (finishedStickerUrl) {
-                    await sendWhatsAppSticker(from, finishedStickerUrl);
+                    // Download WebP buffer from converter result
+                    const webpBufferRes = await axios.get(finishedStickerUrl, {
+                      responseType: 'arraybuffer',
+                      timeout: 20000
+                    });
+                    const webpBuffer = Buffer.from(webpBufferRes.data);
+
+                    // Upload buffer to Meta Media API to obtain media ID
+                    const mediaId = await uploadWhatsAppMedia(webpBuffer, 'image/webp');
+                    if (mediaId) {
+                      await sendWhatsAppSticker(from, mediaId, true);
+                    } else {
+                      // Fallback to URL delivery
+                      await sendWhatsAppSticker(from, finishedStickerUrl, false);
+                    }
                   } else {
                     await sendWhatsAppMessage(
                       from,
