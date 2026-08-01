@@ -18,9 +18,9 @@ Aturan Respon:
 
 export function getHelpMenu(senderName?: string, timezoneName?: string): string {
   const greetingName = senderName ? ` ${senderName}` : '';
-  const tzDisplay = timezoneName || 'WIB (Asia/Jakarta)';
+  const tzDisplay = timezoneName || 'Asia/Jakarta';
   
-  const titleMain = changeFont('JUSTBOT AI MULTI-SERVICE', 'boldSans');
+  const titleMain = changeFont('JUSTBOT AI', 'boldSans');
   const titleUserInfo = changeFont('USER INFO', 'boldSans');
   const titleBotInfo = changeFont('BOT INFO', 'boldSans');
   const titleSkills = changeFont('BOT SKILLS', 'boldSans');
@@ -55,8 +55,8 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─  💳  *.cuanbuddy*
 │
 ├─── o(" ${titleShortcuts} ")
-├─  🚀  *.menu* ── Menampilkan menu utama
-├─  ⏹️  *.exit* ── Keluar dari mode integrasi
+├─  🚀  *.menu* ─ Menampilkan menu utama
+├─  ⏹️  *.exit* ─ Keluar dari mode integrasi
 ╰────────────────────────────
 
 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin mengaktifkan integrasi aplikasi keuangan.`;

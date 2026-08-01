@@ -21,7 +21,6 @@ import {
   markUserNotifiedToday,
 } from "../utils/offNotificationStore.js";
 
-
 const MODULE_BANNERS: Record<string, string> = {
   coding:
     "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop",
@@ -47,7 +46,6 @@ interface WebhookQuery {
 }
 
 export async function webhookRoutes(fastify: FastifyInstance) {
-  
   fastify.get(
     "/webhook",
     async (
@@ -72,7 +70,6 @@ export async function webhookRoutes(fastify: FastifyInstance) {
     },
   );
 
-  
   fastify.post(
     "/webhook",
     async (request: FastifyRequest, reply: FastifyReply) => {
@@ -87,30 +84,13 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           const messageObj = valueObj.messages[0];
           const from = messageObj.from;
 
-          
           const senderName = valueObj.contacts?.[0]?.profile?.name || "";
 
-          
-          
-          
-          
-          
-          
-          
           const session = getUserSession(from);
 
-          
-          
-          
-          
-          
-          
-          
-          
           let tzOffset = 7;
           let tzName = "WIB (Asia/Jakarta)";
 
-          
           const isWitaPrefix =
             /^(6281254|6281347|6282154|6285247|6285347|6281349|6285246|6282153|6281253|6285250|6285251|6285252|628138|628538)/.test(
               from,
@@ -120,11 +100,9 @@ export async function webhookRoutes(fastify: FastifyInstance) {
             tzName = "WITA (Asia/Makassar)";
           }
 
-          
           session.timezoneOffset = tzOffset;
           session.timezoneName = tzName;
 
-          
           if (!isBotOnline(tzOffset)) {
             logger.info(
               { from, senderName, tzName },
@@ -172,55 +150,69 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               messageObj.interactive.button_reply.id ||
               messageObj.interactive.button_reply.title;
           } else if (messageObj.type === "image") {
-             const imageCaption = messageObj.image?.caption || "kiriman gambar";
-             const botReply = await processIncomingMessage(
-               from,
-               imageCaption,
-               senderName,
-             );
-             if (botReply !== "action:processed") {
-               await sendWhatsAppMessage(from, botReply);
-             }
-             return reply.status(200).send({ status: "success" });
+            const imageCaption = messageObj.image?.caption || "kiriman gambar";
+            const botReply = await processIncomingMessage(
+              from,
+              imageCaption,
+              senderName,
+            );
+            if (botReply !== "action:processed") {
+              await sendWhatsAppMessage(from, botReply);
+            }
+            return reply.status(200).send({ status: "success" });
           }
 
           if (userText) {
-          logger.info({ from, senderName, userText }, 'Processing user message / selection');
+            logger.info(
+              { from, senderName, userText },
+              "Processing user message / selection",
+            );
 
-          const trimmed = userText.trim();
-          const lower = trimmed.toLowerCase();
-          const session = getUserSession(from);
+            const trimmed = userText.trim();
+            const lower = trimmed.toLowerCase();
+            const session = getUserSession(from);
 
-          // Only intercept direct command triggers for CuanBuddy App preview
-          const directCmdMode = lower.startsWith('.') ? lower.replace('.', '') : '';
-          if (directCmdMode === 'cuanbuddy' && MODULE_DETAILS[directCmdMode]) {
-            const detail = MODULE_DETAILS[directCmdMode];
-            
-            const bannerUrl = MODULE_BANNERS[directCmdMode] || 'https://picsum.photos/800/600';
-            const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
-            await sendWhatsAppImage(from, bannerUrl, bannerCaption);
+            // Only intercept direct command triggers for CuanBuddy App preview
+            const directCmdMode = lower.startsWith(".")
+              ? lower.replace(".", "")
+              : "";
+            if (
+              directCmdMode === "cuanbuddy" &&
+              MODULE_DETAILS[directCmdMode]
+            ) {
+              const detail = MODULE_DETAILS[directCmdMode];
 
-            const previewText = `╭────────────────────────────
+              const bannerUrl =
+                MODULE_BANNERS[directCmdMode] ||
+                "https://picsum.photos/800/600";
+              const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
+              await sendWhatsAppImage(from, bannerUrl, bannerCaption);
+
+              const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
 ╰────────────────────────────
 ${detail.desc}
 
 ✨ *Kemampuan Utama*:
-${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
+${detail.capabilities.map((c) => ` ├─ ${c}`).join("\n")}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
-            let startButtons = [
-              { id: `action:start:${directCmdMode}`, title: '🚀 Start Mode' },
-              { id: '.menu', title: '📋 Kembali Ke Menu' }
-            ];
+              let startButtons = [
+                { id: `action:start:${directCmdMode}`, title: "🚀 Start Mode" },
+                { id: ".menu", title: "📋 Kembali Ke Menu" },
+              ];
 
-            await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
-            return reply.status(200).send({ status: 'success' });
-          }
+              await sendWhatsAppButtons(
+                from,
+                previewText,
+                startButtons,
+                `${detail.icon} PREVIEW: ${detail.name}`,
+              );
+              return reply.status(200).send({ status: "success" });
+            }
 
-          
-          if (lower === 'action:exit' || lower === '.exit') {
+            if (lower === "action:exit" || lower === ".exit") {
               setUserActiveMode(from, null);
 
               const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`.menu\` untuk memilih modul baru.`;
@@ -234,21 +226,21 @@ Tekan tombol di bawah untuk memulai modul ini:`;
               return reply.status(200).send({ status: "success" });
             }
 
-            
             if (lower.startsWith("action:start:")) {
               const selectedMode = lower.replace("action:start:", "");
-              
-              
+
               if (selectedMode === "cuanbuddy") {
                 const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memverifikasi koneksi WhatsApp Anda dengan akun CuanBuddy..._`;
                 await sendWhatsAppMessage(from, loadingMsg);
 
-                const verificationResult = await processCuanBuddyCheck(from, senderName);
-                
-                
+                const verificationResult = await processCuanBuddyCheck(
+                  from,
+                  senderName,
+                );
+
                 if (verificationResult.includes("WELCOME BACK")) {
-                  setUserActiveMode(from, "finance"); 
-                  
+                  setUserActiveMode(from, "finance");
+
                   const linkedSuccessText = `🟢 *INTEGRASI CUANBUDDY AKTIF!* 🟢
 ══════════════════════════════════════
 Status: Akun Anda terverifikasi dan tersambung!
@@ -261,12 +253,14 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
                     { id: "action:exit", title: "🔴 Exit Mode" },
                     { id: ".menu", title: "📋 Buka Menu" },
                   ];
-                  await sendWhatsAppButtons(from, linkedSuccessText, linkedButtons, "🟢 CUANBUDDY ACTIVE");
+                  await sendWhatsAppButtons(
+                    from,
+                    linkedSuccessText,
+                    linkedButtons,
+                    "🟢 CUANBUDDY ACTIVE",
+                  );
                 } else {
-                  
-                  const menuButtons = [
-                    { id: ".menu", title: "📋 Buka Menu" },
-                  ];
+                  const menuButtons = [{ id: ".menu", title: "📋 Buka Menu" }];
                   await sendWhatsAppButtons(
                     from,
                     verificationResult,
@@ -282,14 +276,12 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
               if (detail) {
                 setUserActiveMode(from, selectedMode);
 
-                
                 const bannerUrl =
                   MODULE_BANNERS[selectedMode] ||
                   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop";
                 const bannerCaption = `${detail.icon} *WELCOME TO MODE: ${detail.name.toUpperCase()}*`;
                 await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
-                
                 if (selectedMode === "finance") {
                   const introText = getFinanceIntroMessage(senderName);
                   const introButtons = [
@@ -305,7 +297,6 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
                   return reply.status(200).send({ status: "success" });
                 }
 
-                
                 const startedText = `🟢 *MODE ${detail.name.toUpperCase()} AKTIF!* 🟢
 ══════════════════════════════════════
 ${detail.icon} *Deskripsi*: ${detail.desc}
@@ -330,7 +321,6 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
               }
             }
 
-            
             if (lower === "action:cuanbuddy:check") {
               const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memproses dan mengambil data Anda dari CuanBuddy App..._`;
               await sendWhatsAppMessage(from, loadingMsg);
@@ -349,15 +339,16 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
               return reply.status(200).send({ status: "success" });
             }
 
-            
             // Only handle list selections for CuanBuddy (other general skills don't have start/modes screens anymore)
-            if (lower.startsWith('select:module:')) {
-              const selectedMode = lower.replace('select:module:', '');
-              
-              if (selectedMode === 'cuanbuddy') {
+            if (lower.startsWith("select:module:")) {
+              const selectedMode = lower.replace("select:module:", "");
+
+              if (selectedMode === "cuanbuddy") {
                 const detail = MODULE_DETAILS[selectedMode];
                 if (detail) {
-                  const bannerUrl = MODULE_BANNERS[selectedMode] || 'https://picsum.photos/800/600';
+                  const bannerUrl =
+                    MODULE_BANNERS[selectedMode] ||
+                    "https://picsum.photos/800/600";
                   const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
                   await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
@@ -367,22 +358,29 @@ ${detail.icon} *Deskripsi*: ${detail.desc}
 ${detail.desc}
 
 ✨ *Kemampuan Utama*:
-${detail.capabilities.map((c) => ` ├─ ${c}`).join('\n')}
+${detail.capabilities.map((c) => ` ├─ ${c}`).join("\n")}
 ══════════════════════════════════════
 Tekan tombol di bawah untuk memulai modul ini:`;
 
                   let startButtons = [
-                    { id: `action:start:${selectedMode}`, title: '🚀 Start Mode' },
-                    { id: '.menu', title: '📋 Kembali Ke Menu' }
+                    {
+                      id: `action:start:${selectedMode}`,
+                      title: "🚀 Start Mode",
+                    },
+                    { id: ".menu", title: "📋 Kembali Ke Menu" },
                   ];
 
-                  await sendWhatsAppButtons(from, previewText, startButtons, `${detail.icon} PREVIEW: ${detail.name}`);
-                  return reply.status(200).send({ status: 'success' });
+                  await sendWhatsAppButtons(
+                    from,
+                    previewText,
+                    startButtons,
+                    `${detail.icon} PREVIEW: ${detail.name}`,
+                  );
+                  return reply.status(200).send({ status: "success" });
                 }
               }
             }
 
-            
             if (
               lower === ".menu" ||
               lower === "!menu" ||
@@ -391,16 +389,13 @@ Tekan tombol di bawah untuk memulai modul ini:`;
               lower === "menu"
             ) {
               const menuText = getHelpMenu(senderName, session.timezoneName);
-              
-              
-              const botAvatarBanner = 'https://picsum.photos/800/600';
-              
-              
+
+              const botAvatarBanner = "https://picsum.photos/800/600";
+
               await sendWhatsAppImage(from, botAvatarBanner, menuText);
               return reply.status(200).send({ status: "success" });
             }
 
-            
             const botReply = await processIncomingMessage(
               from,
               userText,
@@ -430,7 +425,6 @@ Tekan tombol di bawah untuk memulai modul ini:`;
                 `${detail?.icon || "🟢"} MODE: ${detail?.name || session.activeMode}`,
               );
             } else {
-              
               await sendWhatsAppMessage(from, botReply);
             }
           }
