@@ -136,19 +136,20 @@ async function createLocalBratSticker(text: string, type: StickerCommandType): P
   const textBlockHeight = lines.length * lineHeight;
   const startY = Math.round((height - textBlockHeight) / 2 + fontSize / 2);
 
-  const svg = `
-    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http:
-      <rect width="100%" height="100%" fill="${theme.background}" />
-      <rect x="20" y="20" width="472" height="472" rx="36" ry="36" fill="none" stroke="${theme.accent}" stroke-width="5" opacity="0.22" />
-      <g fill="${theme.textColor}" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
-        ${lines
-          .map((line, index) => {
-            const y = startY + index * lineHeight;
-            return `<text x="256" y="${y}" font-size="${fontSize}" letter-spacing="-1">${escapeXml(line)}</text>`;
-          })
-          .join('\n        ')}
-      </g>
-    </svg>`;
+  const textNodes = lines
+    .map((line, index) => {
+      const y = startY + index * lineHeight;
+      return `<text x="256" y="${y}" font-size="${fontSize}" letter-spacing="-1">${escapeXml(line)}</text>`;
+    })
+    .join('\n');
+
+  const svg = `<svg xmlns="http:
+    <rect width="100%" height="100%" fill="${theme.background}" />
+    <rect x="20" y="20" width="472" height="472" rx="36" ry="36" fill="none" stroke="${theme.accent}" stroke-width="5" opacity="0.22" />
+    <g fill="${theme.textColor}" font-family="Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
+      ${textNodes}
+    </g>
+  </svg>`;
 
   return await sharp(Buffer.from(svg)).webp({ quality: 92 }).toBuffer();
 }
