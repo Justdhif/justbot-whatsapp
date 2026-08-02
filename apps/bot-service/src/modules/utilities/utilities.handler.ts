@@ -49,9 +49,11 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 
   const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
   
-  const descMenu = changeFont('Menampilkan menu utama', 'smallCaps');
-  const descCuanBuddy = changeFont('Sambung & kelola CuanBuddy App', 'smallCaps');
-  const descExit = changeFont('Keluar dari mode integrasi', 'smallCaps');
+  const descMenu = changeFont('Menampilkan menu', 'smallCaps');
+  const descCuanBuddy = changeFont('kelola CuanBuddy App', 'smallCaps');
+  const descBrat = changeFont('Buat sticker Brat', 'smallCaps');
+  const descBratVideo = changeFont('Buat sticker animasi Brat', 'smallCaps');
+  const descExit = changeFont('Keluar dari mode', 'smallCaps');
 
   return `╭─── o「 ${titleMain} 」o
 │
@@ -84,8 +86,8 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.menu* ─ ${descMenu}
-├─✦  *.brat <teks>* ─ Buat sticker Brat dari teks
-├─✦  *.bratv <teks>* ─ Buat sticker Brat animasi
+├─✦  *.brat <teks>* ─ ${descBrat}
+├─✦  *.bratv <teks>* ─ ${descBratVideo}
 ├─✦  *.cuanbuddy* ─ ${descCuanBuddy}
 ├─✦  *.exit* ─ ${descExit}
 ╰────────────────────────────
