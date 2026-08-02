@@ -23,9 +23,9 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const titleMain = changeFont('JUSTBOT AI', 'smallCaps');
   const titleUserInfo = changeFont('USER INFO', 'smallCaps');
   const titleBotInfo = changeFont('BOT INFO', 'smallCaps');
-  const titleSkills = changeFont('BOT SKILLS', 'smallCaps');
+  const titleSkills = changeFont('BOT MODULES', 'smallCaps');
   const titleApps = changeFont('INTEGRATED APPS', 'smallCaps');
-  const titleShortcuts = changeFont('COMMANDS', 'smallCaps');
+  const titleShortcuts = changeFont('COMMAND INFO', 'smallCaps');
 
   const labelName = changeFont('Nama', 'smallCaps');
   const labelTz = changeFont('Timezone', 'smallCaps');
@@ -44,16 +44,17 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const skillReminder = changeFont('Pengingat & Agenda', 'smallCaps');
   const skillEmail = changeFont('Email & Surat Formal', 'smallCaps');
   const skillUtil = changeFont('Kalkulator & Konversi', 'smallCaps');
-  const skillBrat = changeFont('Brat Sticker Generator', 'smallCaps');
-  const skillBratVideo = changeFont('Brat Video Sticker', 'smallCaps');
+  const skillSticker = changeFont('Sticker Generator', 'smallCaps');
 
   const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
+  const bratGenerator = changeFont('Brat Generator', 'smallCaps');
   
-  const descMenu = changeFont('Menampilkan menu', 'smallCaps');
-  const descCuanBuddy = changeFont('kelola CuanBuddy App', 'smallCaps');
-  const descBrat = changeFont('Buat sticker Brat', 'smallCaps');
-  const descBratVideo = changeFont('Buat sticker animasi Brat', 'smallCaps');
-  const descExit = changeFont('Keluar dari mode', 'smallCaps');
+  const descMenu = changeFont('Tampilkan daftar fitur', 'smallCaps');
+  const descCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
+  const descBrat = changeFont('Buat sticker Brat teks', 'smallCaps');
+  const descBratVideo = changeFont('Buat sticker Brat animasi', 'smallCaps');
+  const descSticker = changeFont('Ubah gambar jadi sticker', 'smallCaps');
+  const descExit = changeFont('Keluar dari mode aktif', 'smallCaps');
 
   return `╭─── o「 ${titleMain} 」o
 │
@@ -78,16 +79,17 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─✦ *${skillReminder}*
 ├─✦ *${skillEmail}*
 ├─✦ *${skillUtil}*
-├─✦ *${skillBrat}*
-├─✦ *${skillBratVideo}*
+├─✦ *${skillSticker}*
 │
 ├─── o(" ${titleApps} ")
 ├─✦ *${appCuanBuddy}*
+├─✦ *${bratGenerator}*
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.menu* ─ ${descMenu}
 ├─✦  *.brat <teks>* ─ ${descBrat}
 ├─✦  *.bratv <teks>* ─ ${descBratVideo}
+├─✦  *.sticker* / *.s* ─ ${descSticker}
 ├─✦  *.cuanbuddy* ─ ${descCuanBuddy}
 ├─✦  *.exit* ─ ${descExit}
 ╰────────────────────────────

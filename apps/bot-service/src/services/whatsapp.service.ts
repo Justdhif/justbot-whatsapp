@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
+import sharp from 'sharp';
 
 const WA_API_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/messages`;
 const WA_MEDIA_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/media`;
+const WA_GRAPH_BASE_URL = 'https://graph.facebook.com/v20.0';
 
 export async function sendWhatsAppMessage(to: string, messageText: string): Promise<boolean> {
   try {
@@ -110,6 +112,83 @@ async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: s
         errorResponse: error?.response?.data || error.message,
       },
       'Failed to upload WhatsApp media',
+    );
+
+    return null;
+  }
+}
+
+async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
+  try {
+    const mediaResponse = await axios.get(`${WA_GRAPH_BASE_URL}/${mediaId}`, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+      },
+      params: {
+        phone_number_id: env.WA_PHONE_NUMBER_ID,
+      },
+      timeout: 10000,
+    });
+
+    const mediaUrl = mediaResponse.data?.url;
+    const mimeType = mediaResponse.data?.mime_type || 'image/jpeg';
+
+    if (!mediaUrl) {
+      throw new Error('WhatsApp media lookup returned no URL');
+    }
+
+    const fileResponse = await axios.get(mediaUrl, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+      },
+      responseType: 'arraybuffer',
+      timeout: 15000,
+    });
+
+    return {
+      buffer: Buffer.from(fileResponse.data),
+      mimeType,
+    };
+  } catch (error: any) {
+    logger.error(
+      {
+        mediaId,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to download WhatsApp media',
+    );
+
+    return null;
+  }
+}
+
+export async function generateStickerBufferFromImage(imageBuffer: Buffer): Promise<Buffer> {
+  return await sharp(imageBuffer)
+    .resize(512, 512, {
+      fit: 'contain',
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .webp({ quality: 90 })
+    .toBuffer();
+}
+
+export async function generateStickerFromWhatsAppMedia(mediaId: string): Promise<Buffer | null> {
+  const media = await downloadWhatsAppMedia(mediaId);
+
+  if (!media) {
+    return null;
+  }
+
+  try {
+    return await generateStickerBufferFromImage(media.buffer);
+  } catch (error: any) {
+    logger.error(
+      {
+        mediaId,
+        mimeType: media.mimeType,
+        errorMessage: error?.message,
+      },
+      'Failed to convert WhatsApp media into sticker',
     );
 
     return null;

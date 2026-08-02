@@ -5,6 +5,7 @@ import { processIncomingMessage, MODULE_DETAILS } from "../modules/router.js";
 import axios from "axios";
 import { getHelpMenu } from "../modules/utilities/utilities.handler.js";
 import { generateBratSticker, generateBratVideoSticker } from "../services/brat.service.js";
+import { generateStickerFromWhatsAppMedia } from "../services/whatsapp.service.js";
 import {
   getFinanceIntroMessage,
   processCuanBuddyCheck,
@@ -16,7 +17,7 @@ import {
   sendWhatsAppInteractiveList,
   sendWhatsAppSticker,
 } from "../services/whatsapp.service.js";
-import { getUserSession, setUserActiveMode } from "../utils/session.js";
+import { getUserSession, setUserActiveMode, setUserLastImage, clearUserLastImage } from "../utils/session.js";
 import { isBotOnline } from "../utils/schedule.js";
 import {
   hasBeenNotifiedToday,
@@ -141,6 +142,13 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
           }
 
           let userText = "";
+          const imageMediaId = messageObj.image?.id || null;
+          const imageMimeType = messageObj.image?.mime_type || null;
+          const imageCaption = messageObj.image?.caption || "";
+
+          if (messageObj.type === "image" && imageMediaId) {
+            setUserLastImage(from, imageMediaId, imageMimeType, imageCaption);
+          }
 
           if (messageObj.type === "text") {
             userText = messageObj.text.body;
@@ -152,10 +160,45 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               messageObj.interactive.button_reply.id ||
               messageObj.interactive.button_reply.title;
           } else if (messageObj.type === "image") {
-            const imageCaption = messageObj.image?.caption || "kiriman gambar";
+            const imageCaptionText = imageCaption.trim();
+            const stickerRequest = /^(?:\.|\/)?(?:sticker|s)\b/i.test(imageCaptionText);
+
+            if (stickerRequest) {
+              if (!imageMediaId) {
+                await sendWhatsAppMessage(
+                  from,
+                  "Saya tidak menemukan file gambar yang bisa diubah menjadi sticker.",
+                );
+                return reply.status(200).send({ status: "success" });
+              }
+
+              await sendWhatsAppMessage(from, "⏳ Sedang membuat sticker dari gambar...");
+              const stickerBuffer = await generateStickerFromWhatsAppMedia(imageMediaId);
+
+              if (!stickerBuffer) {
+                await sendWhatsAppMessage(
+                  from,
+                  "Gagal membuat sticker dari gambar ini. Coba kirim ulang fotonya.",
+                );
+                return reply.status(200).send({ status: "success" });
+              }
+
+              const stickerSent = await sendWhatsAppSticker(from, stickerBuffer);
+
+              if (!stickerSent) {
+                await sendWhatsAppMessage(
+                  from,
+                  "Gagal mengirim sticker. Coba lagi beberapa saat.",
+                );
+              }
+
+              clearUserLastImage(from);
+              return reply.status(200).send({ status: "success" });
+            }
+
             const botReply = await processIncomingMessage(
               from,
-              imageCaption,
+              imageCaptionText || "kiriman gambar",
               senderName,
             );
             if (botReply !== "action:processed") {
@@ -373,6 +416,48 @@ Tekan tombol di bawah untuk memulai modul ini:`;
                 );
               }
 
+              return reply.status(200).send({ status: "success" });
+            }
+            const stickerCommandMatch = trimmed.match(/^(?:\.|\/)?(?:sticker|s)\b(?:\s+(.*))?$/i);
+            if (stickerCommandMatch) {
+              const session = getUserSession(from);
+              const lastImageMediaId = session.lastImageMediaId;
+              const commandText = (stickerCommandMatch[1] || "").trim();
+
+              if (commandText) {
+                await sendWhatsAppMessage(from, "Kirim gambar lalu caption `.sticker` atau reply gambar dengan `.sticker` untuk membuat sticker.");
+                return reply.status(200).send({ status: "success" });
+              }
+
+              if (!lastImageMediaId) {
+                await sendWhatsAppMessage(
+                  from,
+                  "Saya belum menemukan gambar terakhir untuk diubah menjadi sticker. Kirim foto dulu lalu reply `.sticker`.",
+                );
+                return reply.status(200).send({ status: "success" });
+              }
+
+              await sendWhatsAppMessage(from, "⏳ Sedang membuat sticker dari gambar terakhir...");
+              const stickerBuffer = await generateStickerFromWhatsAppMedia(lastImageMediaId);
+
+              if (!stickerBuffer) {
+                await sendWhatsAppMessage(
+                  from,
+                  "Gagal membuat sticker dari gambar terakhir. Coba kirim ulang fotonya.",
+                );
+                return reply.status(200).send({ status: "success" });
+              }
+
+              const stickerSent = await sendWhatsAppSticker(from, stickerBuffer);
+
+              if (!stickerSent) {
+                await sendWhatsAppMessage(
+                  from,
+                  "Gagal mengirim sticker. Coba lagi beberapa saat.",
+                );
+              }
+
+              clearUserLastImage(from);
               return reply.status(200).send({ status: "success" });
             }
 
