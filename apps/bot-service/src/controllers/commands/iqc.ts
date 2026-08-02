@@ -36,8 +36,9 @@ export async function handleIqcCommand(
       if (!imageSent) {
         await sendWhatsAppMessage(from, 'Gagal mengirim screenshot chat iPhone. Coba lagi beberapa saat.');
       }
-    } catch (error) {
-      await sendWhatsAppMessage(from, 'Terjadi kesalahan saat memproses screenshot chat iPhone.');
+    } catch (error: any) {
+      console.error('[IQC ERROR]', error);
+      await sendWhatsAppMessage(from, `Terjadi kesalahan saat memproses screenshot chat iPhone: ${error.message || error}`);
     }
     return true;
   }
