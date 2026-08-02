@@ -32,12 +32,7 @@ export function setUserActiveMode(userId: string, mode: string | null): void {
   session.updatedAt = Date.now();
 }
 
-export function setUserTimezone(userId: string, offset: number, name: string): void {
-  const session = getUserSession(userId);
-  session.timezoneOffset = offset;
-  session.timezoneName = name;
-  session.updatedAt = Date.now();
-}
+
 
 export function setUserLastImage(
   userId: string,

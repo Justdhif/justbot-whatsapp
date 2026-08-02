@@ -24,7 +24,7 @@ import {
   markUserNotifiedToday,
 } from "../utils/offNotificationStore.js";
 
-// Module banners have been removed. Preview is conversational now except for CuanBuddy.
+
 
 interface WebhookQuery {
   "hub.mode"?: string;
@@ -75,14 +75,19 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
           const session = getUserSession(from);
 
+          
           let tzOffset = 7;
           let tzName = "WIB (Asia/Jakarta)";
 
-          const isWitaPrefix =
-            /^(6281254|6281347|6282154|6285247|6285347|6281349|6285246|6282153|6281253|6285250|6285251|6285252|628138|628538)/.test(
-              from,
-            );
-          if (isWitaPrefix) {
+          
+          const isWita = /^(628117|628118|628119|628139|628181|628182|628183|628191|628192|628193|628121|628141|628161|628171|628211|628221|628231|628241|628242|628243|628244|628245|628246|6281254|6281347|6282154|6285247|6285347|6281349|6285246|6282153|6281253|6285250|6285251|6285252|628138|628538|6283|6285)/.test(from);
+          
+          const isWit = /^(628114|628124|6281354|628219|628229|628529|628539|6289)/.test(from);
+
+          if (isWit) {
+            tzOffset = 9;
+            tzName = "WIT (Asia/Jayapura)";
+          } else if (isWita) {
             tzOffset = 8;
             tzName = "WITA (Asia/Makassar)";
           }
@@ -90,9 +95,9 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           session.timezoneOffset = tzOffset;
           session.timezoneName = tzName;
 
-          if (!isBotOnline(tzOffset)) {
+          if (!isBotOnline(session.timezoneOffset)) {
             logger.info(
-              { from, senderName, tzName },
+              { from, senderName, tzName: session.timezoneName },
               "🌙 Bot is currently OFF / Outside Operational Hours.",
             );
 
@@ -105,7 +110,7 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
 Halo${nameGreeting}! Terima kasih telah menghubungi *JustBot AI*.
 
-Saat ini bot sedang *OFF* pada zona waktu Anda (*${tzName}*).
+Saat ini bot sedang *OFF* pada zona waktu Anda (*${session.timezoneName}*).
 
 📅 *Hari Aktif*: Sabtu - Kamis (Jumat Libur)
 🕒 *Jam Aktif*: ${env.BOT_OPERATIONAL_START} - ${env.BOT_OPERATIONAL_END}
@@ -356,6 +361,8 @@ Tekan tombol di bawah untuk memulai modul ini:`;
                 }
               }
             }
+
+
 
             if (
               lower === ".menu" ||

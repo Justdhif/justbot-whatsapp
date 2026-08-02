@@ -60,8 +60,6 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │
 ├─── o(" ${titleUserInfo} ")
 │ 👤 *${labelName}:* ${greetingName || 'Guest User'}
-│ 🌍 *${labelTz}:* ${tzDisplay}
-│ 🟢 *${labelStatus}:* Online
 │
 ├─── o(" ${titleBotInfo} ")
 ├─✦ *${labelBotName}:* JustBot-Service
