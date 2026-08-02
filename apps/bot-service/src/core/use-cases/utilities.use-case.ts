@@ -72,7 +72,6 @@ export function getHelpMenu(senderName?: string): string {
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.menu*
 ├─✦  *.brat <teks>*
-├─✦  *.bratv <teks>*
 ├─✦  *.sticker*
 ├─✦  *.iqc <teks>*
 ├─✦  *.cuanbuddy*

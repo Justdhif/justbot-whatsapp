@@ -1,5 +1,5 @@
 import { sendWhatsAppMessage, sendWhatsAppSticker } from '../../infrastructure/gateways/whatsapp.gateway.js';
-import { generateBratSticker, generateBratVideoSticker } from '../../infrastructure/gateways/brat.gateway.js';
+import { generateBratSticker } from '../../infrastructure/gateways/brat.gateway.js';
 import { generateStickerFromWhatsAppMedia } from '../../infrastructure/gateways/whatsapp.gateway.js';
 import { clearUserLastImage } from '../../infrastructure/store/session.store.js';
 
@@ -10,23 +10,6 @@ export async function handleStickerCommand(
 ): Promise<boolean> {
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
-
-  
-  const bratVideoCommandMatch = trimmed.match(/^\.bratv(?:\s+(.*))?$/i);
-  if (bratVideoCommandMatch) {
-    const bratText = (bratVideoCommandMatch[1] || '').trim();
-    if (!bratText) {
-      await sendWhatsAppMessage(from, 'Ketik `.bratv teks kamu` untuk membuat sticker Brat animasi.');
-      return true;
-    }
-    await sendWhatsAppMessage(from, '⏳ Sedang membuat sticker Brat animasi...');
-    const stickerBuffer = await generateBratVideoSticker(bratText);
-    const stickerSent = await sendWhatsAppSticker(from, stickerBuffer);
-    if (!stickerSent) {
-      await sendWhatsAppMessage(from, 'Gagal mengirim sticker Brat animasi. Coba lagi beberapa saat.');
-    }
-    return true;
-  }
 
   
   const stickerCommandMatch = trimmed.match(/^\.sticker(?:\s+(.*))?$/i);
