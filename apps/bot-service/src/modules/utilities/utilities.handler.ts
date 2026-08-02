@@ -44,6 +44,8 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const skillReminder = changeFont('Pengingat & Agenda', 'smallCaps');
   const skillEmail = changeFont('Email & Surat Formal', 'smallCaps');
   const skillUtil = changeFont('Kalkulator & Konversi', 'smallCaps');
+  const skillBrat = changeFont('Brat Sticker Generator', 'smallCaps');
+  const skillBratVideo = changeFont('Brat Video Sticker', 'smallCaps');
 
   const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
   
@@ -74,12 +76,16 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 ├─✦ *${skillReminder}*
 ├─✦ *${skillEmail}*
 ├─✦ *${skillUtil}*
+├─✦ *${skillBrat}*
+├─✦ *${skillBratVideo}*
 │
 ├─── o(" ${titleApps} ")
 ├─✦ *${appCuanBuddy}*
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.menu* ─ ${descMenu}
+├─✦  *.brat <teks>* ─ Buat sticker Brat dari teks
+├─✦  *.bratv <teks>* ─ Buat sticker Brat animasi
 ├─✦  *.cuanbuddy* ─ ${descCuanBuddy}
 ├─✦  *.exit* ─ ${descExit}
 ╰────────────────────────────

@@ -12,6 +12,7 @@
   "dependencies": {
     "@fastify/formbody": "^7.4.0",
     "axios": "^1.7.9",
+    "brat-canvas": "^1.0.30",
     "dotenv": "^16.4.7",
     "fastify": "^4.28.1",
     "groq-sdk": "^0.9.0",

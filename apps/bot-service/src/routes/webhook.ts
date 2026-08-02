@@ -4,6 +4,7 @@ import { logger } from "../utils/logger.js";
 import { processIncomingMessage, MODULE_DETAILS } from "../modules/router.js";
 import axios from "axios";
 import { getHelpMenu } from "../modules/utilities/utilities.handler.js";
+import { generateBratSticker, generateBratVideoSticker } from "../services/brat.service.js";
 import {
   getFinanceIntroMessage,
   processCuanBuddyCheck,
@@ -13,6 +14,7 @@ import {
   sendWhatsAppImage,
   sendWhatsAppButtons,
   sendWhatsAppInteractiveList,
+  sendWhatsAppSticker,
 } from "../services/whatsapp.service.js";
 import { getUserSession, setUserActiveMode } from "../utils/session.js";
 import { isBotOnline } from "../utils/schedule.js";
@@ -172,7 +174,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             const lower = trimmed.toLowerCase();
             const session = getUserSession(from);
 
-            // Only intercept direct command triggers for CuanBuddy App preview
+            
             const directCmdMode = lower.startsWith(".")
               ? lower.replace(".", "")
               : "";
@@ -290,7 +292,7 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
               return reply.status(200).send({ status: "success" });
             }
 
-            // Only handle list selections for CuanBuddy (other general skills don't have start/modes screens anymore)
+            
             if (lower.startsWith("select:module:")) {
               const selectedMode = lower.replace("select:module:", "");
 
@@ -344,6 +346,60 @@ Tekan tombol di bawah untuk memulai modul ini:`;
               const botAvatarBanner = "https://picsum.photos/800/600";
 
               await sendWhatsAppImage(from, botAvatarBanner, menuText);
+              return reply.status(200).send({ status: "success" });
+            }
+
+            const bratVideoCommandMatch = trimmed.match(/^(?:\.|\/)?brat(?:\s+(?:v|vid|video|gif)|v|vid|video|gif)(?:\s*[:\s]\s*(.*))?$/i);
+            if (bratVideoCommandMatch) {
+              const bratText = (bratVideoCommandMatch[1] || '').trim();
+
+              if (!bratText) {
+                await sendWhatsAppMessage(
+                  from,
+                  'Ketik `.bratv teks kamu` untuk membuat sticker Brat animasi.',
+                );
+                return reply.status(200).send({ status: "success" });
+              }
+
+              await sendWhatsAppMessage(from, '⏳ Sedang membuat sticker Brat animasi...');
+
+              const stickerBuffer = await generateBratVideoSticker(bratText);
+              const stickerSent = await sendWhatsAppSticker(from, stickerBuffer);
+
+              if (!stickerSent) {
+                await sendWhatsAppMessage(
+                  from,
+                  'Gagal mengirim sticker Brat animasi. Coba lagi beberapa saat.',
+                );
+              }
+
+              return reply.status(200).send({ status: "success" });
+            }
+
+            const bratCommandMatch = trimmed.match(/^(?:\.|\/)?brat(?:\s*[:\s]\s*(.*))?$/i);
+            if (bratCommandMatch) {
+              const bratText = (bratCommandMatch[1] || '').trim();
+
+              if (!bratText) {
+                await sendWhatsAppMessage(
+                  from,
+                  'Ketik `.brat teks kamu` untuk membuat sticker Brat.',
+                );
+                return reply.status(200).send({ status: "success" });
+              }
+
+              await sendWhatsAppMessage(from, '⏳ Sedang membuat sticker Brat...');
+
+              const stickerBuffer = await generateBratSticker(bratText);
+              const stickerSent = await sendWhatsAppSticker(from, stickerBuffer);
+
+              if (!stickerSent) {
+                await sendWhatsAppMessage(
+                  from,
+                  'Gagal mengirim sticker Brat. Coba lagi beberapa saat.',
+                );
+              }
+
               return reply.status(200).send({ status: "success" });
             }
 

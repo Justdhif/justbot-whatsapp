@@ -77,6 +77,87 @@ export async function sendWhatsAppImage(to: string, imageUrl: string, captionTex
 }
 
 
+async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: string): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append('messaging_product', 'whatsapp');
+    formData.append('file', new Blob([buffer], { type: mimeType }), fileName);
+
+    const response = await fetch(WA_MEDIA_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+      },
+      body: formData,
+    });
+
+    const responseData = (await response.json()) as { id?: string };
+
+    if (!response.ok) {
+      throw new Error(JSON.stringify(responseData));
+    }
+
+    const mediaId = responseData?.id;
+
+    if (!mediaId) {
+      throw new Error('WhatsApp media upload returned no media id');
+    }
+
+    return mediaId;
+  } catch (error: any) {
+    logger.error(
+      {
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to upload WhatsApp media',
+    );
+
+    return null;
+  }
+}
+
+
+export async function sendWhatsAppSticker(to: string, stickerBuffer: Buffer): Promise<boolean> {
+  try {
+    const mediaId = await uploadWhatsAppMedia(stickerBuffer, 'image/webp', 'brat-sticker.webp');
+
+    if (!mediaId) {
+      return false;
+    }
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'sticker',
+      sticker: {
+        id: mediaId,
+      },
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Sticker message sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp sticker message',
+    );
+    return false;
+  }
+}
+
+
 export async function sendWhatsAppButtons(
   to: string,
   bodyText: string,
