@@ -24,23 +24,7 @@ import {
   markUserNotifiedToday,
 } from "../utils/offNotificationStore.js";
 
-const MODULE_BANNERS: Record<string, string> = {
-  coding:
-    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop",
-  finance:
-    "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1000&auto=format&fit=crop",
-  creator:
-    "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop",
-  translate:
-    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop",
-  ocr: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop",
-  pdf: "https://images.unsplash.com/photo-1568667256549-094345857637?q=80&w=1000&auto=format&fit=crop",
-  email:
-    "https://images.unsplash.com/photo-1557200134-90327ee9fafa?q=80&w=1000&auto=format&fit=crop",
-  reminder:
-    "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1000&auto=format&fit=crop",
-  util: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1000&auto=format&fit=crop",
-};
+// Module banners have been removed. Preview is conversational now except for CuanBuddy.
 
 interface WebhookQuery {
   "hub.mode"?: string;
@@ -227,9 +211,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             ) {
               const detail = MODULE_DETAILS[directCmdMode];
 
-              const bannerUrl =
-                MODULE_BANNERS[directCmdMode] ||
-                "https://picsum.photos/800/600";
+              const bannerUrl = "https://picsum.photos/800/600";
               const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
               await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
@@ -342,9 +324,7 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
               if (selectedMode === "cuanbuddy") {
                 const detail = MODULE_DETAILS[selectedMode];
                 if (detail) {
-                  const bannerUrl =
-                    MODULE_BANNERS[selectedMode] ||
-                    "https://picsum.photos/800/600";
+                  const bannerUrl = "https://picsum.photos/800/600";
                   const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
                   await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
