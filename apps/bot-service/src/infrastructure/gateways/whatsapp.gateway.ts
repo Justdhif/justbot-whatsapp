@@ -125,21 +125,14 @@ async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: s
     formData.append('messaging_product', 'whatsapp');
     formData.append('file', new Blob([buffer], { type: mimeType }), fileName);
 
-    const response = await fetch(WA_MEDIA_URL, {
-      method: 'POST',
+    const response = await axios.post(WA_MEDIA_URL, formData, {
       headers: {
         Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
       },
-      body: formData,
+      timeout: 15000,
     });
 
-    const responseData = (await response.json()) as { id?: string };
-
-    if (!response.ok) {
-      throw new Error(JSON.stringify(responseData));
-    }
-
-    const mediaId = responseData?.id;
+    const mediaId = response.data?.id;
 
     if (!mediaId) {
       throw new Error('WhatsApp media upload returned no media id');
