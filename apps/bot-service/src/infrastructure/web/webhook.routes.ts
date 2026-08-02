@@ -197,7 +197,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               return reply.status(200).send({ status: "success" });
             }
 
-            const iqcRequest = /^\.iqc\b/i.test(imageCaptionText);
+            const iqcRequest = /^\.iqc$/i.test(imageCaptionText);
             if (iqcRequest) {
               const isIqcHandled = await handleWebhookActionOrMessage(from, imageCaptionText, senderName, session);
               if (isIqcHandled) {

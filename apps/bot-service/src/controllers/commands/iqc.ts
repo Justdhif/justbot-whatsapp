@@ -9,16 +9,16 @@ export async function handleIqcCommand(
 ): Promise<boolean> {
   const trimmed = userText.trim();
   
-  // Trigger pattern: .iqc <teks>
-  const iqcMatch = trimmed.match(/^\.iqc(?:\s*[:\s]\s*(.*))?$/i);
+  // Trigger pattern: .iqc
+  const iqcMatch = trimmed.match(/^\.iqc$/i);
   if (iqcMatch) {
-    const textContent = (iqcMatch[1] || '').trim();
+    const textContent = '';
     
-    // Check if there is an image to download from the session
+    // Retrieve user image attachment from session
     const lastImageMediaId = session?.lastImageMediaId;
 
-    if (!textContent && !lastImageMediaId) {
-      await sendWhatsAppMessage(from, 'Ketik `.iqc teks chat kamu` untuk membuat screenshot chat WhatsApp iPhone. Atau kirim foto terlebih dahulu lalu ketik `.iqc` (atau `.iqc caption`) untuk membuat screenshot chat berisi gambar.');
+    if (!lastImageMediaId) {
+      await sendWhatsAppMessage(from, 'Kirim foto terlebih dahulu lalu ketik/caption `.iqc` untuk membuat screenshot chat berisi gambar.');
       return true;
     }
 
