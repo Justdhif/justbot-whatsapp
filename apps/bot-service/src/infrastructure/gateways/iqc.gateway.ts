@@ -15,7 +15,7 @@ export async function generateIqcScreenshot(text: string, time: string): Promise
       throw new Error('Canvas generation returned invalid object structure');
     }
     
-    // Explicitly convert PNG from generateIQC to JPEG format using sharp to match image/jpeg upload mimetype
+    
     return await sharp(pngBuffer)
       .jpeg({ quality: 95 })
       .toBuffer();
