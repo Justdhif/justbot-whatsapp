@@ -139,6 +139,13 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             userText =
               messageObj.interactive.button_reply.id ||
               messageObj.interactive.button_reply.title;
+          } else if (
+            messageObj.type === "interactive" &&
+            messageObj.interactive?.list_reply
+          ) {
+            userText =
+              messageObj.interactive.list_reply.id ||
+              messageObj.interactive.list_reply.title;
           } else if (messageObj.type === "image") {
             const imageCaptionText = imageCaption.trim();
             const stickerRequest = /^(?:\.|\/)?(?:sticker|s)\b/i.test(imageCaptionText);
