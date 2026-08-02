@@ -15,8 +15,21 @@ app.register(formbody);
 
 app.get('/assets/:filename', async (request, reply) => {
   const { filename } = request.params as { filename: string };
-  const filePath = path.resolve(process.cwd(), 'src/assets', filename);
   
+  
+  let filePath = path.resolve(process.cwd(), 'src/assets', filename);
+  if (!fs.existsSync(filePath)) {
+    filePath = path.resolve(process.cwd(), 'apps/bot-service/src/assets', filename);
+  }
+  
+  
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, '..', 'src', 'assets', filename);
+    if (!fs.existsSync(filePath)) {
+      filePath = path.join(__dirname, 'assets', filename);
+    }
+  }
+
   if (fs.existsSync(filePath)) {
     const stream = fs.createReadStream(filePath);
     let contentType = 'application/octet-stream';

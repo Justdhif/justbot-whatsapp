@@ -45,7 +45,7 @@ Silakan klik tombol *Pilih Modul* di bawah untuk melihat rincian penjelasan kema
         const baseUrl = getBotBaseUrl();
         const bannerUrl = baseUrl && baseUrl.startsWith("http") && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")
           ? `${baseUrl}/assets/finance-banner.jpg`
-          : "https://tmpfiles.org/dl/w1wyRQ9wYwQu/finance-banner.jpg";
+          : "https://tmpfiles.org/dl/wawhR69OQ2d0/finance-banner.jpg";
         const bannerCaption = `💰 *PANDUAN: ${detail.name.toUpperCase()}*`;
         await sendWhatsAppImage(from, bannerUrl, bannerCaption);
       }
