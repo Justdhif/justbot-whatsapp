@@ -5,6 +5,8 @@
 
 [functions]
   directory = "functions"
+  node_bundler = "esbuild"
+  external_node_modules = ["brat-canvas", "@napi-rs/canvas", "sharp"]
 
 [[redirects]]
   from = "/*"
