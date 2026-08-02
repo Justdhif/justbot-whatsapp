@@ -14,7 +14,7 @@ export async function handleWebhookActionOrMessage(
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
 
-  // 1. Action: Exit Active Mode Session
+  
   if (lower === "action:exit" || lower === ".exit") {
     setUserActiveMode(from, null);
     const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`.menu\` untuk memilih modul baru.`;
@@ -23,25 +23,25 @@ export async function handleWebhookActionOrMessage(
     return true;
   }
 
-  // 2. Delegate to CuanBuddy Commands Handlers
+  
   const isCuanBuddyHandled = await handleCuanBuddyCommand(from, userText, senderName);
   if (isCuanBuddyHandled) {
     return true;
   }
 
-  // 3. Delegate to Menu Command Handler
+  
   const isMenuHandled = await handleMenuCommand(from, userText, senderName);
   if (isMenuHandled) {
     return true;
   }
 
-  // 4. Delegate to Help Command Handler
+  
   const isHelpHandled = await handleHelpCommand(from, userText);
   if (isHelpHandled) {
     return true;
   }
 
-  // 5. Delegate to Sticker & Brat Command Handlers
+  
   const isStickerHandled = await handleStickerCommand(from, userText, session);
   if (isStickerHandled) {
     return true;

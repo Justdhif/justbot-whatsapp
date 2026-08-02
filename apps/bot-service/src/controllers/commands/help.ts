@@ -1,5 +1,6 @@
-import { sendWhatsAppInteractiveList, sendWhatsAppButtons } from '../../infrastructure/gateways/whatsapp.gateway.js';
+import { sendWhatsAppInteractiveList, sendWhatsAppButtons, sendWhatsAppImage } from '../../infrastructure/gateways/whatsapp.gateway.js';
 import { MODULE_DETAILS } from '../../core/use-cases/process-message.use-case.js';
+import { getBotBaseUrl } from '../../config/env.js';
 
 export async function handleHelpCommand(
   from: string,
@@ -40,6 +41,13 @@ Silakan klik tombol *Pilih Modul* di bawah untuk melihat rincian penjelasan kema
     const helpMode = lower.replace("select:help:", "");
     const detail = MODULE_DETAILS[helpMode];
     if (detail) {
+      if (helpMode === "finance") {
+        const baseUrl = getBotBaseUrl() || "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public";
+        const bannerUrl = baseUrl.startsWith("http") ? `${baseUrl}/assets/finance-banner.jpg` : "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public/finance-banner.jpg";
+        const bannerCaption = `💰 *PANDUAN: ${detail.name.toUpperCase()}*`;
+        await sendWhatsAppImage(from, bannerUrl, bannerCaption);
+      }
+
       const docText = `╭────────────────────────────
 │  ${detail.icon} *PANDUAN: ${detail.name.toUpperCase()}*
 ╰────────────────────────────

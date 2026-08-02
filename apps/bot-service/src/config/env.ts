@@ -31,3 +31,11 @@ if (!_env.success) {
 }
 
 export const env = _env.data;
+
+let botBaseUrl = "";
+export function getBotBaseUrl(): string {
+  return botBaseUrl;
+}
+export function setBotBaseUrl(url: string) {
+  botBaseUrl = url;
+}

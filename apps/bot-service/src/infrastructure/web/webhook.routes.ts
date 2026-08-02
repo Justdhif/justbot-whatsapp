@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { env } from "../../config/env.js";
+import { env, setBotBaseUrl } from "../../config/env.js";
 import { logger } from "../../utils/logger.js";
 import { processIncomingMessage, MODULE_DETAILS } from "../../core/use-cases/process-message.use-case.js";
 import { handleWebhookActionOrMessage } from "../../controllers/action.controller.js";
@@ -30,6 +30,13 @@ export async function webhookRoutes(fastify: FastifyInstance) {
       request: FastifyRequest<{ Querystring: WebhookQuery }>,
       reply: FastifyReply,
     ) => {
+      const host = request.headers.host || '';
+      const protocol = request.headers['x-forwarded-proto'] || 'https';
+      const baseUrl = host ? `${protocol}://${host}` : '';
+      if (baseUrl) {
+        setBotBaseUrl(baseUrl);
+      }
+
       const mode = request.query["hub.mode"];
       const token = request.query["hub.verify_token"];
       const challenge = request.query["hub.challenge"];
@@ -51,6 +58,13 @@ export async function webhookRoutes(fastify: FastifyInstance) {
   fastify.post(
     "/webhook",
     async (request: FastifyRequest, reply: FastifyReply) => {
+      const host = request.headers.host || '';
+      const protocol = request.headers['x-forwarded-proto'] || 'https';
+      const baseUrl = host ? `${protocol}://${host}` : '';
+      if (baseUrl) {
+        setBotBaseUrl(baseUrl);
+      }
+
       const body: any = request.body;
 
       try {

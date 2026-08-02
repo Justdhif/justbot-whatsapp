@@ -4,12 +4,35 @@ import serverless from 'serverless-http';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
 import { webhookRoutes } from './infrastructure/web/webhook.routes.js';
+import fs from 'fs';
+import path from 'path';
 
 const app = Fastify({
   logger: false,
 });
 
 app.register(formbody);
+
+app.get('/assets/:filename', async (request, reply) => {
+  const { filename } = request.params as { filename: string };
+  const filePath = path.resolve(process.cwd(), 'src/assets', filename);
+  
+  if (fs.existsSync(filePath)) {
+    const stream = fs.createReadStream(filePath);
+    let contentType = 'application/octet-stream';
+    if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      contentType = 'image/jpeg';
+    } else if (filename.endsWith('.png')) {
+      contentType = 'image/png';
+    } else if (filename.endsWith('.ttf')) {
+      contentType = 'font/ttf';
+    }
+    
+    return reply.type(contentType).send(stream);
+  } else {
+    return reply.status(404).send({ error: 'Asset not found' });
+  }
+});
 
 
 app.get('/', async () => {

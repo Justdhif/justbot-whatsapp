@@ -2,6 +2,7 @@ import { sendWhatsAppImage, sendWhatsAppButtons, sendWhatsAppMessage } from '../
 import { processCuanBuddyCheck } from '../../core/use-cases/finance.use-case.js';
 import { setUserActiveMode } from '../../infrastructure/store/session.store.js';
 import { MODULE_DETAILS } from '../../core/use-cases/process-message.use-case.js';
+import { getBotBaseUrl } from '../../config/env.js';
 
 export async function handleCuanBuddyCommand(
   from: string,
@@ -11,16 +12,17 @@ export async function handleCuanBuddyCommand(
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
 
-  // Direct OTP / OTP Input Check inside mode
+  
   if (/^\d{6}$/.test(trimmed)) {
-    return false; // Handled directly in process-message use-case
+    return false; 
   }
 
-  // 1. Direct Command Preview Page
+  
   const directCmdMode = lower.startsWith(".") ? lower.replace(".", "") : "";
   if (directCmdMode === "cuanbuddy" && MODULE_DETAILS[directCmdMode]) {
     const detail = MODULE_DETAILS[directCmdMode];
-    const bannerUrl = "https://picsum.photos/800/600";
+    const baseUrl = getBotBaseUrl() || "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public";
+    const bannerUrl = baseUrl.startsWith("http") ? `${baseUrl}/assets/finance-banner.jpg` : "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public/finance-banner.jpg";
     const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
     await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
@@ -42,7 +44,7 @@ Tekan tombol di bawah untuk memulai modul ini:`;
     return true;
   }
 
-  // 2. Start CuanBuddy Mode Connection Action
+  
   if (lower.startsWith("action:start:")) {
     const selectedMode = lower.replace("action:start:", "");
     if (selectedMode === "cuanbuddy") {
@@ -73,7 +75,7 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
     }
   }
 
-  // 3. Check Connection Status Action
+  
   if (lower === "action:cuanbuddy:check") {
     const loadingMsg = `⏳ _Mohon tunggu sebentar, sedang memproses dan mengambil data Anda dari CuanBuddy App..._`;
     await sendWhatsAppMessage(from, loadingMsg);
@@ -87,13 +89,14 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
     return true;
   }
 
-  // 4. Module Selection Handler
+  
   if (lower.startsWith("select:module:")) {
     const selectedMode = lower.replace("select:module:", "");
     if (selectedMode === "cuanbuddy") {
       const detail = MODULE_DETAILS[selectedMode];
       if (detail) {
-        const bannerUrl = "https://picsum.photos/800/600";
+        const baseUrl = getBotBaseUrl() || "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public";
+        const bannerUrl = baseUrl.startsWith("http") ? `${baseUrl}/assets/finance-banner.jpg` : "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public/finance-banner.jpg";
         const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
         await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
