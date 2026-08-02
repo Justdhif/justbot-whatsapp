@@ -80,7 +80,7 @@ export async function sendWhatsAppImage(to: string, imageUrl: string, captionTex
 
 export async function sendWhatsAppImageFromBuffer(to: string, buffer: Buffer, captionText?: string): Promise<boolean> {
   try {
-    const mediaId = await uploadWhatsAppMedia(buffer, 'image/png', 'chat-mockup.png');
+    const mediaId = await uploadWhatsAppMedia(buffer, 'image/jpeg', 'chat-mockup.jpg');
     if (!mediaId) {
       return false;
     }
