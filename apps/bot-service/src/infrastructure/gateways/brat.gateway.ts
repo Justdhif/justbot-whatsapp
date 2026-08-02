@@ -2,7 +2,7 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { bratGen } from 'brat-canvas';
 import { bratVid } from 'brat-canvas/video';
-import { logger } from '../utils/logger.js';
+import { logger } from '../../utils/logger.js';
 
 const BRAT_FONT_PATH = path.resolve(process.cwd(), 'src/assets/BratFont.ttf');
 

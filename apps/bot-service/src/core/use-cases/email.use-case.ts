@@ -1,4 +1,4 @@
-import { askGroqAI } from '../../services/groq.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 
 export async function handleEmailModule(userPrompt: string): Promise<string> {
   const systemPrompt = `Anda adalah 📧 *EXECUTIVE EMAIL MAKER AI* (Modul Email JustBot).

@@ -1,13 +1,5 @@
 
-export interface UserSession {
-  activeMode: string | null; 
-  timezoneOffset: number;    
-  timezoneName: string;      
-  updatedAt: number;
-  lastImageMediaId?: string | null;
-  lastImageMimeType?: string | null;
-  lastImageCaption?: string | null;
-}
+import { UserSession } from '../../core/domain/session.js';
 
 const userSessions: Record<string, UserSession> = {};
 

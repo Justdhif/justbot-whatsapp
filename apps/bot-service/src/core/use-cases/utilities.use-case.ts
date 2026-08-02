@@ -1,4 +1,4 @@
-import { askGroqAI } from '../../services/groq.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 import { changeFont } from '../../utils/font.js';
 
 export async function handleUtilitiesModule(userPrompt: string): Promise<string> {

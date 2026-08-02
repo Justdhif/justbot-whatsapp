@@ -3,7 +3,7 @@ import formbody from '@fastify/formbody';
 import serverless from 'serverless-http';
 import { env } from './config/env.js';
 import { logger } from './utils/logger.js';
-import { webhookRoutes } from './routes/webhook.js';
+import { webhookRoutes } from './infrastructure/web/webhook.routes.js';
 
 const app = Fastify({
   logger: false,

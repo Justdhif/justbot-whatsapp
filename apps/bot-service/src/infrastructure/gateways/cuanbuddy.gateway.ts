@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { env } from '../config/env.js';
-import { logger } from '../utils/logger.js';
+import { env } from '../../config/env.js';
+import { logger } from '../../utils/logger.js';
 
 const cuanBuddyApi = axios.create({
   baseURL: env.CUANBUDDY_API_BASE_URL,

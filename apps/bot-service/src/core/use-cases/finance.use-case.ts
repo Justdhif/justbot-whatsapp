@@ -1,5 +1,5 @@
-import { askGroqAI } from '../../services/groq.service.js';
-import { getCuanBuddyUserByPhone, pairWhatsAppWithOtp } from '../../services/cuanbuddy.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
+import { getCuanBuddyUserByPhone, pairWhatsAppWithOtp } from '../../infrastructure/gateways/cuanbuddy.gateway.js';
 
 export async function handleFinanceModule(userPrompt: string, phoneNumber?: string, senderName?: string): Promise<string> {
   const trimmed = userPrompt.trim();

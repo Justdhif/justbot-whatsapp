@@ -1,19 +1,19 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { env } from "../config/env.js";
-import { logger } from "../utils/logger.js";
-import { processIncomingMessage, MODULE_DETAILS } from "../modules/router.js";
-import { handleWebhookActionOrMessage } from "../modules/action.controller.js";
+import { env } from "../../config/env.js";
+import { logger } from "../../utils/logger.js";
+import { processIncomingMessage, MODULE_DETAILS } from "../../core/use-cases/process-message.use-case.js";
+import { handleWebhookActionOrMessage } from "../../controllers/action.controller.js";
 import {
   sendWhatsAppMessage,
   sendWhatsAppButtons,
-} from "../services/whatsapp.service.js";
-import { getUserSession, setUserLastImage, clearUserLastImage } from "../utils/session.js";
-import { generateStickerFromWhatsAppMedia, sendWhatsAppSticker } from "../services/whatsapp.service.js";
-import { isBotOnline } from "../utils/schedule.js";
+} from "../gateways/whatsapp.gateway.js";
+import { getUserSession, setUserLastImage, clearUserLastImage } from "../store/session.store.js";
+import { generateStickerFromWhatsAppMedia, sendWhatsAppSticker } from "../gateways/whatsapp.gateway.js";
+import { isBotOnline } from "../../utils/schedule.js";
 import {
   hasBeenNotifiedToday,
   markUserNotifiedToday,
-} from "../utils/offNotificationStore.js";
+} from "../store/notification.store.js";
 
 
 
@@ -148,7 +148,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               messageObj.interactive.list_reply.title;
           } else if (messageObj.type === "image") {
             const imageCaptionText = imageCaption.trim();
-            const stickerRequest = /^(?:\.|\/)?(?:sticker|s)\b/i.test(imageCaptionText);
+            const stickerRequest = /^\.sticker\b/i.test(imageCaptionText);
 
             if (stickerRequest) {
               if (!imageMediaId) {

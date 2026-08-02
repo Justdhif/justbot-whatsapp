@@ -1,4 +1,4 @@
-import { askGroqAI } from '../../services/groq.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 
 export async function handleTranslatorModule(userPrompt: string): Promise<string> {
   const systemPrompt = `Anda adalah 🌍 *POLYGLOT TRANSLATOR AI* (Modul Translator JustBot).

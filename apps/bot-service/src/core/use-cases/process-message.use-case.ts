@@ -1,17 +1,17 @@
-import { handleFinanceModule } from "./finance/finance.handler.js";
-import { handleCreatorModule } from "./creator/creator.handler.js";
-import { handlePdfAiModule } from "./pdf-ai/pdf-ai.handler.js";
-import { handleOcrModule } from "./ocr/ocr.handler.js";
-import { handleCodingModule } from "./coding/coding.handler.js";
-import { handleTranslatorModule } from "./translator/translator.handler.js";
-import { handleReminderModule } from "./reminder/reminder.handler.js";
-import { handleEmailModule } from "./email/email.handler.js";
+import { handleFinanceModule } from "./finance.use-case.js";
+import { handleCreatorModule } from "./creator.use-case.js";
+import { handlePdfAiModule } from "./pdf-ai.use-case.js";
+import { handleOcrModule } from "./ocr.use-case.js";
+import { handleCodingModule } from "./coding.use-case.js";
+import { handleTranslatorModule } from "./translator.use-case.js";
+import { handleReminderModule } from "./reminder.use-case.js";
+import { handleEmailModule } from "./email.use-case.js";
 import {
   handleUtilitiesModule,
   getHelpMenu,
-} from "./utilities/utilities.handler.js";
-import { getUserSession } from "../utils/session.js";
-import { askGroqAI } from "../services/groq.service.js";
+} from "./utilities.use-case.js";
+import { getUserSession } from "../../infrastructure/store/session.store.js";
+import { askGroqAI } from "../../infrastructure/gateways/groq.gateway.js";
 
 export function isJuliaQuery(text: string): boolean {
   const lower = text.toLowerCase();
@@ -135,6 +135,16 @@ export const MODULE_DETAILS: Record<
       "Sinkronisasi dashboard data transaksi keuangan terpadu",
     ],
   },
+  sticker: {
+    name: "Sticker Generator",
+    icon: "🖼️",
+    desc: "Modul khusus pembuatan stiker WhatsApp biasa maupun stiker teks gaya Brat secara instan.",
+    capabilities: [
+      "Mengubah foto/gambar menjadi stiker (.sticker)",
+      "Membuat stiker teks hitam putih gaya Brat (.brat <teks>)",
+      "Membuat stiker teks animasi gif gaya Brat (.bratv <teks>)",
+    ],
+  },
 };
 
 export async function processIncomingMessage(
@@ -231,7 +241,7 @@ Aturan Penting:
 1. Jawablah pesan pengguna secara LANGSUNG, ALAMI, DAN INTERAKTIF layaknya teman ngobrol yang asik di WhatsApp.
 2. Tanggapi dengan gaya santai namun sopan, gunakan emoji yang cocok (seperti 😭, ✌️, 😊, 🤖, ✨).
 3. Jika pengguna menyapa kasual (seperti 'p', 'halo', 'oi'), langsung sapa balik dengan hangat dan panggil nama profilnya bila ada!
-4. Jika pengguna bertanya dengan konteks mengenai kemampuan Anda ("kamu bisa apa aja", "fitur apa aja", "tolong sebutkan kemampuanmu", "kamu bisa bantu apa", dll), jawab secara kasual dan TAMBAHKAN instruksi jelas/ajakan agar pengguna mengetik perintah \`.menu\` untuk melihat modul layanan lengkap secara detail.`;
+4. Jika pengguna bertanya dengan konteks mengenai kemampuan Anda ("kamu bisa apa aja", "fitur apa aja", "tolong sebutkan kemampuanmu", "kamu bisa bantu apa", dll), jawab secara kasual dan TAMBAHKAN instruksi jelas/ajakan agar pengguna mengetik perintah \`.menu\` untuk melihat modul layanan lengkap, atau mengetik \`.help\` jika memerlukan bantuan dan penjelasan rinci kemampuan masing-masing modul.`;
 
   return await askGroqAI(trimmed, conversationalSystemPrompt);
 }

@@ -1,4 +1,4 @@
-import { askGroqAI } from '../../services/groq.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 
 export async function handleReminderModule(userPrompt: string): Promise<string> {
   const systemPrompt = `Anda adalah 📅 *TIME & AGENDA REMINDER AI* (Modul Pengingat JustBot).

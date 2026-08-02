@@ -1,4 +1,4 @@
-import { askGroqAI } from '../../services/groq.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 
 export async function handlePdfAiModule(userPrompt: string): Promise<string> {
   const systemPrompt = `Anda adalah 📄 *PDF & DOCUMENT AI INSIGHT* (Modul PDF AI JustBot).

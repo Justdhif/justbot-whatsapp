@@ -1,4 +1,4 @@
-import { askGroqAI } from '../../services/groq.service.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 
 export async function handleCreatorModule(userPrompt: string): Promise<string> {
   const systemPrompt = `Anda adalah 🎥 *CONTENT CREATOR STUDIO AI* (Modul Kreator JustBot).

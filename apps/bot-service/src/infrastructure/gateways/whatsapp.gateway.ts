@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { env } from '../config/env.js';
-import { logger } from '../utils/logger.js';
+import { env } from '../../config/env.js';
+import { logger } from '../../utils/logger.js';
 import sharp from 'sharp';
 
 const WA_API_URL = `https://graph.facebook.com/v20.0/${env.WA_PHONE_NUMBER_ID}/messages`;
