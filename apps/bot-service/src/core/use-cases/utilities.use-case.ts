@@ -75,6 +75,7 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦  *.brat <teks>*
 ├─✦  *.bratv <teks>*
 ├─✦  *.sticker*
+├─✦  *.iqc <teks>*
 ├─✦  *.cuanbuddy*
 ├─✦  *.exit*
 │

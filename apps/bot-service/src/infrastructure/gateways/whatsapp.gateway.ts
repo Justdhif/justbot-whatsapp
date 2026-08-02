@@ -78,6 +78,46 @@ export async function sendWhatsAppImage(to: string, imageUrl: string, captionTex
   }
 }
 
+export async function sendWhatsAppImageFromBuffer(to: string, buffer: Buffer, captionText?: string): Promise<boolean> {
+  try {
+    const mediaId = await uploadWhatsAppMedia(buffer, 'image/png', 'chat-mockup.png');
+    if (!mediaId) {
+      return false;
+    }
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'image',
+      image: {
+        id: mediaId,
+        caption: captionText,
+      },
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Image buffer message sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp image from buffer'
+    );
+    return false;
+  }
+}
+
 
 async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: string): Promise<string | null> {
   try {

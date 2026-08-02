@@ -4,6 +4,7 @@ import { handleCuanBuddyCommand } from './commands/cuanbuddy.js';
 import { handleMenuCommand } from './commands/menu.js';
 import { handleHelpCommand } from './commands/help.js';
 import { handleStickerCommand } from './commands/sticker.js';
+import { handleIqcCommand } from './commands/iqc.js';
 
 export async function handleWebhookActionOrMessage(
   from: string,
@@ -44,6 +45,11 @@ export async function handleWebhookActionOrMessage(
   
   const isStickerHandled = await handleStickerCommand(from, userText, session);
   if (isStickerHandled) {
+    return true;
+  }
+
+  const isIqcHandled = await handleIqcCommand(from, userText);
+  if (isIqcHandled) {
     return true;
   }
 
