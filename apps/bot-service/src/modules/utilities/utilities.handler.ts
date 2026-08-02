@@ -16,9 +16,8 @@ Aturan Respon:
   return await askGroqAI(userPrompt, systemPrompt);
 }
 
-export function getHelpMenu(senderName?: string, timezoneName?: string): string {
+export function getHelpMenu(senderName?: string): string {
   const greetingName = senderName ? ` ${senderName}` : '';
-  const tzDisplay = timezoneName || 'WIB (Asia/Jakarta)';
   
   const titleMain = changeFont('JUSTBOT AI', 'smallCaps');
   const titleUserInfo = changeFont('USER INFO', 'smallCaps');
@@ -28,8 +27,6 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const titleShortcuts = changeFont('COMMAND INFO', 'smallCaps');
 
   const labelName = changeFont('Nama', 'smallCaps');
-  const labelTz = changeFont('Timezone', 'smallCaps');
-  const labelStatus = changeFont('Status', 'smallCaps');
   const labelBotName = changeFont('Bot Name', 'smallCaps');
   const labelEngine = changeFont('Engine', 'smallCaps');
   const labelActive = changeFont('Active', 'smallCaps');
@@ -55,6 +52,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
   const descBratVideo = changeFont('Buat sticker Brat animasi', 'smallCaps');
   const descSticker = changeFont('Ubah gambar jadi sticker', 'smallCaps');
   const descExit = changeFont('Keluar dari mode aktif', 'smallCaps');
+  const descHelp = changeFont('Panduan & Bantuan Modul', 'smallCaps');
 
   return `╭─── o「 ${titleMain} 」o
 │
@@ -85,6 +83,7 @@ export function getHelpMenu(senderName?: string, timezoneName?: string): string 
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.menu* ─ ${descMenu}
+├─✦  *.help* ─ ${descHelp}
 ├─✦  *.brat <teks>* ─ ${descBrat}
 ├─✦  *.bratv <teks>* ─ ${descBratVideo}
 ├─✦  *.sticker* / *.s* ─ ${descSticker}

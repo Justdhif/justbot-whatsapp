@@ -367,16 +367,60 @@ Tekan tombol di bawah untuk memulai modul ini:`;
             if (
               lower === ".menu" ||
               lower === "!menu" ||
-              lower === "/help" ||
-              lower === "help" ||
               lower === "menu"
             ) {
-              const menuText = getHelpMenu(senderName, session.timezoneName);
-
+              const menuText = getHelpMenu(senderName);
               const botAvatarBanner = "https://picsum.photos/800/600";
-
               await sendWhatsAppImage(from, botAvatarBanner, menuText);
               return reply.status(200).send({ status: "success" });
+            }
+
+            if (lower === ".help" || lower === "/help" || lower === "help") {
+              const helpBody = `✨ *PANDUAN & BANTUAN LAYANAN JUSTBOT* ✨
+════════════════════════════════════════
+
+Silakan klik tombol *Pilih Modul* di bawah untuk melihat rincian penjelasan kemampuan, cara kerja, dan daftar perintah operasional dari masing-masing modul/skill JustBot.`;
+
+              const listRows = [
+                { id: "select:help:coding", title: "💻 Coding Assistant", description: "Bantuan penulisan & debug kode pemrograman" },
+                { id: "select:help:finance", title: "💰 Finance Consultant", description: "Konsultasi keuangan & manajemen budget" },
+                { id: "select:help:creator", title: "🎥 Content Creator", description: "Ide & naskah konten TikTok/Reels" },
+                { id: "select:help:pdf", title: "📄 PDF & Document AI", description: "Rangkum & bedah dokumen PDF" },
+                { id: "select:help:ocr", title: "📷 OCR Scanner", description: "Mengekstrak tulisan dari gambar" },
+                { id: "select:help:translate", title: "🌍 Polyglot Translator", description: "Terjemahan bahasa kontekstual alami" },
+                { id: "select:help:reminder", title: "📅 Agenda & Reminder", description: "Mengatur tugas & to-do list harian" },
+                { id: "select:help:email", title: "📧 Executive Email", description: "Penyusunan draf email profesional" },
+                { id: "select:help:util", title: "🛠️ Smart Utilities", description: "Kalkulator instan & konversi satuan" }
+              ];
+
+              await sendWhatsAppInteractiveList(
+                from,
+                helpBody,
+                "Pilih Modul",
+                [{ title: "DAFTAR MODUL", rows: listRows }],
+                "📖 PANDUAN MODUL"
+              );
+              return reply.status(200).send({ status: "success" });
+            }
+
+            if (lower.startsWith("select:help:")) {
+              const helpMode = lower.replace("select:help:", "");
+              const detail = MODULE_DETAILS[helpMode];
+              if (detail) {
+                const docText = `╭────────────────────────────
+│  ${detail.icon} *PANDUAN: ${detail.name.toUpperCase()}*
+╰────────────────────────────
+${detail.desc}
+
+💡 *Kemampuan Utama*:
+${detail.capabilities.map((c) => ` ├─ ${c}`).join("\n")}
+════════════════════════════════════════
+📌 _Ketik pertanyaan atau kirim dokumen yang berkaitan langsung dengan fitur di atas untuk mencobanya secara otomatis!_`;
+
+                const menuButtons = [{ id: ".help", title: "📖 Panduan Lain" }, { id: ".menu", title: "📋 Menu Utama" }];
+                await sendWhatsAppButtons(from, docText, menuButtons, `HELP: ${detail.name}`);
+                return reply.status(200).send({ status: "success" });
+              }
             }
 
             const bratVideoCommandMatch = trimmed.match(/^(?:\.|\/)?brat(?:\s+(?:v|vid|video|gif)|v|vid|video|gif)(?:\s*[:\s]\s*(.*))?$/i);
