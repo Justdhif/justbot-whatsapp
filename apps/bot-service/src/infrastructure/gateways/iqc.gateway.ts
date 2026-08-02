@@ -3,12 +3,17 @@ import sharp from 'sharp';
 
 export async function generateIqcScreenshot(text: string, time: string): Promise<Buffer> {
   try {
-    const pngBuffer = await generateIQC(text, time, {
+    const result = await generateIQC(text, time, {
       baterai: [true, '100'],
       operator: true,
       timebar: true,
       wifi: true,
     });
+    
+    const pngBuffer = (result as any).image;
+    if (!pngBuffer) {
+      throw new Error('Canvas generation returned invalid object structure');
+    }
     
     // Explicitly convert PNG from generateIQC to JPEG format using sharp to match image/jpeg upload mimetype
     return await sharp(pngBuffer)
