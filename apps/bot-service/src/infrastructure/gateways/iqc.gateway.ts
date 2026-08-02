@@ -3,12 +3,25 @@ import sharp from 'sharp';
 
 export async function generateIqcScreenshot(text: string, time: string, imageBuffer?: Buffer): Promise<Buffer> {
   try {
+    let processedSticker: Buffer | undefined;
+
+    if (imageBuffer) {
+      // Crop and resize the input image to a clean 512x512 square to bypass iqc-canvas validation limits
+      processedSticker = await sharp(imageBuffer)
+        .resize(512, 512, {
+          fit: 'cover',
+          position: 'center'
+        })
+        .png()
+        .toBuffer();
+    }
+
     const result = await generateIQC(text, time, {
       baterai: [true, '100'],
       operator: true,
       timebar: true,
       wifi: true,
-      sticker: imageBuffer || undefined,
+      sticker: processedSticker,
     });
     
     const pngBuffer = (result as any).image;
