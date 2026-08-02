@@ -21,8 +21,10 @@ export async function handleCuanBuddyCommand(
   const directCmdMode = lower.startsWith(".") ? lower.replace(".", "") : "";
   if (directCmdMode === "cuanbuddy" && MODULE_DETAILS[directCmdMode]) {
     const detail = MODULE_DETAILS[directCmdMode];
-    const baseUrl = getBotBaseUrl() || "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public";
-    const bannerUrl = baseUrl.startsWith("http") ? `${baseUrl}/assets/finance-banner.jpg` : "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public/finance-banner.jpg";
+    const baseUrl = getBotBaseUrl();
+    const bannerUrl = baseUrl && baseUrl.startsWith("http") && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")
+      ? `${baseUrl}/assets/finance-banner.jpg`
+      : "https://tmpfiles.org/dl/w1wyRQ9wYwQu/finance-banner.jpg";
     const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
     await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
@@ -95,8 +97,10 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
     if (selectedMode === "cuanbuddy") {
       const detail = MODULE_DETAILS[selectedMode];
       if (detail) {
-        const baseUrl = getBotBaseUrl() || "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public";
-        const bannerUrl = baseUrl.startsWith("http") ? `${baseUrl}/assets/finance-banner.jpg` : "https://raw.githubusercontent.com/Justdhif/justbot-whatsapp/main/apps/landing-page/public/finance-banner.jpg";
+        const baseUrl = getBotBaseUrl();
+        const bannerUrl = baseUrl && baseUrl.startsWith("http") && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")
+          ? `${baseUrl}/assets/finance-banner.jpg`
+          : "https://tmpfiles.org/dl/w1wyRQ9wYwQu/finance-banner.jpg";
         const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
         await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
