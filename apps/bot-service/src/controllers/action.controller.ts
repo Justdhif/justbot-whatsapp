@@ -2,7 +2,6 @@ import { sendWhatsAppButtons } from '../infrastructure/gateways/whatsapp.gateway
 import { setUserActiveMode } from '../infrastructure/store/session.store.js';
 import { handleCuanBuddyCommand } from './commands/cuanbuddy.js';
 import { handleMenuCommand } from './commands/menu.js';
-import { handleHelpCommand } from './commands/help.js';
 import { handleStickerCommand } from './commands/sticker.js';
 import { handleIqcCommand } from './commands/iqc.js';
 
@@ -36,11 +35,7 @@ export async function handleWebhookActionOrMessage(
     return true;
   }
 
-  
-  const isHelpHandled = await handleHelpCommand(from, userText);
-  if (isHelpHandled) {
-    return true;
-  }
+
 
   
   const isStickerHandled = await handleStickerCommand(from, userText, session);

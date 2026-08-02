@@ -241,7 +241,8 @@ Aturan Penting:
 1. Jawablah pesan pengguna secara LANGSUNG, ALAMI, DAN INTERAKTIF layaknya teman ngobrol yang asik di WhatsApp.
 2. Tanggapi dengan gaya santai namun sopan, gunakan emoji yang cocok (seperti 😭, ✌️, 😊, 🤖, ✨).
 3. Jika pengguna menyapa kasual (seperti 'p', 'halo', 'oi'), langsung sapa balik dengan hangat dan panggil nama profilnya bila ada!
-4. Jika pengguna bertanya dengan konteks mengenai kemampuan Anda ("kamu bisa apa aja", "fitur apa aja", "tolong sebutkan kemampuanmu", "kamu bisa bantu apa", dll), jawab secara kasual dan TAMBAHKAN instruksi jelas/ajakan agar pengguna mengetik perintah \`.menu\` untuk melihat modul layanan lengkap, atau mengetik \`.help\` jika memerlukan bantuan dan penjelasan rinci kemampuan masing-masing modul.`;
+4. Jika pengguna bertanya atau minta penjelasan mengenai modul/fitur tertentu (contoh: "jelaskan module finance", "bantuan fitur coding", "gimana cara pakai translator", "apa itu pdf ai", dll), jelaskan kemampuan modul tersebut dengan bahasa yang sangat mudah dimengerti, sebutkan ikonnya, serta berikan contoh input pertanyaannya agar mereka bisa langsung mencobanya secara natural.
+5. Beri tahu juga kepada user bahwa mereka bisa mengetik \`.menu\` kapan saja untuk melihat seluruh daftar menu command bot.`;
 
   return await askGroqAI(trimmed, conversationalSystemPrompt);
 }
