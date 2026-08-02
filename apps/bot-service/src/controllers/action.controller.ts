@@ -43,7 +43,7 @@ export async function handleWebhookActionOrMessage(
     return true;
   }
 
-  const isIqcHandled = await handleIqcCommand(from, userText);
+  const isIqcHandled = await handleIqcCommand(from, userText, session);
   if (isIqcHandled) {
     return true;
   }

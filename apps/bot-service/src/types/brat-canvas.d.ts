@@ -12,6 +12,7 @@ declare module 'iqc-canvas' {
     operator?: boolean;
     timebar?: boolean;
     wifi?: boolean;
+    sticker?: Buffer | string;
   }
   export function generateIQC(
     text: string,

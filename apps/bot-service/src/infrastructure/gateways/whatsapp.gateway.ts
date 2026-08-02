@@ -151,7 +151,7 @@ async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: s
   }
 }
 
-async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
+export async function downloadWhatsAppMedia(mediaId: string): Promise<{ buffer: Buffer; mimeType: string } | null> {
   try {
     const mediaResponse = await axios.get(`${WA_GRAPH_BASE_URL}/${mediaId}`, {
       headers: {
