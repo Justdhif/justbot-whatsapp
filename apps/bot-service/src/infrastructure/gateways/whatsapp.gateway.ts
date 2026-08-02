@@ -128,6 +128,7 @@ async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: s
     const response = await axios.post(WA_MEDIA_URL, formData, {
       headers: {
         Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'multipart/form-data',
       },
       timeout: 15000,
     });
