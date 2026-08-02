@@ -35,4 +35,32 @@ for (const file of files) {
     }
 }
 fs.writeFileSync('cleaned_files.json', JSON.stringify(cleaned, null, 2));
+
+// Clean up heavy, unused emoji JSON databases in node_modules to pass Netlify 250MB limit
+const parentNodeModules = path.resolve(__dirname, '../../node_modules');
+const targetPaths = [
+  path.join(parentNodeModules, 'iqc-canvas/assets/emoji'),
+  path.join(parentNodeModules, 'brat-canvas/assets/emoji'),
+  path.join(__dirname, 'node_modules/iqc-canvas/assets/emoji'),
+  path.join(__dirname, 'node_modules/brat-canvas/assets/emoji')
+];
+
+targetPaths.forEach(emojiDir => {
+  if (fs.existsSync(emojiDir)) {
+    const jsonFiles = fs.readdirSync(emojiDir);
+    jsonFiles.forEach(file => {
+      // Keep only one light database if needed, or remove all heavy ones (apple, google, joypixels, twitter)
+      // Since bot doesn't require Apple/Joypixels/Twitter high-res database renderings on backend server, delete them
+      if (file.endsWith('.json') && !file.includes('google')) {
+        try {
+          fs.unlinkSync(path.join(emojiDir, file));
+          console.log(`Cleaned up heavy asset: ${file}`);
+        } catch (e) {
+          console.error(`Failed to delete ${file}`, e);
+        }
+      }
+    });
+  }
+});
+
 console.log('Done');
