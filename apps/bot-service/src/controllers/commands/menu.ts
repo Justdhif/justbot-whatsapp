@@ -1,4 +1,4 @@
-import { sendWhatsAppImage } from '../../infrastructure/gateways/whatsapp.gateway.js';
+import { sendWhatsAppMessage } from '../../infrastructure/gateways/whatsapp.gateway.js';
 import { getHelpMenu } from '../../core/use-cases/utilities.use-case.js';
 
 export async function handleMenuCommand(
@@ -10,8 +10,7 @@ export async function handleMenuCommand(
 
   if (lower === ".menu") {
     const menuText = getHelpMenu(senderName);
-    const botAvatarBanner = "https://picsum.photos/800/600";
-    await sendWhatsAppImage(from, botAvatarBanner, menuText);
+    await sendWhatsAppMessage(from, menuText);
     return true;
   }
 

@@ -60,36 +60,36 @@ export function getHelpMenu(senderName?: string): string {
 │ 👤 *${labelName}:* ${greetingName || 'Guest User'}
 │
 ├─── o(" ${titleBotInfo} ")
-├─✦ *${labelBotName}:* JustBot-Service
-├─✦ *${labelEngine}:* Fastify & Groq AI
-├─✦ *${labelActive}:* Sabtu - Kamis
-├─✦ *${labelHours}:* 07.00 - 21.00
+│ ├─✦ *${labelBotName}:* JustBot-Service
+│ ├─✦ *${labelEngine}:* Fastify & Groq AI
+│ ├─✦ *${labelActive}:* Sabtu - Kamis
+│ ├─✦ *${labelHours}:* 07.00 - 21.00
 │
 ├─── o(" ${titleSkills} ")
-├─✦ *${skillFinance}* 
-├─✦ *${skillCoding}*
-├─✦ *${skillCreator}*
-├─✦ *${skillPdf}*
-├─✦ *${skillOcr}*
-├─✦ *${skillTranslate}*
-├─✦ *${skillReminder}*
-├─✦ *${skillEmail}*
-├─✦ *${skillUtil}*
-├─✦ *${skillSticker}*
+│ ├─✦ *${skillFinance}* 
+│ ├─✦ *${skillCoding}*
+│ ├─✦ *${skillCreator}*
+│ ├─✦ *${skillPdf}*
+│ ├─✦ *${skillOcr}*
+│ ├─✦ *${skillTranslate}*
+│ ├─✦ *${skillReminder}*
+│ ├─✦ *${skillEmail}*
+│ ├─✦ *${skillUtil}*
+│ ├─✦ *${skillSticker}*
 │
 ├─── o(" ${titleApps} ")
-├─✦ *${appCuanBuddy}*
-├─✦ *${bratGenerator}*
+│ ├─✦ *${appCuanBuddy}*
+│ ├─✦ *${bratGenerator}*
 │
 ├─── o(" ${titleShortcuts} ")
-├─✦  *.menu* ─ ${descMenu}
-├─✦  *.help* ─ ${descHelp}
-├─✦  *.brat <teks>* ─ ${descBrat}
-├─✦  *.bratv <teks>* ─ ${descBratVideo}
-├─✦  *.sticker* / *.s* ─ ${descSticker}
-├─✦  *.cuanbuddy* ─ ${descCuanBuddy}
-├─✦  *.exit* ─ ${descExit}
-╰────────────────────────────
-
-📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
+│ ├─✦  *.menu*
+│ ├─✦  *.help*
+│ ├─✦  *.brat <teks>*
+│ ├─✦  *.bratv <teks>*
+│ ├─✦  *.sticker*
+│ ├─✦  *.cuanbuddy*
+│ ├─✦  *.exit*
+│ ╰────────────────────────────
+│
+│ 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
 }

@@ -21,12 +21,6 @@ export async function handleCuanBuddyCommand(
   const directCmdMode = lower.startsWith(".") ? lower.replace(".", "") : "";
   if (directCmdMode === "cuanbuddy" && MODULE_DETAILS[directCmdMode]) {
     const detail = MODULE_DETAILS[directCmdMode];
-    const baseUrl = getBotBaseUrl();
-    const bannerUrl = baseUrl && baseUrl.startsWith("http") && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")
-      ? `${baseUrl}/assets/finance-banner.jpg`
-      : "https://tmpfiles.org/dl/wawhR69OQ2d0/finance-banner.jpg";
-    const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
-    await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
     const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
@@ -97,12 +91,6 @@ Semua pesan berupa rincian transaksi pengeluaran/pemasukan yang Anda ketik di mo
     if (selectedMode === "cuanbuddy") {
       const detail = MODULE_DETAILS[selectedMode];
       if (detail) {
-        const baseUrl = getBotBaseUrl();
-        const bannerUrl = baseUrl && baseUrl.startsWith("http") && !baseUrl.includes("localhost") && !baseUrl.includes("127.0.0.1")
-          ? `${baseUrl}/assets/finance-banner.jpg`
-          : "https://tmpfiles.org/dl/wawhR69OQ2d0/finance-banner.jpg";
-        const bannerCaption = `${detail.icon} *PREVIEW: ${detail.name.toUpperCase()}*`;
-        await sendWhatsAppImage(from, bannerUrl, bannerCaption);
 
         const previewText = `╭────────────────────────────
 │  ${detail.icon} *INFO MODUL: ${detail.name.toUpperCase()}*
