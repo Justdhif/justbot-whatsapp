@@ -23,8 +23,8 @@ export function getHelpMenu(senderName?: string): string {
   const titleUserInfo = changeFont('USER INFO', 'smallCaps');
   const titleBotInfo = changeFont('BOT INFO', 'smallCaps');
   const titleSkills = changeFont('BOT MODULES', 'smallCaps');
+  const titleShortcuts = changeFont('BOT COMMAND', 'smallCaps');
   const titleApps = changeFont('INTEGRATED APPS', 'smallCaps');
-  const titleShortcuts = changeFont('COMMAND INFO', 'smallCaps');
 
   const labelName = changeFont('Nama', 'smallCaps');
   const labelBotName = changeFont('Bot Name', 'smallCaps');
@@ -45,14 +45,6 @@ export function getHelpMenu(senderName?: string): string {
 
   const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
   const bratGenerator = changeFont('Brat Generator', 'smallCaps');
-  
-  const descMenu = changeFont('Tampilkan daftar fitur', 'smallCaps');
-  const descCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
-  const descBrat = changeFont('Buat sticker Brat teks', 'smallCaps');
-  const descBratVideo = changeFont('Buat sticker Brat animasi', 'smallCaps');
-  const descSticker = changeFont('Ubah gambar jadi sticker', 'smallCaps');
-  const descExit = changeFont('Keluar dari mode aktif', 'smallCaps');
-  const descHelp = changeFont('Panduan & Bantuan Modul', 'smallCaps');
 
   return `╭─── o「 ${titleMain} 」o
 │
@@ -60,36 +52,35 @@ export function getHelpMenu(senderName?: string): string {
 │ 👤 *${labelName}:* ${greetingName || 'Guest User'}
 │
 ├─── o(" ${titleBotInfo} ")
-│ ├─✦ *${labelBotName}:* JustBot-Service
-│ ├─✦ *${labelEngine}:* Fastify & Groq AI
-│ ├─✦ *${labelActive}:* Sabtu - Kamis
-│ ├─✦ *${labelHours}:* 07.00 - 21.00
+├─✦ *${labelBotName}:* JustBot-Service
+├─✦ *${labelEngine}:* Fastify & Groq AI
+├─✦ *${labelActive}:* Sabtu - Kamis
+├─✦ *${labelHours}:* 07.00 - 21.00
 │
 ├─── o(" ${titleSkills} ")
-│ ├─✦ *${skillFinance}* 
-│ ├─✦ *${skillCoding}*
-│ ├─✦ *${skillCreator}*
-│ ├─✦ *${skillPdf}*
-│ ├─✦ *${skillOcr}*
-│ ├─✦ *${skillTranslate}*
-│ ├─✦ *${skillReminder}*
-│ ├─✦ *${skillEmail}*
-│ ├─✦ *${skillUtil}*
-│ ├─✦ *${skillSticker}*
-│
-├─── o(" ${titleApps} ")
-│ ├─✦ *${appCuanBuddy}*
-│ ├─✦ *${bratGenerator}*
+├─✦ *${skillFinance}* 
+├─✦ *${skillCoding}*
+├─✦ *${skillCreator}*
+├─✦ *${skillPdf}*
+├─✦ *${skillOcr}*
+├─✦ *${skillTranslate}*
+├─✦ *${skillReminder}*
+├─✦ *${skillEmail}*
+├─✦ *${skillUtil}*
+├─✦ *${skillSticker}*
 │
 ├─── o(" ${titleShortcuts} ")
-│ ├─✦  *.menu*
-│ ├─✦  *.help*
-│ ├─✦  *.brat <teks>*
-│ ├─✦  *.bratv <teks>*
-│ ├─✦  *.sticker*
-│ ├─✦  *.cuanbuddy*
-│ ├─✦  *.exit*
-│ ╰────────────────────────────
+├─✦  *.menu*
+├─✦  *.help*
+├─✦  *.brat <teks>*
+├─✦  *.bratv <teks>*
+├─✦  *.sticker*
+├─✦  *.cuanbuddy*
+├─✦  *.exit*
 │
-│ 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
+├─── o(" ${titleApps} ")
+├─✦ *${appCuanBuddy}*
+├─✦ *${bratGenerator}*
+╰────────────────────────────
+📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
 }
