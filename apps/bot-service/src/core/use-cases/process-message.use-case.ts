@@ -125,16 +125,6 @@ export const MODULE_DETAILS: Record<
     ],
   },
 
-  cuanbuddy: {
-    name: "CuanBuddy App",
-    icon: "💳",
-    desc: "Modul Integrasi dan Sinkronisasi Catatan Transaksi Otomatis Ke Aplikasi Keuangan CuanBuddy.",
-    capabilities: [
-      "Integrasi realtime nomor WhatsApp via 6-digit OTP",
-      "Pencatatan pengeluaran dan pendapatan otomatis langsung dari obrolan",
-      "Sinkronisasi dashboard data transaksi keuangan terpadu",
-    ],
-  },
   sticker: {
     name: "Sticker Generator",
     icon: "🖼️",
@@ -142,7 +132,6 @@ export const MODULE_DETAILS: Record<
     capabilities: [
       "Mengubah foto/gambar menjadi stiker (.sticker)",
       "Membuat stiker teks hitam putih gaya Brat (.brat <teks>)",
-      "Membuat stiker teks animasi gif gaya Brat (.bratv <teks>)",
     ],
   },
 };

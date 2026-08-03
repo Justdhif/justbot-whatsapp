@@ -43,7 +43,6 @@ export function getHelpMenu(senderName?: string): string {
   const skillUtil = changeFont('Kalkulator & Konversi', 'smallCaps');
   const skillSticker = changeFont('Sticker Generator', 'smallCaps');
 
-  const appCuanBuddy = changeFont('CuanBuddy App', 'smallCaps');
   const bratGenerator = changeFont('Brat Generator', 'smallCaps');
 
   return `╭─── o「 ${titleMain} 」o
@@ -74,12 +73,7 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦  *.brat <teks>*
 ├─✦  *.sticker*
 ├─✦  *.iqc <teks>*
-├─✦  *.cuanbuddy*
 ├─✦  *.exit*
-│
-├─── o(" ${titleApps} ")
-├─✦ *${appCuanBuddy}*
-├─✦ *${bratGenerator}*
 ╰────────────────────────────
-📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural! Gunakan perintah \`.cuanbuddy\` jika ingin menyambungkan akun keuangan Anda.`;
+📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural!`;
 }
