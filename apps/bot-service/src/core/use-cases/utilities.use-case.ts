@@ -69,16 +69,19 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦ *${skillSticker}*
 │
 ├─── o(" ${titleShortcuts} ")
-├─✦  *.menu*
-├─✦  *.finance* — buka Finance Manager
-├─✦  *.catat masuk/keluar <jumlah> <kategori>*
-├─✦  *.riwayat* — lihat transaksi
-├─✦  *.laporan* — ringkasan keuangan
-├─✦  *.hapus <id>* — hapus transaksi
-├─✦  *.brat <teks>*
-├─✦  *.sticker*
-├─✦  *.iqc <teks>*
+├─✦  *.batal*
+├─✦  *.brat*
+├─✦  *.catat*
 ├─✦  *.exit*
+├─✦  *.finance*
+├─✦  *.hapus*
+├─✦  *.iqc*
+├─✦  *.konfirmasi*
+├─✦  *.laporan*
+├─✦  *.login*
+├─✦  *.menu*
+├─✦  *.riwayat*
+├─✦  *.sticker*
 ╰────────────────────────────
 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural!`;
 }
