@@ -6,6 +6,8 @@ export interface UserSession {
   lastImageMediaId?: string | null;
   lastImageMimeType?: string | null;
   lastImageCaption?: string | null;
+  accessToken?: string | null;
+  refreshToken?: string | null;
 }
 
 export interface ModuleDetail {

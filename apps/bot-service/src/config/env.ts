@@ -18,6 +18,10 @@ const envSchema = z.object({
   
   BOT_OPERATIONAL_DAYS: z.string().default('1,2,3,4,6,7'),
   BOT_ENABLE_SCHEDULE: z.string().default('true').transform((val) => val.toLowerCase() === 'true'),
+  
+  // Backend Integration
+  BACKEND_API_URL: z.string().default('http://localhost:3001'),
+  BOT_SECRET: z.string().default('justbot_super_secure_bot_secret_key_12345'),
 });
 
 const _env = envSchema.safeParse(process.env);

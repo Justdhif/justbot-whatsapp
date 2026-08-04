@@ -13,6 +13,8 @@ export function getUserSession(userId: string): UserSession {
       lastImageMediaId: null,
       lastImageMimeType: null,
       lastImageCaption: null,
+      accessToken: null,
+      refreshToken: null,
     };
   }
   return userSessions[userId];
@@ -46,3 +48,15 @@ export function clearUserLastImage(userId: string): void {
   session.lastImageCaption = null;
   session.updatedAt = Date.now();
 }
+
+export function setUserTokens(
+  userId: string,
+  accessToken: string | null,
+  refreshToken: string | null,
+): void {
+  const session = getUserSession(userId);
+  session.accessToken = accessToken;
+  session.refreshToken = refreshToken;
+  session.updatedAt = Date.now();
+}
+

@@ -70,6 +70,11 @@ export function getHelpMenu(senderName?: string): string {
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.menu*
+├─✦  *.finance* — buka Finance Manager
+├─✦  *.catat masuk/keluar <jumlah> <kategori>*
+├─✦  *.riwayat* — lihat transaksi
+├─✦  *.laporan* — ringkasan keuangan
+├─✦  *.hapus <id>* — hapus transaksi
 ├─✦  *.brat <teks>*
 ├─✦  *.sticker*
 ├─✦  *.iqc <teks>*

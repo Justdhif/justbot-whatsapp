@@ -3,6 +3,7 @@ import { setUserActiveMode } from '../infrastructure/store/session.store.js';
 import { handleMenuCommand } from './commands/menu.js';
 import { handleStickerCommand } from './commands/sticker.js';
 import { handleIqcCommand } from './commands/iqc.js';
+import { handleFinanceCommand } from './commands/finance.js';
 
 export async function handleWebhookActionOrMessage(
   from: string,
@@ -19,6 +20,23 @@ export async function handleWebhookActionOrMessage(
     const exitButtons = [{ id: ".menu", title: "📋 Buka Menu" }];
     await sendWhatsAppButtons(from, exitText, exitButtons, "🤖 MODE OFF");
     return true;
+  }
+
+  // Finance commands — selalu dicek (baik dalam mode finance maupun tidak)
+  const isFinanceCommand =
+    lower === '.finance' ||
+    lower === '.keuangan' ||
+    lower.startsWith('.catat ') ||
+    lower === '.riwayat' ||
+    lower === '.riwayat masuk' ||
+    lower === '.riwayat keluar' ||
+    lower === '.laporan' ||
+    lower === '.summary' ||
+    lower.startsWith('.hapus ');
+
+  if (isFinanceCommand) {
+    const isHandled = await handleFinanceCommand(from, userText, senderName);
+    if (isHandled) return true;
   }
 
   const isMenuHandled = await handleMenuCommand(from, userText, senderName);
@@ -38,3 +56,4 @@ export async function handleWebhookActionOrMessage(
 
   return false;
 }
+
