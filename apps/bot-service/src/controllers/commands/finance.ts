@@ -6,18 +6,75 @@ import {
   getUserSession,
   setUserActiveMode,
   setPendingAction,
-  setUserTokens,
 } from '../../infrastructure/store/session.store.js';
 import {
-  checkAccountExists,
-  registerUserWithName,
   resolveAccessToken,
+  registerUserWithName,
   apiGetTransactions,
   apiCreateTransaction,
   apiDeleteTransaction,
   apiGetFinanceSummary,
 } from '../../infrastructure/gateways/api-client.gateway.js';
+import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 import { logger } from '../../utils/logger.js';
+
+// ─── AI Transaction Parser ────────────────────────────────────────────────────
+
+interface ParsedTransaction {
+  type: 'income' | 'expense';
+  amount: number;
+  category: string;
+  description: string;
+  confidence: 'high' | 'medium' | 'low';
+  clarification?: string; // pesan jika AI tidak yakin
+}
+
+/**
+ * Gunakan Groq AI untuk mengekstrak data transaksi dari teks bebas.
+ * Return null jika AI tidak bisa memparse dengan confidence cukup.
+ */
+async function parseTransactionWithAI(
+  naturalText: string,
+): Promise<ParsedTransaction | null> {
+  const systemPrompt = `Kamu adalah asisten pencatat keuangan. Tugasmu adalah mengekstrak informasi transaksi keuangan dari teks bebas Bahasa Indonesia.
+
+Ekstrak informasi berikut:
+- type: "income" jika pemasukan/terima/dapat uang, "expense" jika pengeluaran/beli/bayar/habis uang
+- amount: jumlah uang dalam angka bulat (tanpa simbol atau titik/koma)
+- category: kategori singkat 1-2 kata (contoh: "makan", "transport", "belanja", "gaji", "hiburan", "kesehatan", "tagihan", "investasi", dll)
+- description: deskripsi singkat transaksi (maksimal 10 kata)
+- confidence: "high" jika jelas, "medium" jika perlu asumsi kecil, "low" jika banyak asumsi
+- clarification: (opsional) jika confidence low, berikan pertanyaan klarifikasi singkat
+
+Jawab HANYA dengan JSON valid, tanpa markdown, tanpa komentar. Format:
+{"type":"expense","amount":20000,"category":"makan","description":"nasi goreng 2 porsi","confidence":"high"}`;
+
+  try {
+    const raw = await askGroqAI(naturalText, systemPrompt);
+    // Ambil hanya bagian JSON dari response
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    const parsed = JSON.parse(jsonMatch[0]) as ParsedTransaction;
+
+    // Validasi field wajib
+    if (
+      !parsed.type ||
+      !['income', 'expense'].includes(parsed.type) ||
+      !parsed.amount ||
+      typeof parsed.amount !== 'number' ||
+      parsed.amount <= 0 ||
+      !parsed.category
+    ) {
+      return null;
+    }
+
+    return parsed;
+  } catch (err) {
+    logger.error({ err }, '❌ [Finance] AI parsing failed');
+    return null;
+  }
+}
 
 // ─── Formatter Helpers ────────────────────────────────────────────────────────
 
@@ -113,6 +170,30 @@ export async function handleFinanceCommand(
   // ── Intercept: Pending Action (multi-step conversation) ───────────────────
   if (session.pendingAction === 'awaiting:register:name') {
     return handleNameInput(from, trimmed, senderName);
+  }
+
+  // Intercept konfirmasi transaksi AI confidence-low
+  if (session.pendingAction?.startsWith('awaiting:catat:confirm:')) {
+    if (lower === '.konfirmasi' || lower === 'konfirmasi') {
+      const jsonStr = session.pendingAction.slice('awaiting:catat:confirm:'.length);
+      try {
+        const data = JSON.parse(jsonStr);
+        setPendingAction(from, null);
+        await sendWhatsAppMessage(from, '⏳ Menyimpan transaksi...');
+        return saveCatatTransaction(from, senderName, data.type, data.amount, data.category, data.description);
+      } catch {
+        setPendingAction(from, null);
+        await sendWhatsAppMessage(from, '❌ Data konfirmasi rusak. Silakan ulangi perintah .catat.');
+        return true;
+      }
+    } else if (lower === '.batal' || lower === 'batal') {
+      setPendingAction(from, null);
+      await sendWhatsAppMessage(from, '🚫 Transaksi dibatalkan. Ulangi perintah .catat dengan deskripsi yang lebih jelas.');
+      return true;
+    }
+    // User mengirim sesuatu yang lain saat menunggu konfirmasi → abaikan dan tanya lagi
+    await sendWhatsAppMessage(from, '⚠️ Balas *.konfirmasi* untuk menyimpan, atau *.batal* untuk membatalkan transaksi di atas.');
+    return true;
   }
 
   // ── .finance / .keuangan ─────────────────────────────────────────────────
@@ -251,6 +332,43 @@ Mulai catat keuangan kamu sekarang.`;
   return true;
 }
 
+// ─── Reusable Save Helper ─────────────────────────────────────────────────────
+
+async function saveCatatTransaction(
+  from: string,
+  senderName: string,
+  type: 'income' | 'expense',
+  amount: number,
+  category: string,
+  description?: string,
+): Promise<boolean> {
+  try {
+    const tx = await apiCreateTransaction(from, senderName, {
+      type, amount, category, description,
+      date: new Date().toISOString().split('T')[0],
+    });
+
+    const icon = type === 'income' ? '📈' : '📉';
+    const label = type === 'income' ? 'PEMASUKAN' : 'PENGELUARAN';
+    const replyText = `✅ *Transaksi Dicatat!*
+══════════════════════════════
+${icon} *${label}*
+💰 Jumlah    : ${formatRupiah(amount)}
+🏷️ Kategori : ${category}${description ? `\n📝 Deskripsi: ${description}` : ''}
+📅 Tanggal  : ${formatDate(tx.date ?? new Date().toISOString())}
+🆔 ID       : \`${tx.id.slice(0, 8)}...\`
+══════════════════════════════
+_Gunakan \`.hapus ${tx.id.slice(0, 8)}\` untuk membatalkan transaksi ini._`;
+
+    await sendWhatsAppButtons(from, replyText,
+      [{ id: '.riwayat', title: '📋 Lihat Riwayat' }, { id: '.laporan', title: '📊 Laporan' }],
+      `${icon} TRANSAKSI DICATAT`);
+  } catch (err: any) {
+    await sendWhatsAppMessage(from, `❌ Gagal menyimpan: ${err?.response?.data?.message ?? err?.message ?? 'Coba lagi.'}`);
+  }
+  return true;
+}
+
 // ─── Authenticated Commands ───────────────────────────────────────────────────
 
 async function handleAuthenticatedCommand(
@@ -263,55 +381,57 @@ async function handleAuthenticatedCommand(
   // ── .catat ──────────────────────────────────────────────────────────────
   if (lower.startsWith('.catat ')) {
     const parts = trimmed.slice(7).trim();
-    const match = parts.match(
+
+    // ── Fast Path: Format strict masuk/keluar ─────────────────────────────
+    const strictMatch = parts.match(
       /^(masuk|keluar)\s+(\d[\d.,]*)\s+(\S+)(?:\s+"([^"]*)")?(?:\s+(.*))?/i,
     );
 
-    if (!match) {
+    if (strictMatch) {
+      const type = strictMatch[1].toLowerCase() === 'masuk' ? 'income' : 'expense';
+      const amount = parseInt(strictMatch[2].replace(/[.,]/g, ''), 10);
+      const category = strictMatch[3];
+      const description = strictMatch[4] ?? strictMatch[5] ?? undefined;
+
+      if (isNaN(amount) || amount <= 0) {
+        await sendWhatsAppMessage(from, '❌ Jumlah tidak valid. Masukkan angka yang benar.');
+        return true;
+      }
+
+      await sendWhatsAppMessage(from, '⏳ Menyimpan transaksi...');
+      return saveCatatTransaction(from, senderName, type, amount, category, description);
+    }
+
+    // ── Smart Path: AI Natural Language Parsing ───────────────────────────
+    await sendWhatsAppMessage(from, '🤖 _Memproses catatanmu dengan AI..._');
+
+    const parsed = await parseTransactionWithAI(parts);
+
+    if (!parsed) {
       await sendWhatsAppMessage(
         from,
-        `❌ Format tidak valid.\n\n*Contoh yang benar:*\n• \`.catat masuk 500000 gaji "gaji agustus"\`\n• \`.catat keluar 25000 makan\``,
+        `❌ Maaf, saya tidak bisa memahami catatanmu.\n\n*Coba format yang lebih jelas:*\n• \`.catat keluar 20000 makan "nasi goreng 2 porsi"\`\n• \`.catat masuk 500000 gaji\`\n\nAtau deskripsikan ulang dengan menyebutkan *jumlah uang* yang lebih jelas.`,
       );
       return true;
     }
 
-    const type = match[1].toLowerCase() === 'masuk' ? 'income' : 'expense';
-    const amount = parseInt(match[2].replace(/[.,]/g, ''), 10);
-    const category = match[3];
-    const description = match[4] ?? match[5] ?? undefined;
+    const { type, amount, category, description, confidence, clarification } = parsed;
+    const icon = type === 'income' ? '📈' : '📉';
+    const label = type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+    const confidenceIcon = confidence === 'high' ? '✅' : confidence === 'medium' ? '🟡' : '🔴';
 
-    if (isNaN(amount) || amount <= 0) {
-      await sendWhatsAppMessage(from, '❌ Jumlah tidak valid. Masukkan angka yang benar.');
+    // Jika confidence low, tampilkan konfirmasi sebelum simpan
+    if (confidence === 'low') {
+      const confirmText = `${confidenceIcon} *AI kurang yakin dengan catatan ini:*\n\n${clarification ?? 'Tolong periksa detail berikut:'}\n\n*Hasil deteksi:*\n├─ Tipe    : ${label}\n├─ Jumlah  : ${formatRupiah(amount)}\n├─ Kategori: ${category}\n╰─ Deskripsi: ${description || '-'}\n\nKetik *.konfirmasi* untuk menyimpan, atau ulangi perintah .catat dengan deskripsi yang lebih jelas.`;
+      await sendWhatsAppMessage(from, confirmText);
+      // Simpan data di pending action agar bisa dikonfirmasi
+      setPendingAction(from, `awaiting:catat:confirm:${JSON.stringify({ type, amount, category, description })}`);
       return true;
     }
 
-    await sendWhatsAppMessage(from, '⏳ Menyimpan transaksi...');
-
-    try {
-      const tx = await apiCreateTransaction(from, senderName, {
-        type, amount, category, description,
-        date: new Date().toISOString().split('T')[0],
-      });
-
-      const icon = type === 'income' ? '📈' : '📉';
-      const label = type === 'income' ? 'PEMASUKAN' : 'PENGELUARAN';
-      const replyText = `✅ *Transaksi Dicatat!*
-══════════════════════════════
-${icon} *${label}*
-💰 Jumlah    : ${formatRupiah(amount)}
-🏷️ Kategori : ${category}${description ? `\n📝 Deskripsi: ${description}` : ''}
-📅 Tanggal  : ${formatDate(tx.date ?? new Date().toISOString())}
-🆔 ID       : \`${tx.id.slice(0, 8)}...\`
-══════════════════════════════
-_Gunakan \`.hapus ${tx.id.slice(0, 8)}\` untuk membatalkan transaksi ini._`;
-
-      await sendWhatsAppButtons(from, replyText,
-        [{ id: '.riwayat', title: '📋 Lihat Riwayat' }, { id: '.laporan', title: '📊 Laporan' }],
-        `${icon} TRANSAKSI DICATAT`);
-    } catch (err: any) {
-      await sendWhatsAppMessage(from, `❌ Gagal menyimpan: ${err?.response?.data?.message ?? err?.message ?? 'Coba lagi.'}`);
-    }
-    return true;
+    // Confidence high/medium → langsung simpan
+    await sendWhatsAppMessage(from, `${confidenceIcon} _AI mendeteksi: ${label} ${formatRupiah(amount)} • ${category}_\n⏳ Menyimpan...`);
+    return saveCatatTransaction(from, senderName, type, amount, category, description);
   }
 
   // ── .riwayat ────────────────────────────────────────────────────────────

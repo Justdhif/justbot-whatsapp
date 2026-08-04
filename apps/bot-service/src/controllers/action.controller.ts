@@ -22,9 +22,11 @@ export async function handleWebhookActionOrMessage(
   }
 
   // ── Intercept: Pending Action ────────────────────────────────────────────
-  // Jika user sedang dalam conversation flow (misal: menunggu input nama register),
-  // langsung teruskan ke handler yang relevan tanpa melalui perintah lain.
-  if (session.pendingAction?.startsWith('awaiting:register:')) {
+  // Jika user sedang dalam conversation flow, langsung teruskan ke handler.
+  if (
+    session.pendingAction?.startsWith('awaiting:register:') ||
+    session.pendingAction?.startsWith('awaiting:catat:')
+  ) {
     return handleFinanceCommand(from, userText, senderName);
   }
 
