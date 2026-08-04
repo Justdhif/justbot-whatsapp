@@ -26,7 +26,9 @@ export async function handleWebhookActionOrMessage(
   // Jika user sedang dalam conversation flow, teruskan ke handler yang relevan.
   if (
     session.pendingAction?.startsWith('awaiting:register:') ||
-    session.pendingAction?.startsWith('awaiting:catat:')
+    session.pendingAction?.startsWith('awaiting:catat:') ||
+    session.pendingAction?.startsWith('awaiting:edit:') ||
+    session.pendingAction?.startsWith('awaiting:delete:')
   ) {
     // Jika mode reminder, register flow dikembalikan ke reminder
     if (session.activeMode === 'reminder') {
@@ -73,8 +75,13 @@ export async function handleWebhookActionOrMessage(
     lower === '.laporan' ||
     lower === '.summary' ||
     lower.startsWith('.hapus ') ||
+    lower.startsWith('.edit ') ||
     lower === 'catat:confirm' ||
     lower === 'catat:cancel' ||
+    lower === 'edit:confirm' ||
+    lower === 'edit:cancel' ||
+    lower === 'delete:confirm' ||
+    lower === 'delete:cancel' ||
     lower === 'auth:register';
 
   if (isFinanceCommand) {

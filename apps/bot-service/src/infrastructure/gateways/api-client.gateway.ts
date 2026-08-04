@@ -219,6 +219,20 @@ export async function apiCreateTransaction(
   });
 }
 
+export async function apiUpdateTransaction(
+  phoneNumber: string,
+  displayName: string | undefined,
+  transactionId: string,
+  payload: { type?: 'income' | 'expense'; amount?: number; category?: string; description?: string },
+): Promise<Transaction> {
+  return authRequest(phoneNumber, displayName, async (token) => {
+    const res = await getClient().patch(`/api/finance/transactions/${transactionId}`, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data?.data ?? res.data;
+  });
+}
+
 export async function apiDeleteTransaction(
   phoneNumber: string,
   displayName: string | undefined,
