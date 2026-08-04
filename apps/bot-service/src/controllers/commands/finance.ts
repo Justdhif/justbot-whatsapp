@@ -2,13 +2,22 @@ import {
   sendWhatsAppMessage,
   sendWhatsAppButtons,
 } from '../../infrastructure/gateways/whatsapp.gateway.js';
-import { setUserActiveMode } from '../../infrastructure/store/session.store.js';
 import {
+  getUserSession,
+  setUserActiveMode,
+  setPendingAction,
+  setUserTokens,
+} from '../../infrastructure/store/session.store.js';
+import {
+  checkAccountExists,
+  registerUserWithName,
+  resolveAccessToken,
   apiGetTransactions,
   apiCreateTransaction,
   apiDeleteTransaction,
   apiGetFinanceSummary,
 } from '../../infrastructure/gateways/api-client.gateway.js';
+import { logger } from '../../utils/logger.js';
 
 // ─── Formatter Helpers ────────────────────────────────────────────────────────
 
@@ -28,19 +37,69 @@ function formatDate(dateStr: string): string {
   });
 }
 
-// ─── Finance Command Handler ──────────────────────────────────────────────────
+// ─── Auth Helpers ─────────────────────────────────────────────────────────────
 
 /**
- * Menangani semua perintah finance CRUD.
- * Trigger: userText dimulai dengan `.finance` atau alias perintah keuangan.
- *
- * Daftar Perintah:
- *   .finance              → masuk mode finance + tampilkan menu
- *   .catat masuk <jumlah> <kategori> [deskripsi]
- *   .catat keluar <jumlah> <kategori> [deskripsi]
- *   .riwayat [masuk|keluar]
- *   .laporan              → ringkasan keuangan
- *   .hapus <id>           → hapus transaksi
+ * Tampilkan menu Finance Manager lengkap setelah user terautentikasi.
+ */
+async function sendFinanceMenu(from: string, displayName?: string): Promise<void> {
+  const greet = displayName ? ` ${displayName}` : '';
+  const menuText = `╭────────────────────────────
+│  💰 *FINANCE MANAGER* 💰
+╰────────────────────────────
+Halo${greet}! Mode keuangan aktif. ✅
+
+📝 *Perintah yang tersedia:*
+
+├─✦ *.catat masuk <jumlah> <kategori>* [deskripsi]
+│   _Contoh: \`.catat masuk 500000 gaji "gaji agustus"\`_
+│
+├─✦ *.catat keluar <jumlah> <kategori>* [deskripsi]
+│   _Contoh: \`.catat keluar 35000 makan "makan siang"\`_
+│
+├─✦ *.riwayat* — 10 transaksi terakhir
+├─✦ *.riwayat masuk* / *.riwayat keluar* — filter tipe
+├─✦ *.laporan* — ringkasan total keuangan
+├─✦ *.hapus <id>* — hapus transaksi berdasarkan ID
+╰────────────────────────────
+💡 _Atau chat bebas untuk konsultasi keuangan dengan AI._`;
+
+  const buttons = [
+    { id: '.laporan', title: '📊 Laporan' },
+    { id: '.riwayat', title: '📋 Riwayat' },
+    { id: 'action:exit', title: '🔴 Exit' },
+  ];
+  await sendWhatsAppButtons(from, menuText, buttons, '💰 FINANCE MANAGER');
+}
+
+/**
+ * Tampilkan pesan sambutan untuk user yang belum punya akun,
+ * dengan tombol "Mulai Daftar".
+ */
+async function sendRegisterPrompt(from: string): Promise<void> {
+  const welcomeText = `╭────────────────────────────
+│  💰 *FINANCE MANAGER* 💰
+╰────────────────────────────
+Halo! Kamu belum memiliki akun Finance Manager.
+
+Dengan mendaftar, kamu bisa:
+├─✦ Mencatat pemasukan & pengeluaran
+├─✦ Melihat riwayat transaksi
+├─✦ Mendapat laporan keuangan otomatis
+╰────────────────────────────
+Tap tombol di bawah untuk mulai daftar! 👇`;
+
+  const buttons = [
+    { id: 'finance:register', title: '📝 Daftar Sekarang' },
+  ];
+  await sendWhatsAppButtons(from, welcomeText, buttons, '💰 SELAMAT DATANG');
+}
+
+// ─── Main Finance Command Handler ─────────────────────────────────────────────
+
+/**
+ * Menangani semua perintah finance.
+ * Return true jika perintah ditangani, false jika tidak relevan.
  */
 export async function handleFinanceCommand(
   from: string,
@@ -49,45 +108,161 @@ export async function handleFinanceCommand(
 ): Promise<boolean> {
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
+  const session = getUserSession(from);
 
-  // ── .finance ──────────────────────────────────────────────────────────────
+  // ── Intercept: Pending Action (multi-step conversation) ───────────────────
+  if (session.pendingAction === 'awaiting:register:name') {
+    return handleNameInput(from, trimmed, senderName);
+  }
+
+  // ── .finance / .keuangan ─────────────────────────────────────────────────
   if (lower === '.finance' || lower === '.keuangan') {
     setUserActiveMode(from, 'finance');
 
-    const menuText = `╭────────────────────────────
-│  💰 *FINANCE MANAGER* 💰
-╰────────────────────────────
-Halo${senderName ? ' ' + senderName : ''}! Mode keuangan aktif.
+    // Cek apakah sudah ada token di session (sudah pernah login sebelumnya)
+    const token = await resolveAccessToken(from, senderName);
 
-📝 *Perintah yang tersedia:*
+    if (token) {
+      // Sudah terautentikasi → tampilkan menu langsung
+      await sendFinanceMenu(from, senderName);
+    } else {
+      // Belum punya akun → tampilkan prompt daftar
+      await sendRegisterPrompt(from);
+    }
+    return true;
+  }
 
-├─✦ *.catat masuk <jumlah> <kategori>* [deskripsi]
-│   Contoh: \`.catat masuk 500000 gaji "gaji bulan agustus"\`
-│
-├─✦ *.catat keluar <jumlah> <kategori>* [deskripsi]
-│   Contoh: \`.catat keluar 35000 makan "makan siang"\`
-│
-├─✦ *.riwayat* — lihat 10 transaksi terakhir
-├─✦ *.riwayat masuk* — khusus pemasukan
-├─✦ *.riwayat keluar* — khusus pengeluaran
-├─✦ *.laporan* — ringkasan total keuangan
-├─✦ *.hapus <id>* — hapus transaksi berdasarkan ID
-╰────────────────────────────
-💡 _Atau chat biasa untuk konsultasi keuangan dengan AI._`;
+  // ── Button: finance:register ──────────────────────────────────────────────
+  if (lower === 'finance:register') {
+    setPendingAction(from, 'awaiting:register:name');
+    await sendWhatsAppMessage(
+      from,
+      `📝 *Langkah 1 dari 1*\n══════════════════════════════\nSilakan ketik *nama panggilan* kamu:\n\n_Nama ini akan digunakan sebagai identitas akun Finance Manager kamu._`,
+    );
+    return true;
+  }
+
+  // ── Finance commands — hanya jika sudah terautentikasi ───────────────────
+  const isFinanceCommand =
+    lower.startsWith('.catat ') ||
+    lower === '.riwayat' ||
+    lower === '.riwayat masuk' ||
+    lower === '.riwayat keluar' ||
+    lower === '.laporan' ||
+    lower === '.summary' ||
+    lower.startsWith('.hapus ');
+
+  if (isFinanceCommand) {
+    // Validasi auth sebelum aksi apapun
+    const token = await resolveAccessToken(from, senderName);
+    if (!token) {
+      await sendWhatsAppMessage(
+        from,
+        `🔒 Kamu belum punya akun Finance Manager.\nKetik *.finance* untuk mulai mendaftar.`,
+      );
+      return true;
+    }
+
+    return handleAuthenticatedCommand(from, lower, trimmed, senderName);
+  }
+
+  return false;
+}
+
+// ─── Multi-Step: Handle Name Input ───────────────────────────────────────────
+
+async function handleNameInput(
+  from: string,
+  nameInput: string,
+  senderName: string,
+): Promise<boolean> {
+  const displayName = nameInput.trim();
+
+  // Validasi nama
+  if (!displayName || displayName.length < 2 || displayName.length > 50) {
+    await sendWhatsAppMessage(
+      from,
+      `❌ Nama tidak valid. Masukkan nama panggilan yang terdiri dari 2-50 karakter.\n\nContoh: \`Nadhif\` atau \`Budi Santoso\``,
+    );
+    return true;
+  }
+
+  // Karakter yang tidak boleh ada di nama
+  if (/[<>{}[\]\\|^~`]/.test(displayName)) {
+    await sendWhatsAppMessage(from, `❌ Nama mengandung karakter yang tidak diperbolehkan. Coba lagi.`);
+    return true;
+  }
+
+  await sendWhatsAppMessage(from, `⏳ Mendaftarkan akun atas nama *${displayName}*...`);
+
+  try {
+    const registered = await registerUserWithName(from, displayName);
+    if (!registered) {
+      await sendWhatsAppMessage(
+        from,
+        `❌ Gagal mendaftarkan akun. Coba lagi beberapa saat.\n\nKetik *.finance* untuk mencoba ulang.`,
+      );
+      setPendingAction(from, null);
+      return true;
+    }
+
+    // Login setelah register
+    const { resolveAccessToken: resolve } = await import('../../infrastructure/gateways/api-client.gateway.js');
+    const token = await resolve(from, displayName);
+
+    if (!token) {
+      await sendWhatsAppMessage(
+        from,
+        `⚠️ Akun berhasil dibuat, tapi gagal login otomatis. Ketik *.finance* untuk masuk.`,
+      );
+      setPendingAction(from, null);
+      return true;
+    }
+
+    // Selesai! Clear pending action dan tampilkan menu
+    setPendingAction(from, null);
+    setUserActiveMode(from, 'finance');
+
+    const successText = `✅ *Akun Berhasil Dibuat!*
+══════════════════════════════
+👤 Nama   : *${displayName}*
+📱 Nomor  : +${from}
+══════════════════════════════
+Selamat datang di Finance Manager! 🎉
+Mulai catat keuangan kamu sekarang.`;
 
     const buttons = [
       { id: '.laporan', title: '📊 Laporan' },
       { id: '.riwayat', title: '📋 Riwayat' },
       { id: 'action:exit', title: '🔴 Exit' },
     ];
-    await sendWhatsAppButtons(from, menuText, buttons, '💰 FINANCE MANAGER');
-    return true;
+    await sendWhatsAppButtons(from, successText, buttons, '💰 FINANCE MANAGER');
+
+    logger.info({ from, displayName }, '✅ [Finance] New user registered via WA');
+  } catch (err: any) {
+    logger.error({ err, from }, '❌ [Finance] Registration error');
+    await sendWhatsAppMessage(
+      from,
+      `❌ Terjadi kesalahan: ${err?.message ?? 'Coba lagi.'}\n\nKetik *.finance* untuk mencoba ulang.`,
+    );
+    setPendingAction(from, null);
   }
 
-  // ── .catat ────────────────────────────────────────────────────────────────
+  return true;
+}
+
+// ─── Authenticated Commands ───────────────────────────────────────────────────
+
+async function handleAuthenticatedCommand(
+  from: string,
+  lower: string,
+  trimmed: string,
+  senderName: string,
+): Promise<boolean> {
+
+  // ── .catat ──────────────────────────────────────────────────────────────
   if (lower.startsWith('.catat ')) {
-    const parts = trimmed.slice(7).trim(); // hapus ".catat "
-    // Format: <masuk|keluar> <jumlah> <kategori> [deskripsi dalam tanda kutip]
+    const parts = trimmed.slice(7).trim();
     const match = parts.match(
       /^(masuk|keluar)\s+(\d[\d.,]*)\s+(\S+)(?:\s+"([^"]*)")?(?:\s+(.*))?/i,
     );
@@ -95,15 +270,13 @@ Halo${senderName ? ' ' + senderName : ''}! Mode keuangan aktif.
     if (!match) {
       await sendWhatsAppMessage(
         from,
-        `❌ Format tidak valid.\n\nContoh yang benar:\n\`.catat masuk 500000 gaji "gaji bulan ini"\`\n\`.catat keluar 25000 makan\``,
+        `❌ Format tidak valid.\n\n*Contoh yang benar:*\n• \`.catat masuk 500000 gaji "gaji agustus"\`\n• \`.catat keluar 25000 makan\``,
       );
       return true;
     }
 
-    const direction = match[1].toLowerCase();
-    const type = direction === 'masuk' ? 'income' : 'expense';
-    const amountStr = match[2].replace(/[.,]/g, '');
-    const amount = parseInt(amountStr, 10);
+    const type = match[1].toLowerCase() === 'masuk' ? 'income' : 'expense';
+    const amount = parseInt(match[2].replace(/[.,]/g, ''), 10);
     const category = match[3];
     const description = match[4] ?? match[5] ?? undefined;
 
@@ -116,51 +289,44 @@ Halo${senderName ? ' ' + senderName : ''}! Mode keuangan aktif.
 
     try {
       const tx = await apiCreateTransaction(from, senderName, {
-        type,
-        amount,
-        category,
-        description,
+        type, amount, category, description,
         date: new Date().toISOString().split('T')[0],
       });
 
       const icon = type === 'income' ? '📈' : '📉';
       const label = type === 'income' ? 'PEMASUKAN' : 'PENGELUARAN';
-      const replyText = `✅ *Transaksi Tersimpan!*
+      const replyText = `✅ *Transaksi Dicatat!*
 ══════════════════════════════
 ${icon} *${label}*
-💰 Jumlah : ${formatRupiah(amount)}
-🏷️ Kategori: ${category}${description ? `\n📝 Deskripsi: ${description}` : ''}
-📅 Tanggal : ${formatDate(tx.date ?? new Date().toISOString())}
-🆔 ID      : \`${tx.id.slice(0, 8)}...\`
+💰 Jumlah    : ${formatRupiah(amount)}
+🏷️ Kategori : ${category}${description ? `\n📝 Deskripsi: ${description}` : ''}
+📅 Tanggal  : ${formatDate(tx.date ?? new Date().toISOString())}
+🆔 ID       : \`${tx.id.slice(0, 8)}...\`
 ══════════════════════════════
-_Gunakan .hapus ${tx.id.slice(0, 8)} untuk menghapus transaksi ini._`;
+_Gunakan \`.hapus ${tx.id.slice(0, 8)}\` untuk membatalkan transaksi ini._`;
 
-      const buttons = [
-        { id: '.riwayat', title: '📋 Lihat Riwayat' },
-        { id: '.laporan', title: '📊 Laporan' },
-      ];
-      await sendWhatsAppButtons(from, replyText, buttons, `${icon} TRANSAKSI DICATAT`);
+      await sendWhatsAppButtons(from, replyText,
+        [{ id: '.riwayat', title: '📋 Lihat Riwayat' }, { id: '.laporan', title: '📊 Laporan' }],
+        `${icon} TRANSAKSI DICATAT`);
     } catch (err: any) {
-      await sendWhatsAppMessage(from, `❌ Gagal menyimpan: ${err?.message ?? 'Coba lagi.'}`);
+      await sendWhatsAppMessage(from, `❌ Gagal menyimpan: ${err?.response?.data?.message ?? err?.message ?? 'Coba lagi.'}`);
     }
     return true;
   }
 
-  // ── .riwayat ──────────────────────────────────────────────────────────────
+  // ── .riwayat ────────────────────────────────────────────────────────────
   if (lower === '.riwayat' || lower === '.riwayat masuk' || lower === '.riwayat keluar') {
-    const filterType = lower === '.riwayat masuk'
-      ? 'income'
-      : lower === '.riwayat keluar'
-        ? 'expense'
-        : undefined;
-
+    const filterType = lower === '.riwayat masuk' ? 'income' : lower === '.riwayat keluar' ? 'expense' : undefined;
     await sendWhatsAppMessage(from, '⏳ Mengambil riwayat transaksi...');
 
     try {
       const txs = await apiGetTransactions(from, senderName, { type: filterType, limit: 10 });
 
       if (!txs || txs.length === 0) {
-        await sendWhatsAppMessage(from, '📭 Belum ada transaksi yang tercatat.');
+        await sendWhatsAppButtons(from,
+          '📭 Belum ada transaksi yang tercatat.',
+          [{ id: '.catat masuk 0 contoh', title: '➕ Catat Transaksi' }],
+          '📋 RIWAYAT KOSONG');
         return true;
       }
 
@@ -170,37 +336,24 @@ _Gunakan .hapus ${tx.id.slice(0, 8)} untuk menghapus transaksi ini._`;
         return `${i + 1}. ${icon} *${sign}${formatRupiah(tx.amount)}*\n   🏷️ ${tx.category}${tx.description ? ` — ${tx.description}` : ''}\n   📅 ${formatDate(tx.date)}\n   🆔 \`${tx.id.slice(0, 8)}\``;
       });
 
-      const title = filterType === 'income'
-        ? '📈 RIWAYAT PEMASUKAN'
-        : filterType === 'expense'
-          ? '📉 RIWAYAT PENGELUARAN'
-          : '📋 RIWAYAT TRANSAKSI';
+      const title = filterType === 'income' ? '📈 RIWAYAT PEMASUKAN' : filterType === 'expense' ? '📉 RIWAYAT PENGELUARAN' : '📋 RIWAYAT TRANSAKSI';
+      const replyText = `╭────────────────────────────\n│  ${title}\n╰────────────────────────────\n${lines.join('\n──────────────────\n')}\n══════════════════════════════\n_Gunakan .hapus <8 digit ID> untuk menghapus._`;
 
-      const replyText = `╭────────────────────────────
-│  ${title}
-╰────────────────────────────
-${lines.join('\n──────────────────────────\n')}
-══════════════════════════════
-_Gunakan .hapus <8 digit ID> untuk menghapus._`;
-
-      const buttons = [
-        { id: '.laporan', title: '📊 Laporan' },
-        { id: '.finance', title: '💰 Menu Finance' },
-      ];
-      await sendWhatsAppButtons(from, replyText, buttons, title);
+      await sendWhatsAppButtons(from, replyText,
+        [{ id: '.laporan', title: '📊 Laporan' }, { id: '.finance', title: '💰 Menu Finance' }],
+        title);
     } catch (err: any) {
       await sendWhatsAppMessage(from, `❌ Gagal mengambil riwayat: ${err?.message ?? 'Coba lagi.'}`);
     }
     return true;
   }
 
-  // ── .laporan ──────────────────────────────────────────────────────────────
+  // ── .laporan ────────────────────────────────────────────────────────────
   if (lower === '.laporan' || lower === '.summary') {
     await sendWhatsAppMessage(from, '⏳ Mengambil laporan keuangan...');
 
     try {
       const summary = await apiGetFinanceSummary(from, senderName);
-
       const balance = summary.balance;
       const balanceIcon = balance >= 0 ? '🟢' : '🔴';
       const balanceLabel = balance >= 0 ? 'Surplus' : 'Defisit';
@@ -211,23 +364,21 @@ _Gunakan .hapus <8 digit ID> untuk menghapus._`;
 📈 *Total Pemasukan* : ${formatRupiah(summary.totalIncome)}
 📉 *Total Pengeluaran*: ${formatRupiah(summary.totalExpense)}
 ──────────────────────────
-${balanceIcon} *${balanceLabel}*     : ${formatRupiah(Math.abs(balance))}
+${balanceIcon} *${balanceLabel}*      : ${formatRupiah(Math.abs(balance))}
 📑 Jumlah Transaksi : ${summary.transactionCount}
 ══════════════════════════════
-${balance >= 0 ? '✨ Keuangan kamu sehat!' : '⚠️ Pengeluaran melebihi pemasukan!'}`;
+${balance >= 0 ? '✨ Keuangan kamu sehat! Pertahankan!' : '⚠️ Pengeluaran melebihi pemasukan!'}`;
 
-      const buttons = [
-        { id: '.riwayat', title: '📋 Lihat Riwayat' },
-        { id: '.finance', title: '💰 Menu Finance' },
-      ];
-      await sendWhatsAppButtons(from, replyText, buttons, '📊 LAPORAN KEUANGAN');
+      await sendWhatsAppButtons(from, replyText,
+        [{ id: '.riwayat', title: '📋 Lihat Riwayat' }, { id: '.finance', title: '💰 Menu Finance' }],
+        '📊 LAPORAN KEUANGAN');
     } catch (err: any) {
       await sendWhatsAppMessage(from, `❌ Gagal mengambil laporan: ${err?.message ?? 'Coba lagi.'}`);
     }
     return true;
   }
 
-  // ── .hapus ────────────────────────────────────────────────────────────────
+  // ── .hapus ──────────────────────────────────────────────────────────────
   if (lower.startsWith('.hapus ')) {
     const idPart = trimmed.slice(7).trim();
     if (!idPart) {
@@ -238,12 +389,11 @@ ${balance >= 0 ? '✨ Keuangan kamu sehat!' : '⚠️ Pengeluaran melebihi pemas
     await sendWhatsAppMessage(from, '⏳ Menghapus transaksi...');
 
     try {
-      // Ambil riwayat, cari transaksi yang ID-nya cocok (partial match 8 char pertama)
       const txs = await apiGetTransactions(from, senderName, { limit: 50 });
       const target = txs.find((tx) => tx.id.startsWith(idPart));
 
       if (!target) {
-        await sendWhatsAppMessage(from, `❌ Transaksi dengan ID \`${idPart}\` tidak ditemukan.\nGunakan .riwayat untuk melihat daftar ID transaksi.`);
+        await sendWhatsAppMessage(from, `❌ Transaksi dengan ID \`${idPart}\` tidak ditemukan.\nGunakan *.riwayat* untuk melihat daftar ID.`);
         return true;
       }
 
@@ -252,7 +402,7 @@ ${balance >= 0 ? '✨ Keuangan kamu sehat!' : '⚠️ Pengeluaran melebihi pemas
       const icon = target.type === 'income' ? '📈' : '📉';
       await sendWhatsAppMessage(
         from,
-        `✅ *Transaksi Dihapus!*\n${icon} ${formatRupiah(target.amount)} — ${target.category}${target.description ? ` (${target.description})` : ''} berhasil dihapus.`,
+        `✅ *Transaksi Dihapus!*\n${icon} ${formatRupiah(target.amount)} — ${target.category}${target.description ? ` (${target.description})` : ''} telah dihapus.`,
       );
     } catch (err: any) {
       await sendWhatsAppMessage(from, `❌ Gagal menghapus: ${err?.message ?? 'Coba lagi.'}`);

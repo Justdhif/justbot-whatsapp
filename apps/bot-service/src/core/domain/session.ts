@@ -8,6 +8,11 @@ export interface UserSession {
   lastImageCaption?: string | null;
   accessToken?: string | null;
   refreshToken?: string | null;
+  /** 
+   * Pending action — menunggu input user untuk langkah berikutnya.
+   * Contoh: 'awaiting:register:name' menunggu user mengetik nama mereka.
+   */
+  pendingAction?: string | null;
 }
 
 export interface ModuleDetail {

@@ -87,9 +87,32 @@ async function refreshTokens(refreshToken: string): Promise<{ accessToken: strin
 // ─── Authenticated Token Resolver ─────────────────────────────────────────────
 
 /**
+ * Cek apakah nomor WA ini sudah memiliki akun di backend.
+ * Return true jika login berhasil (akun ada), false jika belum.
+ */
+export async function checkAccountExists(phoneNumber: string): Promise<boolean> {
+  const result = await loginUser(phoneNumber);
+  return result !== null;
+}
+
+/**
+ * Daftarkan user baru dengan nama yang sudah dikonfirmasi dari percakapan WA.
+ * Return true jika berhasil, false jika gagal.
+ */
+export async function registerUserWithName(
+  phoneNumber: string,
+  displayName: string,
+): Promise<boolean> {
+  return registerUser(phoneNumber, displayName);
+}
+
+/**
  * Pastikan user memiliki accessToken yang valid di session.
- * Urutan: cek session → refresh jika perlu → login → register & login.
- * Return accessToken yang valid, atau null jika semua gagal.
+ * Urutan: cek session → refresh jika perlu → login (silent).
+ * CATATAN: Fungsi ini TIDAK akan auto-register.
+ *          Panggil checkAccountExists + registerUserWithName + resolveAccessToken secara manual
+ *          jika user belum terdaftar.
+ * Return accessToken yang valid, atau null jika gagal login.
  */
 export async function resolveAccessToken(
   phoneNumber: string,
@@ -97,10 +120,10 @@ export async function resolveAccessToken(
 ): Promise<string | null> {
   const session = getUserSession(phoneNumber);
 
-  // 1. Sudah ada token di session, coba gunakan langsung
+  // 1. Sudah ada token di session
   if (session.accessToken) return session.accessToken;
 
-  // 2. Ada refreshToken, coba refresh
+  // 2. Ada refreshToken → coba refresh
   if (session.refreshToken) {
     const tokens = await refreshTokens(session.refreshToken);
     if (tokens) {
@@ -109,23 +132,14 @@ export async function resolveAccessToken(
     }
   }
 
-  // 3. Coba login
+  // 3. Coba login silent (akun sudah ada sebelumnya)
   const loginResult = await loginUser(phoneNumber);
   if (loginResult) {
     setUserTokens(phoneNumber, loginResult.accessToken, loginResult.refreshToken);
     return loginResult.accessToken;
   }
 
-  // 4. User belum terdaftar → register dulu lalu login
-  const registered = await registerUser(phoneNumber, displayName);
-  if (!registered) return null;
-
-  const loginAfterRegister = await loginUser(phoneNumber);
-  if (loginAfterRegister) {
-    setUserTokens(phoneNumber, loginAfterRegister.accessToken, loginAfterRegister.refreshToken);
-    return loginAfterRegister.accessToken;
-  }
-
+  // Akun tidak ada → return null (perlu registrasi dulu via conversation flow)
   return null;
 }
 

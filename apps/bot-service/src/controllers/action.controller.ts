@@ -14,6 +14,13 @@ export async function handleWebhookActionOrMessage(
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
 
+  // ── Intercept: Pending Action ────────────────────────────────────────────
+  // Jika user sedang dalam conversation flow (misal: menunggu input nama register),
+  // langsung teruskan ke handler yang relevan tanpa melalui perintah lain.
+  if (session.pendingAction?.startsWith('awaiting:register:')) {
+    return handleFinanceCommand(from, userText, senderName);
+  }
+
   if (lower === "action:exit" || lower === ".exit") {
     setUserActiveMode(from, null);
     const exitText = `🔴 *MODE DIMATIKAN*\n══════════════════════════════\nAnda telah keluar dari mode khusus. Silakan obrolkan apa saja atau ketik \`.menu\` untuk memilih modul baru.`;

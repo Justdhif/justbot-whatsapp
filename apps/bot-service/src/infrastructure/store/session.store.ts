@@ -15,6 +15,7 @@ export function getUserSession(userId: string): UserSession {
       lastImageCaption: null,
       accessToken: null,
       refreshToken: null,
+      pendingAction: null,
     };
   }
   return userSessions[userId];
@@ -23,6 +24,12 @@ export function getUserSession(userId: string): UserSession {
 export function setUserActiveMode(userId: string, mode: string | null): void {
   const session = getUserSession(userId);
   session.activeMode = mode;
+  session.updatedAt = Date.now();
+}
+
+export function setPendingAction(userId: string, action: string | null): void {
+  const session = getUserSession(userId);
+  session.pendingAction = action;
   session.updatedAt = Date.now();
 }
 
