@@ -6,6 +6,7 @@ import { handleIqcCommand } from './commands/iqc.js';
 import { handleFinanceCommand } from './commands/finance.js';
 import { handleReminderCommand } from './commands/reminder.js';
 import { handleLoginCommand } from './commands/login.js';
+import { classifyTargetModule } from './commands/general.js';
 
 export async function handleWebhookActionOrMessage(
   from: string,
@@ -47,6 +48,35 @@ export async function handleWebhookActionOrMessage(
     const exitButtons = [{ id: ".menu", title: "📋 Buka Menu" }];
     await sendWhatsAppButtons(from, exitText, exitButtons, "🤖 MODE OFF");
     return true;
+  }
+
+  // ── General Edit/Delete Router ────────────────────────────────────────────
+  const isGeneralEditOrDelete = lower.startsWith('.edit ') || lower.startsWith('.hapus ');
+  if (isGeneralEditOrDelete) {
+    const target = await classifyTargetModule(from, senderName, userText);
+    if (target === 'finance') {
+      return handleFinanceCommand(from, userText, senderName);
+    } else if (target === 'reminder') {
+      return handleReminderCommand(from, userText, senderName);
+    } else {
+      // Ambiguous: tanyakan ke user dengan tombol pilihan
+      const actionType = lower.startsWith('.edit ') ? 'Edit' : 'Hapus';
+      const detailText = trimmed.slice(actionType === 'Edit' ? 6 : 7).trim();
+      const questionText =
+        `❓ *Modul apa yang ingin Anda ${actionType.toLowerCase()}?*\n══════════════════════════════\n` +
+        `Kalimat Anda: "_${detailText}_"\n\nPilih modul target di bawah ini 👇`;
+
+      await sendWhatsAppButtons(
+        from,
+        questionText,
+        [
+          { id: `.${actionType.toLowerCase()} transaksi ${detailText}`, title: '💰 Transaksi Keuangan' },
+          { id: `.${actionType.toLowerCase()} pengingat ${detailText}`, title: '🔔 Pengingat' },
+        ],
+        '❓ PILIH TARGET MODUL',
+      );
+      return true;
+    }
   }
 
   // ── Reminder commands ─────────────────────────────────────────────────────

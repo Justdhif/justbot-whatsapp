@@ -13,6 +13,7 @@ import {
   apiUpdateReminder,
   apiDeleteReminder,
   resolveAccessToken,
+  Reminder,
 } from '../../infrastructure/gateways/api-client.gateway.js';
 import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 import {
@@ -93,6 +94,78 @@ async function parseReminderWithAI(
     logger.error({ err }, '❌ [Reminder] AI parsing failed');
     return null;
   }
+}
+
+// ─── AI Edit/Delete Reminder Parser ───────────────────────────────────────────
+
+interface ParsedReminderEditIntent {
+  action: 'edit' | 'delete';
+  idPrefix?: string;
+  keywords?: string[];
+  newTitle?: string;
+  newBody?: string;
+  newRemindAt?: string; // ISO 8601 UTC
+  newRecurrence?: string;
+  confidence: 'high' | 'medium' | 'low';
+  clarification?: string;
+}
+
+async function parseReminderEditDeleteIntent(
+  naturalText: string,
+  recentReminders: Reminder[],
+  userTimezoneOffset = 7,
+): Promise<ParsedReminderEditIntent | null> {
+  const now = new Date();
+  const localNow = new Date(now.getTime() + userTimezoneOffset * 60 * 60 * 1000);
+  const nowISO = localNow.toISOString().replace('Z', '+00:00');
+
+  const listStr = recentReminders.slice(0, 10).map((r, i) =>
+    `${i + 1}. ID:${r.id.slice(0, 8)} | ${r.title} | ${r.remindAt} | Aktif:${r.isActive}`
+  ).join('\n');
+
+  const systemPrompt =
+    `Kamu adalah asisten pengingat. Deteksi niat edit atau hapus reminder dari teks bebas Bahasa Indonesia.\n\n` +
+    `Waktu sekarang (UTC+${userTimezoneOffset}): ${nowISO}\n\n` +
+    `Daftar reminder aktif user:\n${listStr}\n\n` +
+    `Tentukan:\n` +
+    `- action: "edit" atau "delete"\n` +
+    `- idPrefix: 8 karakter pertama ID reminder jika user menyebutkannya (atau null)\n` +
+    `- keywords: array kata kunci untuk mencocokkan reminder (atau null)\n` +
+    `- newTitle: judul baru jika diubah (atau null)\n` +
+    `- newBody: catatan baru jika diubah (atau null)\n` +
+    `- newRemindAt: waktu pengingat baru dalam format ISO 8601 UTC (atau null)\n` +
+    `- newRecurrence: cron expression baru jika berulang (atau null)\n` +
+    `- confidence: "high"/"medium"/"low"\n` +
+    `- clarification: pertanyaan jika confidence low\n\n` +
+    `Jawab HANYA dengan JSON valid. Format:\n` +
+    `{"action":"edit","idPrefix":null,"keywords":["meeting"],"newTitle":"meeting koordinasi","newBody":null,"newRemindAt":"2025-08-06T03:00:00.000Z","newRecurrence":null,"confidence":"high"}`;
+
+  try {
+    const raw = await askGroqAI(naturalText, systemPrompt);
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]) as ParsedReminderEditIntent;
+    if (!parsed.action || !['edit', 'delete'].includes(parsed.action)) return null;
+    return parsed;
+  } catch (err) {
+    logger.error({ err }, '❌ [Reminder] Edit/delete AI parsing failed');
+    return null;
+  }
+}
+
+function matchReminder(reminders: Reminder[], intent: ParsedReminderEditIntent): Reminder | null {
+  if (intent.idPrefix) {
+    return reminders.find(r => r.id.startsWith(intent.idPrefix!)) ?? null;
+  }
+  if (intent.keywords && intent.keywords.length > 0) {
+    const kws = intent.keywords.map(k => k.toLowerCase());
+    const matches = reminders.filter(r => {
+      const haystack = `${r.title} ${r.body ?? ''}`.toLowerCase();
+      return kws.some(k => haystack.includes(k));
+    });
+    return matches.length === 1 ? matches[0] : null;
+  }
+  return null;
 }
 
 // ─── Menu ─────────────────────────────────────────────────────────────────────
@@ -176,70 +249,92 @@ export async function handleReminderCommand(
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
   const session = getUserSession(from);
-
-  // ── Intercept: Pending register ────────────────────────────────────────────
-  if (session.pendingAction === 'awaiting:register:name') {
-    return handleNameRegistration(from, trimmed, senderName, async () => {
-      setUserActiveMode(from, 'reminder');
-      await sendReminderMenu(from, senderName);
-    });
-  }
-
-  // ── Intercept: Konfirmasi buat reminder ────────────────────────────────────
-  if (session.pendingAction?.startsWith('awaiting:reminder:confirm:')) {
-    const isConfirm = lower === 'konfirmasi' || lower === 'reminder:confirm';
-    const isCancel  = lower === 'batal'       || lower === 'reminder:cancel';
+  if (session.pendingAction?.startsWith('awaiting:reminder:edit:confirm:')) {
+    const isConfirm = lower === 'konfirmasi' || lower === 'reminder:edit:confirm';
+    const isCancel  = lower === 'batal'       || lower === 'reminder:edit:cancel';
 
     if (isConfirm) {
-      const jsonStr = session.pendingAction.slice('awaiting:reminder:confirm:'.length);
+      const jsonStr = session.pendingAction.slice('awaiting:reminder:edit:confirm:'.length);
       try {
-        const data = JSON.parse(jsonStr) as ParsedReminder;
+        const data = JSON.parse(jsonStr) as { reminderId: string; changes: Record<string, unknown> };
         setPendingAction(from, null);
-        await sendWhatsAppMessage(from, '⏳ Menyimpan reminder...');
-        const created = await apiCreateReminder(from, senderName, {
-          title: data.title,
-          body: data.body,
-          remindAt: data.remindAt,
-          recurrence: data.recurrence,
-        });
+        await sendWhatsAppMessage(from, '⏳ Memperbarui reminder...');
+        const updated = await apiUpdateReminder(from, senderName, data.reminderId, data.changes as any);
         await sendWhatsAppButtons(
           from,
-          `✅ *Reminder Disimpan!*\n══════════════════════════════\n🔔 *${created.title}*\n📅 ${formatReminderDate(created.remindAt, session.timezoneOffset ?? 7)}\n🆔 \`${created.id.slice(0, 8)}...\`\n══════════════════════════════\n_Gunakan \`.hapus-ingat ${created.id.slice(0, 8)}\` untuk menghapus._`,
-          [
-            { id: '.pengingat', title: '📋 Lihat Semua' },
-            { id: '.ingatkan ', title: '➕ Tambah Lagi' },
-          ],
-          '🔔 REMINDER DISIMPAN',
+          `✅ *Reminder Diperbarui!*\n══════════════════════════════\n🔔 *${updated.title}*\n📅 ${formatReminderDate(updated.remindAt, session.timezoneOffset ?? 7)}\n══════════════════════════════`,
+          [{ id: '.pengingat', title: '📋 Lihat Semua' }],
+          '🔔 REMINDER DIPERBARUI',
         );
       } catch (err: any) {
         setPendingAction(from, null);
-        await sendWhatsAppMessage(from, `❌ Gagal menyimpan: ${err?.response?.data?.message ?? err?.message ?? 'Coba lagi.'}`);
+        await sendWhatsAppMessage(from, `❌ Gagal memperbarui: ${err?.response?.data?.message ?? err?.message ?? 'Coba lagi.'}`);
       }
       return true;
     }
 
     if (isCancel) {
       setPendingAction(from, null);
-      await sendWhatsAppMessage(from, '🚫 Reminder dibatalkan.');
+      await sendWhatsAppMessage(from, '🚫 Edit dibatalkan.');
       return true;
     }
 
-    // Ingatkan lagi dengan tombol
-    const jsonStr = session.pendingAction.slice('awaiting:reminder:confirm:'.length);
+    // Ingatkan lagi
+    const jsonStr2 = session.pendingAction.slice('awaiting:reminder:edit:confirm:'.length);
     try {
-      const data = JSON.parse(jsonStr) as ParsedReminder;
+      const data2 = JSON.parse(jsonStr2);
       await sendWhatsAppButtons(
         from,
-        `⚠️ Kamu belum mengkonfirmasi reminder:\n\n🔔 *${data.title}*\n📅 ${formatReminderDate(data.remindAt, session.timezoneOffset ?? 7)}\n\nKonfirmasi atau batalkan dulu ya 👇`,
-        [
-          { id: 'reminder:confirm', title: '✅ Konfirmasi' },
-          { id: 'reminder:cancel',  title: '❌ Batal' },
-        ],
+        `⚠️ Konfirmasi atau batalkan perubahan reminder \`${String(data2.reminderId).slice(0, 8)}\` dulu ya 👇`,
+        [{ id: 'reminder:edit:confirm', title: '✅ Konfirmasi' }, { id: 'reminder:edit:cancel', title: '❌ Batal' }],
         '⏳ MENUNGGU KONFIRMASI',
       );
-    } catch {
-      setPendingAction(from, null);
+    } catch { setPendingAction(from, null); }
+    return true;
+  }
+
+  // ── Intercept: awaiting:reminder:delete:confirm ─────────────────────────
+  if (session.pendingAction?.startsWith('awaiting:reminder:delete:confirm:')) {
+    const isConfirm = lower === 'konfirmasi' || lower === 'reminder:delete:confirm';
+    const isCancel  = lower === 'batal'       || lower === 'reminder:delete:cancel';
+
+    if (isConfirm) {
+      const jsonStr = session.pendingAction.slice('awaiting:reminder:delete:confirm:'.length);
+      try {
+        const data = JSON.parse(jsonStr) as { reminderId: string; label: string };
+        setPendingAction(from, null);
+        await sendWhatsAppMessage(from, '⏳ Menghapus reminder...');
+        await apiDeleteReminder(from, senderName, data.reminderId);
+        await sendWhatsAppButtons(
+          from,
+          `🗑️ *Reminder Dihapus!*\n══════════════════════════════\n~~${data.label}~~\n══════════════════════════════`,
+          [{ id: '.pengingat', title: '📋 Lihat Semua' }],
+          '🗑️ REMINDER DIHAPUS',
+        );
+      } catch (err: any) {
+        setPendingAction(from, null);
+        await sendWhatsAppMessage(from, `❌ Gagal menghapus: ${err?.response?.data?.message ?? err?.message ?? 'Coba lagi.'}`);
+      }
+      return true;
     }
+
+    if (isCancel) {
+      setPendingAction(from, null);
+      await sendWhatsAppMessage(from, '🚫 Penghapusan dibatalkan.');
+      return true;
+    }
+
+    // Ingatkan lagi
+    const jsonStr3 = session.pendingAction.slice('awaiting:reminder:delete:confirm:'.length);
+    try {
+      const data3 = JSON.parse(jsonStr3);
+      await sendWhatsAppButtons(
+        from,
+        `⚠️ Konfirmasi atau batalkan penghapusan reminder \`${String(data3.reminderId).slice(0, 8)}\` dulu ya 👇`,
+        [{ id: 'reminder:delete:confirm', title: '🗑️ Ya, Hapus' }, { id: 'reminder:delete:cancel', title: '❌ Batal' }],
+        '⏳ MENUNGGU KONFIRMASI',
+      );
+    } catch { setPendingAction(from, null); }
     return true;
   }
 
@@ -339,7 +434,75 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .edit-ingat <id> — masuk mode edit ───────────────────────────────────
+  // ── .edit <teks bebas> — AI cari dan edit reminder ───────────────────────
+  if (lower.startsWith('.edit ')) {
+    const token = await resolveAccessToken(from, senderName);
+    if (!token) {
+      await sendRegisterPrompt(from);
+      return true;
+    }
+
+    const editText = trimmed.slice(6).trim();
+    if (!editText) {
+      await sendWhatsAppMessage(from, '❌ Jelaskan pengingat mana yang ingin diedit.\n_Contoh: `.edit reminder meeting besok jadi jam 10`_');
+      return true;
+    }
+
+    await sendWhatsAppMessage(from, '🤖 _Mencari pengingat yang dimaksud..._');
+    try {
+      const reminders = await apiGetReminders(from, senderName);
+      const active = reminders.filter(r => r.isActive);
+      const intent = await parseReminderEditDeleteIntent(editText, active, session.timezoneOffset ?? 7);
+
+      if (!intent || intent.action !== 'edit') {
+        await sendWhatsAppMessage(from, '❌ Tidak bisa memahami pengingat mana yang ingin diedit.\n\nCoba sebutkan kata kunci pengingat:\n_Contoh: `.edit reminder meeting jadi jam 10 pagi`_');
+        return true;
+      }
+
+      const target = matchReminder(active, intent);
+      if (!target) {
+        await sendWhatsAppMessage(from, `❌ Tidak bisa menemukan pengingat yang cocok.${intent.clarification ? `\n\n⚠️ ${intent.clarification}` : ''}\n\nGunakan *.pengingat* untuk melihat daftar ID.`);
+        return true;
+      }
+
+      const changes: Record<string, unknown> = {};
+      if (intent.newTitle) changes.title = intent.newTitle;
+      if (intent.newBody !== undefined) changes.body = intent.newBody;
+      if (intent.newRemindAt) changes.remindAt = intent.newRemindAt;
+      if (intent.newRecurrence !== undefined) changes.recurrence = intent.newRecurrence;
+
+      if (Object.keys(changes).length === 0) {
+        await sendWhatsAppMessage(from, '❌ Tidak ada perubahan yang terdeteksi. Sebutkan apa yang ingin diubah (waktu, judul, dll).');
+        return true;
+      }
+
+      const changeLines = [
+        intent.newTitle ? `├─ Judul   : ${target.title} → *${intent.newTitle}*` : null,
+        intent.newRemindAt ? `├─ Waktu   : ${formatReminderDate(target.remindAt, session.timezoneOffset ?? 7)} → *${formatReminderDate(intent.newRemindAt, session.timezoneOffset ?? 7)}*` : null,
+        intent.newBody !== undefined ? `├─ Catatan : ${target.body || '-'} → *${intent.newBody || '-'}*` : null,
+        intent.newRecurrence !== undefined ? `├─ Berulang: ${target.recurrence || 'Tidak'} → *${intent.newRecurrence || 'Tidak'}*` : null,
+      ].filter(Boolean).join('\n');
+
+      const editConfirmText =
+        `✏️ *Konfirmasi Perubahan Reminder*\n══════════════════════════════\n` +
+        `🔔 *${target.title}*\n` +
+        `🆔 \`${target.id.slice(0, 8)}\`\n\n` +
+        `*Perubahan:*\n${changeLines}\n\nKonfirmasi atau batalkan 👇`;
+
+      setPendingAction(from, `awaiting:reminder:edit:confirm:${JSON.stringify({ reminderId: target.id, changes })}`);
+      await sendWhatsAppButtons(
+        from,
+        editConfirmText,
+        [{ id: 'reminder:edit:confirm', title: '✅ Konfirmasi' }, { id: 'reminder:edit:cancel', title: '❌ Batal' }],
+        '✏️ KONFIRMASI EDIT REMINDER',
+      );
+    } catch (err: any) {
+      await sendWhatsAppMessage(from, `❌ Gagal memproses edit: ${err?.message ?? 'Coba lagi.'}`);
+    }
+    return true;
+  }
+
+  // ── .edit-ingat <id> — legacy/direct edit ────────────────────────────────
   if (lower.startsWith('.edit-ingat ')) {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
@@ -353,12 +516,11 @@ export async function handleReminderCommand(
       return true;
     }
 
-    // Cari reminder berdasarkan prefix ID
     try {
       const reminders = await apiGetReminders(from, senderName);
       const match = reminders.find(r => r.id.startsWith(idPrefix));
       if (!match) {
-        await sendWhatsAppMessage(from, `❌ Reminder dengan ID \`${idPrefix}\` tidak ditemukan. Gunakan *.pengingat* untuk melihat daftar.`);
+        await sendWhatsAppMessage(from, `❌ Reminder dengan ID \`${idPrefix}\` tidak ditemukan.`);
         return true;
       }
 
@@ -373,7 +535,51 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .hapus-ingat <id> — hapus reminder ───────────────────────────────────
+  // ── .hapus <teks bebas> — AI cari dan hapus reminder ─────────────────────
+  if (lower.startsWith('.hapus ')) {
+    const token = await resolveAccessToken(from, senderName);
+    if (!token) {
+      await sendRegisterPrompt(from);
+      return true;
+    }
+
+    const hapusText = trimmed.slice(7).trim();
+    if (!hapusText) {
+      await sendWhatsAppMessage(from, '❌ Sebutkan ID atau deskripsi pengingat yang ingin dihapus.');
+      return true;
+    }
+
+    await sendWhatsAppMessage(from, '🤖 _Mencari pengingat yang dimaksud..._');
+    try {
+      const reminders = await apiGetReminders(from, senderName);
+      const active = reminders.filter(r => r.isActive);
+
+      let target = active.find(r => r.id.startsWith(hapusText)) ?? null;
+      if (!target) {
+        const intent = await parseReminderEditDeleteIntent(hapusText, active, session.timezoneOffset ?? 7);
+        if (intent) target = matchReminder(active, intent);
+      }
+
+      if (!target) {
+        await sendWhatsAppMessage(from, '❌ Tidak bisa menemukan pengingat yang cocok.\n\nGunakan *.pengingat* untuk melihat daftar.');
+        return true;
+      }
+
+      const label = target.title;
+      setPendingAction(from, `awaiting:reminder:delete:confirm:${JSON.stringify({ reminderId: target.id, label })}`);
+      await sendWhatsAppButtons(
+        from,
+        `🗑️ *Hapus Reminder?*\n══════════════════════════════\n🔔 *${target.title}*\n📅 ${formatReminderDate(target.remindAt, session.timezoneOffset ?? 7)}\n🆔 \`${target.id.slice(0, 8)}\`\n══════════════════════════════\nReminder ini akan dihapus permanen 👇`,
+        [{ id: 'reminder:delete:confirm', title: '🗑️ Ya, Hapus' }, { id: 'reminder:delete:cancel', title: '❌ Batal' }],
+        '🗑️ KONFIRMASI HAPUS REMINDER',
+      );
+    } catch (err: any) {
+      await sendWhatsAppMessage(from, `❌ Gagal memproses hapus: ${err?.message ?? 'Coba lagi.'}`);
+    }
+    return true;
+  }
+
+  // ── .hapus-ingat <id> — legacy/direct hapus ──────────────────────────────
   if (lower.startsWith('.hapus-ingat ')) {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
