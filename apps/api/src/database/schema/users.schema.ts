@@ -24,6 +24,8 @@ export const users = pgTable('users', {
    */
   refreshTokenHash: text('refresh_token_hash'),
 
+  role: varchar('role', { length: 20 }).default('user').notNull(),
+
   isActive: boolean('is_active').default(true).notNull(),
 
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
