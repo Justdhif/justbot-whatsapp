@@ -4,6 +4,7 @@ dotenv.config();
 
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { RequestMethod } from '@nestjs/common';
 import serverless from 'serverless-http';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -48,8 +49,10 @@ async function bootstrapServer() {
     credentials: true,
   });
 
-  // Global API prefix — semua route di bawah /api
-  app.setGlobalPrefix('api');
+  // Global API prefix — kecuali "/" agar root route accessible di production
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: '/', method: RequestMethod.GET }],
+  });
 
   // Init tanpa listen (serverless tidak perlu port)
   await app.init();

@@ -12,6 +12,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
+import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { FinanceModule } from './modules/finance/finance.module';
@@ -44,6 +45,7 @@ import { RemindersModule } from './modules/reminders/reminders.module';
     FinanceModule,
     RemindersModule,
   ],
+  controllers: [AppController],
   providers: [
     // Global JWT guard — semua route protected kecuali yang @Public()
     {

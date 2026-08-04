@@ -1,8 +1,9 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { RequestMethod } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -33,8 +34,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // ── Global API Prefix ─────────────────────────────────────────────────
-  app.setGlobalPrefix('api');
+  // Global API prefix — kecuali "/" agar root route tetap accessible
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: '/', method: RequestMethod.GET }],
+  });
 
   // ── Graceful Shutdown ─────────────────────────────────────────────────
   app.enableShutdownHooks();
