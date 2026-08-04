@@ -4,8 +4,6 @@ import { env } from '../../config/env.js';
 import { getUserSession, setUserTokens } from '../store/session.store.js';
 import { logger } from '../../utils/logger.js';
 
-// ─── HTTP Client ──────────────────────────────────────────────────────────────
-
 let _client: AxiosInstance | null = null;
 
 function getClient(): AxiosInstance {
@@ -19,26 +17,17 @@ function getClient(): AxiosInstance {
   return _client;
 }
 
-// ─── Credential Generation ────────────────────────────────────────────────────
-
-/**
- * Membuat password deterministik dari nomor HP user + BOT_SECRET.
- * Digunakan agar setiap user WA bisa auto-login ke backend
- * tanpa harus mendaftar secara manual.
- */
 function generateBotPassword(phoneNumber: string): string {
   return createHash('sha256')
     .update(`${phoneNumber}:${env.BOT_SECRET}`)
     .digest('hex')
-    .slice(0, 32) // 32 char cukup aman dan memenuhi minimum 8 char
-    + 'A1'; // Pastikan ada uppercase + angka agar lolos validasi password
+    .slice(0, 32) 
+    + 'A1'; 
 }
 
 function phoneToEmail(phoneNumber: string): string {
   return `${phoneNumber}@justbot.app`;
 }
-
-// ─── Auth Helpers ─────────────────────────────────────────────────────────────
 
 async function loginUser(phoneNumber: string): Promise<{ accessToken: string; refreshToken: string } | null> {
   try {
@@ -65,7 +54,7 @@ async function registerUser(phoneNumber: string, displayName?: string): Promise<
     });
     return true;
   } catch (err: any) {
-    // 409 = user sudah ada, tetap dianggap sukses
+    
     if (err?.response?.status === 409) return true;
     logger.error({ err, phoneNumber }, '❌ [ApiClient] Failed to register user');
     return false;
@@ -84,21 +73,11 @@ async function refreshTokens(refreshToken: string): Promise<{ accessToken: strin
   }
 }
 
-// ─── Authenticated Token Resolver ─────────────────────────────────────────────
-
-/**
- * Cek apakah nomor WA ini sudah memiliki akun di backend.
- * Return true jika login berhasil (akun ada), false jika belum.
- */
 export async function checkAccountExists(phoneNumber: string): Promise<boolean> {
   const result = await loginUser(phoneNumber);
   return result !== null;
 }
 
-/**
- * Daftarkan user baru dengan nama yang sudah dikonfirmasi dari percakapan WA.
- * Return true jika berhasil, false jika gagal.
- */
 export async function registerUserWithName(
   phoneNumber: string,
   displayName: string,
@@ -106,24 +85,14 @@ export async function registerUserWithName(
   return registerUser(phoneNumber, displayName);
 }
 
-/**
- * Pastikan user memiliki accessToken yang valid di session.
- * Urutan: cek session → refresh jika perlu → login (silent).
- * CATATAN: Fungsi ini TIDAK akan auto-register.
- *          Panggil checkAccountExists + registerUserWithName + resolveAccessToken secara manual
- *          jika user belum terdaftar.
- * Return accessToken yang valid, atau null jika gagal login.
- */
 export async function resolveAccessToken(
   phoneNumber: string,
   displayName?: string,
 ): Promise<string | null> {
   const session = getUserSession(phoneNumber);
 
-  // 1. Sudah ada token di session
   if (session.accessToken) return session.accessToken;
 
-  // 2. Ada refreshToken → coba refresh
   if (session.refreshToken) {
     const tokens = await refreshTokens(session.refreshToken);
     if (tokens) {
@@ -132,22 +101,15 @@ export async function resolveAccessToken(
     }
   }
 
-  // 3. Coba login silent (akun sudah ada sebelumnya)
   const loginResult = await loginUser(phoneNumber);
   if (loginResult) {
     setUserTokens(phoneNumber, loginResult.accessToken, loginResult.refreshToken);
     return loginResult.accessToken;
   }
 
-  // Akun tidak ada → return null (perlu registrasi dulu via conversation flow)
   return null;
 }
 
-// ─── Authenticated Request Helper ────────────────────────────────────────────
-
-/**
- * Lakukan request ke backend dengan auto-retry satu kali jika 401 (token expired).
- */
 async function authRequest<T>(
   phoneNumber: string,
   displayName: string | undefined,
@@ -159,7 +121,7 @@ async function authRequest<T>(
   try {
     return await requester(token);
   } catch (err: any) {
-    // Token expired (401) → clear token dan retry sekali
+    
     if (err?.response?.status === 401) {
       setUserTokens(phoneNumber, null, getUserSession(phoneNumber).refreshToken ?? null);
       token = await resolveAccessToken(phoneNumber, displayName);
@@ -169,8 +131,6 @@ async function authRequest<T>(
     throw err;
   }
 }
-
-// ─── Finance API ──────────────────────────────────────────────────────────────
 
 export interface Transaction {
   id: string;
@@ -258,9 +218,6 @@ export async function apiGetFinanceSummary(
   });
 }
 
-/**
- * Mengirim persetujuan login QR ke backend API.
- */
 export async function apiApproveQrSession(
   sessionId: string,
   phoneNumber: string,
@@ -282,8 +239,6 @@ export async function apiApproveQrSession(
     throw new Error(msg || 'Gagal menyetujui QR Code');
   }
 }
-
-// ─── Reminder API ─────────────────────────────────────────────────────────────
 
 export interface Reminder {
   id: string;

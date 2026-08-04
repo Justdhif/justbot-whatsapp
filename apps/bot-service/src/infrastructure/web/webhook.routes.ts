@@ -15,8 +15,6 @@ import {
   markUserNotifiedToday,
 } from "../store/notification.store.js";
 
-
-
 interface WebhookQuery {
   "hub.mode"?: string;
   "hub.verify_token"?: string;
@@ -80,11 +78,9 @@ export async function webhookRoutes(fastify: FastifyInstance) {
 
           const session = getUserSession(from);
 
-          
           let tzOffset = 7;
           let tzName = "WIB (Asia/Jakarta)";
 
-          
           const isWita = /^(628117|628118|628119|628139|628181|628182|628183|628191|628192|628193|628121|628141|628161|628171|628211|628221|628231|628241|628242|628243|628244|628245|628246|6281254|6281347|6282154|6285247|6285347|6281349|6285246|6282153|6281253|6285250|6285251|6285252|628138|628538|6283|6285)/.test(from);
           
           const isWit = /^(628114|628124|6281354|628219|628229|628529|628539|6289)/.test(from);

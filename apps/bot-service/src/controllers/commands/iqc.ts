@@ -8,13 +8,11 @@ export async function handleIqcCommand(
   session?: any
 ): Promise<boolean> {
   const trimmed = userText.trim();
-  
-  
+
   const iqcMatch = trimmed.match(/^\.iqc$/i);
   if (iqcMatch) {
     const textContent = '';
-    
-    
+
     const lastImageMediaId = session?.lastImageMediaId;
 
     if (!lastImageMediaId) {
@@ -45,8 +43,7 @@ export async function handleIqcCommand(
       }
 
       const imageBuffer = await generateIqcScreenshot(textContent, timeStr, uploadedImageBuffer);
-      
-      
+
       const imageSent = await sendWhatsAppImageFromBuffer(from, imageBuffer, textContent ? `📱 Screenshot chat iPhone: "${textContent}"` : '📱 Screenshot chat iPhone');
       if (!imageSent) {
         await sendWhatsAppMessage(from, 'Gagal mengirim screenshot chat iPhone. Coba lagi beberapa saat.');

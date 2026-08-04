@@ -15,14 +15,12 @@ app.register(formbody);
 
 app.get('/assets/:filename', async (request, reply) => {
   const { filename } = request.params as { filename: string };
-  
-  
+
   let filePath = path.resolve(process.cwd(), 'src/assets', filename);
   if (!fs.existsSync(filePath)) {
     filePath = path.resolve(process.cwd(), 'apps/bot-service/src/assets', filename);
   }
-  
-  
+
   if (!fs.existsSync(filePath)) {
     filePath = path.join(__dirname, '..', 'src', 'assets', filename);
     if (!fs.existsSync(filePath)) {
@@ -47,7 +45,6 @@ app.get('/assets/:filename', async (request, reply) => {
   }
 });
 
-
 app.get('/', async () => {
   return {
     name: 'JustBot WhatsApp Service',
@@ -61,11 +58,9 @@ app.get('/', async () => {
   };
 });
 
-
 app.get('/health', async () => {
   return { status: 'ok', service: 'justbot-whatsapp-service', timestamp: new Date() };
 });
-
 
 app.register(webhookRoutes);
 
@@ -79,11 +74,9 @@ async function startServer() {
   }
 }
 
-
 if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY && !process.env.VERCEL) {
   startServer();
 }
-
 
 export default async function handler(req: any, res: any) {
   await app.ready();

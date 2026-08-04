@@ -17,21 +17,18 @@ export async function handleWebhookActionOrMessage(
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
 
-  // Login QR commands — intercept langsung
   if (lower.startsWith('.login ')) {
     const isHandled = await handleLoginCommand(from, userText);
     if (isHandled) return true;
   }
 
-  // ── Intercept: Pending Action ─────────────────────────────────────────────
-  // Jika user sedang dalam conversation flow, teruskan ke handler yang relevan.
   if (
     session.pendingAction?.startsWith('awaiting:register:') ||
     session.pendingAction?.startsWith('awaiting:catat:') ||
     session.pendingAction?.startsWith('awaiting:edit:') ||
     session.pendingAction?.startsWith('awaiting:delete:')
   ) {
-    // Jika mode reminder, register flow dikembalikan ke reminder
+    
     if (session.activeMode === 'reminder') {
       return handleReminderCommand(from, userText, senderName);
     }
@@ -50,7 +47,6 @@ export async function handleWebhookActionOrMessage(
     return true;
   }
 
-  // ── General Edit/Delete Router ────────────────────────────────────────────
   const isGeneralEditOrDelete = lower.startsWith('.edit ') || lower.startsWith('.hapus ');
   if (isGeneralEditOrDelete) {
     const target = await classifyTargetModule(from, senderName, userText);
@@ -59,7 +55,7 @@ export async function handleWebhookActionOrMessage(
     } else if (target === 'reminder') {
       return handleReminderCommand(from, userText, senderName);
     } else {
-      // Ambiguous: tanyakan ke user dengan tombol pilihan
+      
       const actionType = lower.startsWith('.edit ') ? 'Edit' : 'Hapus';
       const detailText = trimmed.slice(actionType === 'Edit' ? 6 : 7).trim();
       const questionText =
@@ -79,7 +75,6 @@ export async function handleWebhookActionOrMessage(
     }
   }
 
-  // ── Reminder commands ─────────────────────────────────────────────────────
   const isReminderCommand =
     lower === '.pengingat' ||
     lower === '.reminder' ||
@@ -94,7 +89,6 @@ export async function handleWebhookActionOrMessage(
     if (isHandled) return true;
   }
 
-  // ── Finance commands ──────────────────────────────────────────────────────
   const isFinanceCommand =
     lower === '.finance' ||
     lower === '.keuangan' ||

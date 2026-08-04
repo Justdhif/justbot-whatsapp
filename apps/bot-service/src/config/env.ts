@@ -11,15 +11,13 @@ const envSchema = z.object({
   WA_VERIFY_TOKEN: z.string().min(1, 'WA_VERIFY_TOKEN is required'),
   WA_PHONE_NUMBER_ID: z.string().min(1, 'WA_PHONE_NUMBER_ID is required'),
   WA_CLOUD_API_ACCESS_TOKEN: z.string().min(1, 'WA_CLOUD_API_ACCESS_TOKEN is required'),
-  
-  
+
   BOT_OPERATIONAL_START: z.string().default('07:00'),
   BOT_OPERATIONAL_END: z.string().default('21:00'),
   
   BOT_OPERATIONAL_DAYS: z.string().default('1,2,3,4,6,7'),
   BOT_ENABLE_SCHEDULE: z.string().default('true').transform((val) => val.toLowerCase() === 'true'),
-  
-  // Backend Integration
+
   BACKEND_API_URL: z.string().default('http://localhost:3001'),
   BOT_SECRET: z.string().default('justbot_super_secure_bot_secret_key_12345'),
 });

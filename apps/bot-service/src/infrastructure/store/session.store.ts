@@ -33,8 +33,6 @@ export function setPendingAction(userId: string, action: string | null): void {
   session.updatedAt = Date.now();
 }
 
-
-
 export function setUserLastImage(
   userId: string,
   mediaId: string | null,

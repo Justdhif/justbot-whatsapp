@@ -20,8 +20,6 @@ import { askGroqAI } from "../../infrastructure/gateways/groq.gateway.js";
 import { sendRegisterPrompt, handleNameRegistration } from "./auth.shared.js";
 import { logger } from "../../utils/logger.js";
 
-// ─── AI Transaction Parser ────────────────────────────────────────────────────
-
 interface ParsedTransaction {
   type: "income" | "expense";
   amount: number;
@@ -69,8 +67,6 @@ async function parseTransactionWithAI(
     return null;
   }
 }
-
-// ─── AI Edit/Delete Intent Parser ────────────────────────────────────────────
 
 interface ParsedEditIntent {
   action: "edit" | "delete";
@@ -144,8 +140,6 @@ function matchTransaction(
   return null;
 }
 
-// ─── Formatter Helpers ────────────────────────────────────────────────────────
-
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -161,8 +155,6 @@ function formatDate(dateStr: string): string {
     year: "numeric",
   });
 }
-
-// ─── Finance Menu ─────────────────────────────────────────────────────────────
 
 async function sendFinanceMenu(
   from: string,
@@ -201,10 +193,6 @@ async function sendFinanceMenu(
   );
 }
 
-// sendRegisterPrompt diimport dari auth.shared.ts
-
-// ─── Main Finance Command Handler ─────────────────────────────────────────────
-
 export async function handleFinanceCommand(
   from: string,
   userText: string,
@@ -214,7 +202,6 @@ export async function handleFinanceCommand(
   const lower = trimmed.toLowerCase();
   const session = getUserSession(from);
 
-  // ── Intercept: awaiting:register:name ────────────────────────────────────
   if (session.pendingAction === "awaiting:register:name") {
     return handleNameRegistration(from, trimmed, senderName, async () => {
       setUserActiveMode(from, "finance");
@@ -222,7 +209,6 @@ export async function handleFinanceCommand(
     });
   }
 
-  // ── Intercept: awaiting:catat:confirm ────────────────────────────────────
   if (session.pendingAction?.startsWith("awaiting:catat:confirm:")) {
     const isConfirm = lower === "konfirmasi" || lower === "catat:confirm";
     const isCancel = lower === "batal" || lower === "catat:cancel";
@@ -281,7 +267,6 @@ export async function handleFinanceCommand(
     return true;
   }
 
-  // ── Intercept: awaiting:edit:confirm ─────────────────────────────────────
   if (session.pendingAction?.startsWith("awaiting:edit:confirm:")) {
     const isConfirm = lower === "konfirmasi" || lower === "edit:confirm";
     const isCancel = lower === "batal" || lower === "edit:cancel";
@@ -350,7 +335,6 @@ export async function handleFinanceCommand(
     return true;
   }
 
-  // ── Intercept: awaiting:delete:confirm ───────────────────────────────────
   if (session.pendingAction?.startsWith("awaiting:delete:confirm:")) {
     const isConfirm = lower === "konfirmasi" || lower === "delete:confirm";
     const isCancel = lower === "batal" || lower === "delete:cancel";
@@ -409,7 +393,6 @@ export async function handleFinanceCommand(
     return true;
   }
 
-  // ── .finance / .keuangan ─────────────────────────────────────────────────
   if (lower === ".finance" || lower === ".keuangan") {
     setUserActiveMode(from, "finance");
     const token = await resolveAccessToken(from, senderName);
@@ -421,7 +404,6 @@ export async function handleFinanceCommand(
     return true;
   }
 
-  // ── Button: auth:register ────────────────────────────────────────────────
   if (lower === "auth:register") {
     setPendingAction(from, "awaiting:register:name");
     await sendWhatsAppMessage(
@@ -431,7 +413,6 @@ export async function handleFinanceCommand(
     return true;
   }
 
-  // ── Finance commands ─────────────────────────────────────────────────────
   const isFinanceCommand =
     lower.startsWith(".catat ") ||
     lower === ".riwayat" ||
@@ -459,8 +440,6 @@ export async function handleFinanceCommand(
 
   return false;
 }
-
-// ─── Reusable Save Helper ─────────────────────────────────────────────────────
 
 async function saveCatatTransaction(
   from: string,
@@ -510,15 +489,13 @@ async function saveCatatTransaction(
   return true;
 }
 
-// ─── Authenticated Commands ───────────────────────────────────────────────────
-
 async function handleAuthenticatedCommand(
   from: string,
   lower: string,
   trimmed: string,
   senderName: string,
 ): Promise<boolean> {
-  // ── .catat ──────────────────────────────────────────────────────────────
+  
   if (lower.startsWith(".catat ")) {
     const parts = trimmed.slice(7).trim();
 
@@ -606,7 +583,6 @@ async function handleAuthenticatedCommand(
     return true;
   }
 
-  // ── .riwayat ────────────────────────────────────────────────────────────
   if (
     lower === ".riwayat" ||
     lower === ".riwayat masuk" ||
@@ -672,7 +648,6 @@ async function handleAuthenticatedCommand(
     return true;
   }
 
-  // ── .laporan ────────────────────────────────────────────────────────────
   if (lower === ".laporan" || lower === ".summary") {
     await sendWhatsAppMessage(from, "\u23f3 Mengambil laporan keuangan...");
 
@@ -710,7 +685,6 @@ async function handleAuthenticatedCommand(
     return true;
   }
 
-  // ── .edit <teks bebas> — AI cari dan edit transaksi ─────────────────────
   if (lower.startsWith(".edit ")) {
     const editText = trimmed.slice(6).trim();
     if (!editText) {
@@ -802,7 +776,6 @@ async function handleAuthenticatedCommand(
     return true;
   }
 
-  // ── .hapus <id atau deskripsi bebas> — AI cari dan hapus ─────────────────
   if (lower.startsWith(".hapus ")) {
     const hapusText = trimmed.slice(7).trim();
     if (!hapusText) {

@@ -11,7 +11,6 @@ export async function handleStickerCommand(
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
 
-  
   const stickerCommandMatch = trimmed.match(/^\.sticker(?:\s+(.*))?$/i);
   if (stickerCommandMatch) {
     const lastImageMediaId = session.lastImageMediaId;
@@ -38,7 +37,6 @@ export async function handleStickerCommand(
     return true;
   }
 
-  
   const bratCommandMatch = trimmed.match(/^\.brat(?:\s+(.*))?$/i);
   if (bratCommandMatch) {
     const bratText = (bratCommandMatch[1] || '').trim();

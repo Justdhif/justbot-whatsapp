@@ -1,9 +1,6 @@
 import { sendWhatsAppMessage } from '../../infrastructure/gateways/whatsapp.gateway.js';
 import { apiApproveQrSession } from '../../infrastructure/gateways/api-client.gateway.js';
 
-/**
- * Menangani perintah login QR dari WhatsApp: `.login <sessionId>`
- */
 export async function handleLoginCommand(
   from: string,
   userText: string

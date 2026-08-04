@@ -42,7 +42,6 @@ export async function sendWhatsAppMessage(to: string, messageText: string): Prom
   }
 }
 
-
 export async function sendWhatsAppImage(to: string, imageUrl: string, captionText: string): Promise<boolean> {
   try {
     const payload = {
@@ -117,7 +116,6 @@ export async function sendWhatsAppImageFromBuffer(to: string, buffer: Buffer, ca
     return false;
   }
 }
-
 
 async function uploadWhatsAppMedia(buffer: Buffer, mimeType: string, fileName: string): Promise<string | null> {
   try {
@@ -228,7 +226,6 @@ export async function generateStickerFromWhatsAppMedia(mediaId: string): Promise
   }
 }
 
-
 export async function sendWhatsAppSticker(to: string, stickerBuffer: Buffer): Promise<boolean> {
   try {
     const mediaId = await uploadWhatsAppMedia(stickerBuffer, 'image/webp', 'brat-sticker.webp');
@@ -268,7 +265,6 @@ export async function sendWhatsAppSticker(to: string, stickerBuffer: Buffer): Pr
     return false;
   }
 }
-
 
 export async function sendWhatsAppButtons(
   to: string,
@@ -332,7 +328,6 @@ export async function sendWhatsAppButtons(
   }
 }
 
-
 export async function sendWhatsAppInteractiveList(
   to: string,
   bodyText: string,
@@ -388,5 +383,4 @@ export async function sendWhatsAppInteractiveList(
     return false;
   }
 }
-
 

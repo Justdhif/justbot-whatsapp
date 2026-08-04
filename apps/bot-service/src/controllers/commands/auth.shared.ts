@@ -12,16 +12,8 @@ import {
 } from '../../infrastructure/gateways/api-client.gateway.js';
 import { logger } from '../../utils/logger.js';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export type OnAuthSuccess = (token: string) => Promise<void>;
 
-// ─── Register Prompt ──────────────────────────────────────────────────────────
-
-/**
- * Tampilkan prompt daftar akun JustBot secara general.
- * Digunakan oleh semua modul yang membutuhkan autentikasi.
- */
 export async function sendRegisterPrompt(from: string): Promise<void> {
   const welcomeText =
     `╭────────────────────────────\n` +
@@ -42,12 +34,6 @@ export async function sendRegisterPrompt(from: string): Promise<void> {
   );
 }
 
-// ─── Name Input Handler ───────────────────────────────────────────────────────
-
-/**
- * Proses input nama dari user, daftarkan akun, lalu panggil onSuccess.
- * Dipanggil ketika pendingAction === 'awaiting:register:name'.
- */
 export async function handleNameRegistration(
   from: string,
   nameInput: string,
@@ -82,7 +68,6 @@ export async function handleNameRegistration(
       return true;
     }
 
-    // Login otomatis setelah register
     const token = await resolveAccessToken(from, displayName);
     if (!token) {
       await sendWhatsAppMessage(
@@ -110,18 +95,6 @@ export async function handleNameRegistration(
   return true;
 }
 
-// ─── Ensure Authenticated ─────────────────────────────────────────────────────
-
-/**
- * Pastikan user terautentikasi sebelum menjalankan perintah.
- * - Jika sudah punya token → langsung jalankan onAuth
- * - Jika belum → tampilkan register prompt
- *
- * @param from         Nomor WA user
- * @param senderName   Nama display dari WA
- * @param activeMode   Mode yang akan di-set jika perlu register dulu
- * @param onAuth       Callback yang dijalankan jika sudah terautentikasi
- */
 export async function ensureAuthenticated(
   from: string,
   senderName: string,

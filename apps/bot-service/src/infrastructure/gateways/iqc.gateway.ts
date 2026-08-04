@@ -28,8 +28,7 @@ export async function generateIqcScreenshot(text: string, time: string, imageBuf
     if (!pngBuffer) {
       throw new Error('Canvas generation returned invalid object structure');
     }
-    
-    
+
     return await sharp(pngBuffer)
       .jpeg({ quality: 95 })
       .toBuffer();

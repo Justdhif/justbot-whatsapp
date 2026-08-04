@@ -7,9 +7,6 @@ import {
 
 export type TargetModule = 'finance' | 'reminder' | 'ambiguous';
 
-/**
- * Mendeteksi secara cerdas apakah permintaan edit/hapus ditujukan untuk Transaksi (finance) atau Pengeningat (reminder).
- */
 export async function classifyTargetModule(
   from: string,
   senderName: string,
@@ -17,7 +14,6 @@ export async function classifyTargetModule(
 ): Promise<TargetModule> {
   const lower = text.toLowerCase();
 
-  // 1. Cepat: keyword heuristic
   const financeKeywords = [
     'transaksi', 'catat', 'jajan', 'pengeluaran', 'pemasukan',
     'belanja', 'gaji', 'uang', 'rupiah', 'rp', 'ribu', 'rb',
@@ -37,7 +33,6 @@ export async function classifyTargetModule(
   if (finCount > 0 && remCount === 0) return 'finance';
   if (remCount > 0 && finCount === 0) return 'reminder';
 
-  // 2. Cek apakah input berupa ID prefix yang cocok dengan salah satu transaksi atau reminder
   const matchesId = text.trim().match(/^[0-9a-fA-F]{3,8}$/);
   if (matchesId) {
     const idPrefix = matchesId[0].toLowerCase();
@@ -52,7 +47,6 @@ export async function classifyTargetModule(
     } catch {}
   }
 
-  // 3. Gunakan AI Classifier jika keyword tumpang tindih atau tidak terdeteksi
   const systemPrompt =
     `Kamu adalah asisten klasifikasi teks. Tentukan apakah permintaan edit/hapus dari user berikut ditujukan untuk:\n` +
     `- 'finance' (transaksi keuangan, belanja, uang, jajan, gaji, pemasukan, pengeluaran, dll)\n` +

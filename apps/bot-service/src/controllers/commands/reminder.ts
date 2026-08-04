@@ -22,18 +22,14 @@ import {
 } from './auth.shared.js';
 import { logger } from '../../utils/logger.js';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface ParsedReminder {
   title: string;
   body?: string;
-  remindAt: string; // ISO 8601
-  recurrence?: string; // cron expression jika berulang
+  remindAt: string; 
+  recurrence?: string; 
   confidence: 'high' | 'medium' | 'low';
   clarification?: string;
 }
-
-// ─── Formatter Helpers ────────────────────────────────────────────────────────
 
 function formatReminderDate(isoStr: string, timezoneOffset = 7): string {
   const date = new Date(isoStr);
@@ -48,8 +44,6 @@ function formatReminderDate(isoStr: string, timezoneOffset = 7): string {
     timeZone: 'UTC',
   });
 }
-
-// ─── AI Parser ────────────────────────────────────────────────────────────────
 
 async function parseReminderWithAI(
   naturalText: string,
@@ -81,12 +75,11 @@ async function parseReminderWithAI(
 
     if (!parsed.title || !parsed.remindAt) return null;
 
-    // Validasi remindAt di masa depan
     if (new Date(parsed.remindAt) <= new Date()) {
-      // Jika waktu sudah lewat, anggap besok
+      
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      parsed.remindAt = parsed.remindAt; // biarkan AI yang handle
+      parsed.remindAt = parsed.remindAt; 
     }
 
     return parsed;
@@ -96,15 +89,13 @@ async function parseReminderWithAI(
   }
 }
 
-// ─── AI Edit/Delete Reminder Parser ───────────────────────────────────────────
-
 interface ParsedReminderEditIntent {
   action: 'edit' | 'delete';
   idPrefix?: string;
   keywords?: string[];
   newTitle?: string;
   newBody?: string;
-  newRemindAt?: string; // ISO 8601 UTC
+  newRemindAt?: string; 
   newRecurrence?: string;
   confidence: 'high' | 'medium' | 'low';
   clarification?: string;
@@ -168,8 +159,6 @@ function matchReminder(reminders: Reminder[], intent: ParsedReminderEditIntent):
   return null;
 }
 
-// ─── Menu ─────────────────────────────────────────────────────────────────────
-
 async function sendReminderMenu(from: string, senderName: string): Promise<void> {
   let reminderList = '';
 
@@ -220,8 +209,6 @@ async function sendReminderMenu(from: string, senderName: string): Promise<void>
   );
 }
 
-// ─── Confirm Flow Helpers ─────────────────────────────────────────────────────
-
 function buildConfirmText(parsed: ParsedReminder, timezoneOffset = 7): string {
   const confIcon = parsed.confidence === 'high' ? '✅' : parsed.confidence === 'medium' ? '🟡' : '🔴';
   const extraNote = parsed.confidence === 'low' && parsed.clarification
@@ -238,8 +225,6 @@ function buildConfirmText(parsed: ParsedReminder, timezoneOffset = 7): string {
     `Konfirmasi atau batalkan reminder ini 👇`
   );
 }
-
-// ─── Main Handler ─────────────────────────────────────────────────────────────
 
 export async function handleReminderCommand(
   from: string,
@@ -279,7 +264,6 @@ export async function handleReminderCommand(
       return true;
     }
 
-    // Ingatkan lagi
     const jsonStr2 = session.pendingAction.slice('awaiting:reminder:edit:confirm:'.length);
     try {
       const data2 = JSON.parse(jsonStr2);
@@ -293,7 +277,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── Intercept: awaiting:reminder:delete:confirm ─────────────────────────
   if (session.pendingAction?.startsWith('awaiting:reminder:delete:confirm:')) {
     const isConfirm = lower === 'konfirmasi' || lower === 'reminder:delete:confirm';
     const isCancel  = lower === 'batal'       || lower === 'reminder:delete:cancel';
@@ -324,7 +307,6 @@ export async function handleReminderCommand(
       return true;
     }
 
-    // Ingatkan lagi
     const jsonStr3 = session.pendingAction.slice('awaiting:reminder:delete:confirm:'.length);
     try {
       const data3 = JSON.parse(jsonStr3);
@@ -338,7 +320,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── Intercept: Edit reminder — tunggu input teks baru ──────────────────────
   if (session.pendingAction?.startsWith('awaiting:reminder:edit:')) {
     const reminderId = session.pendingAction.slice('awaiting:reminder:edit:'.length);
 
@@ -370,7 +351,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .pengingat — buka menu ────────────────────────────────────────────────
   if (lower === '.pengingat' || lower === '.reminder') {
     setUserActiveMode(from, 'reminder');
     const token = await resolveAccessToken(from, senderName);
@@ -382,8 +362,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── Button: auth:register (dari register prompt) ─────────────────────────
-  // Ditangani di finance.ts juga, tapi bisa masuk sini jika mode reminder
   if (lower === 'auth:register' && session.activeMode === 'reminder') {
     setPendingAction(from, 'awaiting:register:name');
     await sendWhatsAppMessage(
@@ -393,7 +371,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .ingatkan <teks> — buat reminder baru via AI ─────────────────────────
   if (lower.startsWith('.ingatkan ') || lower === '.ingatkan') {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
@@ -434,7 +411,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .edit <teks bebas> — AI cari dan edit reminder ───────────────────────
   if (lower.startsWith('.edit ')) {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
@@ -502,7 +478,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .edit-ingat <id> — legacy/direct edit ────────────────────────────────
   if (lower.startsWith('.edit-ingat ')) {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
@@ -535,7 +510,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .hapus <teks bebas> — AI cari dan hapus reminder ─────────────────────
   if (lower.startsWith('.hapus ')) {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
@@ -579,7 +553,6 @@ export async function handleReminderCommand(
     return true;
   }
 
-  // ── .hapus-ingat <id> — legacy/direct hapus ──────────────────────────────
   if (lower.startsWith('.hapus-ingat ')) {
     const token = await resolveAccessToken(from, senderName);
     if (!token) {
