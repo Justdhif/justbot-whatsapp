@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, asc, lte, desc } from 'drizzle-orm';
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import { DATABASE_CONNECTION } from '@/database/database.provider';
-import * as schema from '@/database/schema';
-import { reminders, NewReminder } from '@/database/schema';
+import { DATABASE_CONNECTION } from '../../database/database.provider';
+import * as schema from '../../database/schema';
+import { reminders, NewReminder } from '../../database/schema';
 
 @Injectable()
 export class RemindersRepository {

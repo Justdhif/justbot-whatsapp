@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, gte, lte, sql, desc } from 'drizzle-orm';
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import { DATABASE_CONNECTION } from '@/database/database.provider';
-import * as schema from '@/database/schema';
-import { transactions, NewTransaction } from '@/database/schema';
+import { DATABASE_CONNECTION } from '../../database/database.provider';
+import * as schema from '../../database/schema';
+import { transactions, NewTransaction } from '../../database/schema';
 
 export interface TransactionFilters {
   type?: 'income' | 'expense';

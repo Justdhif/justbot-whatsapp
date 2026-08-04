@@ -14,7 +14,7 @@ import {
 import { FinanceService } from './finance.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { IsEnum, IsOptional, IsDateString } from 'class-validator';
 import { TransactionType } from './dto/create-transaction.dto';
 

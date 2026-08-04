@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import { DATABASE_CONNECTION } from '@/database/database.provider';
-import * as schema from '@/database/schema';
-import { users, userProfiles, NewUser } from '@/database/schema';
+import { DATABASE_CONNECTION } from '../../database/database.provider';
+import * as schema from '../../database/schema';
+import { users, userProfiles, NewUser } from '../../database/schema';
 
 @Injectable()
 export class UsersRepository {
