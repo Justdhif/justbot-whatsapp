@@ -4,6 +4,7 @@ import { handleMenuCommand } from './commands/menu.js';
 import { handleStickerCommand } from './commands/sticker.js';
 import { handleIqcCommand } from './commands/iqc.js';
 import { handleFinanceCommand } from './commands/finance.js';
+import { handleReminderCommand } from './commands/reminder.js';
 import { handleLoginCommand } from './commands/login.js';
 
 export async function handleWebhookActionOrMessage(
@@ -21,13 +22,21 @@ export async function handleWebhookActionOrMessage(
     if (isHandled) return true;
   }
 
-  // ── Intercept: Pending Action ────────────────────────────────────────────
-  // Jika user sedang dalam conversation flow, langsung teruskan ke handler.
+  // ── Intercept: Pending Action ─────────────────────────────────────────────
+  // Jika user sedang dalam conversation flow, teruskan ke handler yang relevan.
   if (
     session.pendingAction?.startsWith('awaiting:register:') ||
     session.pendingAction?.startsWith('awaiting:catat:')
   ) {
+    // Jika mode reminder, register flow dikembalikan ke reminder
+    if (session.activeMode === 'reminder') {
+      return handleReminderCommand(from, userText, senderName);
+    }
     return handleFinanceCommand(from, userText, senderName);
+  }
+
+  if (session.pendingAction?.startsWith('awaiting:reminder:')) {
+    return handleReminderCommand(from, userText, senderName);
   }
 
   if (lower === "action:exit" || lower === ".exit") {
@@ -38,7 +47,22 @@ export async function handleWebhookActionOrMessage(
     return true;
   }
 
-  // Finance commands — selalu dicek (baik dalam mode finance maupun tidak)
+  // ── Reminder commands ─────────────────────────────────────────────────────
+  const isReminderCommand =
+    lower === '.pengingat' ||
+    lower === '.reminder' ||
+    lower.startsWith('.ingatkan') ||
+    lower.startsWith('.hapus-ingat ') ||
+    lower.startsWith('.edit-ingat ') ||
+    lower === 'reminder:confirm' ||
+    lower === 'reminder:cancel';
+
+  if (isReminderCommand) {
+    const isHandled = await handleReminderCommand(from, userText, senderName);
+    if (isHandled) return true;
+  }
+
+  // ── Finance commands ──────────────────────────────────────────────────────
   const isFinanceCommand =
     lower === '.finance' ||
     lower === '.keuangan' ||
@@ -48,7 +72,10 @@ export async function handleWebhookActionOrMessage(
     lower === '.riwayat keluar' ||
     lower === '.laporan' ||
     lower === '.summary' ||
-    lower.startsWith('.hapus ');
+    lower.startsWith('.hapus ') ||
+    lower === 'catat:confirm' ||
+    lower === 'catat:cancel' ||
+    lower === 'auth:register';
 
   if (isFinanceCommand) {
     const isHandled = await handleFinanceCommand(from, userText, senderName);
@@ -72,4 +99,3 @@ export async function handleWebhookActionOrMessage(
 
   return false;
 }
-

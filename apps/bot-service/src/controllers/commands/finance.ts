@@ -9,13 +9,16 @@ import {
 } from '../../infrastructure/store/session.store.js';
 import {
   resolveAccessToken,
-  registerUserWithName,
   apiGetTransactions,
   apiCreateTransaction,
   apiDeleteTransaction,
   apiGetFinanceSummary,
 } from '../../infrastructure/gateways/api-client.gateway.js';
 import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
+import {
+  sendRegisterPrompt,
+  handleNameRegistration,
+} from './auth.shared.js';
 import { logger } from '../../utils/logger.js';
 
 // ─── AI Transaction Parser ────────────────────────────────────────────────────
@@ -129,28 +132,7 @@ Halo${greet}! Mode keuangan aktif. ✅
   await sendWhatsAppButtons(from, menuText, buttons, '💰 FINANCE MANAGER');
 }
 
-/**
- * Tampilkan pesan sambutan untuk user yang belum punya akun,
- * dengan tombol "Mulai Daftar".
- */
-async function sendRegisterPrompt(from: string): Promise<void> {
-  const welcomeText = `╭────────────────────────────
-│  💰 *FINANCE MANAGER* 💰
-╰────────────────────────────
-Halo! Kamu belum memiliki akun Finance Manager.
-
-Dengan mendaftar, kamu bisa:
-├─✦ Mencatat pemasukan & pengeluaran
-├─✦ Melihat riwayat transaksi
-├─✦ Mendapat laporan keuangan otomatis
-╰────────────────────────────
-Tap tombol di bawah untuk mulai daftar! 👇`;
-
-  const buttons = [
-    { id: 'finance:register', title: '📝 Daftar Sekarang' },
-  ];
-  await sendWhatsAppButtons(from, welcomeText, buttons, '💰 SELAMAT DATANG');
-}
+// sendRegisterPrompt diimport dari auth.shared.ts
 
 // ─── Main Finance Command Handler ─────────────────────────────────────────────
 
@@ -169,7 +151,10 @@ export async function handleFinanceCommand(
 
   // ── Intercept: Pending Action (multi-step conversation) ───────────────────
   if (session.pendingAction === 'awaiting:register:name') {
-    return handleNameInput(from, trimmed, senderName);
+    return handleNameRegistration(from, trimmed, senderName, async () => {
+      setUserActiveMode(from, 'finance');
+      await sendFinanceMenu(from, senderName);
+    });
   }
 
   // Intercept konfirmasi transaksi AI
@@ -235,12 +220,12 @@ export async function handleFinanceCommand(
     return true;
   }
 
-  // ── Button: finance:register ──────────────────────────────────────────────
-  if (lower === 'finance:register') {
+  // ── Button: auth:register (dari shared register prompt) ──────────────────
+  if (lower === 'auth:register') {
     setPendingAction(from, 'awaiting:register:name');
     await sendWhatsAppMessage(
       from,
-      `📝 *Langkah 1 dari 1*\n══════════════════════════════\nSilakan ketik *nama panggilan* kamu:\n\n_Nama ini akan digunakan sebagai identitas akun Finance Manager kamu._`,
+      `📝 *Daftar Akun JustBot*\n══════════════════════════════\nSilakan ketik *nama panggilan* kamu:\n\n_Nama ini akan digunakan sebagai identitas akun kamu._`,
     );
     return true;
   }
@@ -272,87 +257,6 @@ export async function handleFinanceCommand(
   return false;
 }
 
-// ─── Multi-Step: Handle Name Input ───────────────────────────────────────────
-
-async function handleNameInput(
-  from: string,
-  nameInput: string,
-  senderName: string,
-): Promise<boolean> {
-  const displayName = nameInput.trim();
-
-  // Validasi nama
-  if (!displayName || displayName.length < 2 || displayName.length > 50) {
-    await sendWhatsAppMessage(
-      from,
-      `❌ Nama tidak valid. Masukkan nama panggilan yang terdiri dari 2-50 karakter.\n\nContoh: \`Nadhif\` atau \`Budi Santoso\``,
-    );
-    return true;
-  }
-
-  // Karakter yang tidak boleh ada di nama
-  if (/[<>{}[\]\\|^~`]/.test(displayName)) {
-    await sendWhatsAppMessage(from, `❌ Nama mengandung karakter yang tidak diperbolehkan. Coba lagi.`);
-    return true;
-  }
-
-  await sendWhatsAppMessage(from, `⏳ Mendaftarkan akun atas nama *${displayName}*...`);
-
-  try {
-    const registered = await registerUserWithName(from, displayName);
-    if (!registered) {
-      await sendWhatsAppMessage(
-        from,
-        `❌ Gagal mendaftarkan akun. Coba lagi beberapa saat.\n\nKetik *.finance* untuk mencoba ulang.`,
-      );
-      setPendingAction(from, null);
-      return true;
-    }
-
-    // Login setelah register
-    const { resolveAccessToken: resolve } = await import('../../infrastructure/gateways/api-client.gateway.js');
-    const token = await resolve(from, displayName);
-
-    if (!token) {
-      await sendWhatsAppMessage(
-        from,
-        `⚠️ Akun berhasil dibuat, tapi gagal login otomatis. Ketik *.finance* untuk masuk.`,
-      );
-      setPendingAction(from, null);
-      return true;
-    }
-
-    // Selesai! Clear pending action dan tampilkan menu
-    setPendingAction(from, null);
-    setUserActiveMode(from, 'finance');
-
-    const successText = `✅ *Akun Berhasil Dibuat!*
-══════════════════════════════
-👤 Nama   : *${displayName}*
-📱 Nomor  : +${from}
-══════════════════════════════
-Selamat datang di Finance Manager! 🎉
-Mulai catat keuangan kamu sekarang.`;
-
-    const buttons = [
-      { id: '.laporan', title: '📊 Laporan' },
-      { id: '.riwayat', title: '📋 Riwayat' },
-      { id: 'action:exit', title: '🔴 Exit' },
-    ];
-    await sendWhatsAppButtons(from, successText, buttons, '💰 FINANCE MANAGER');
-
-    logger.info({ from, displayName }, '✅ [Finance] New user registered via WA');
-  } catch (err: any) {
-    logger.error({ err, from }, '❌ [Finance] Registration error');
-    await sendWhatsAppMessage(
-      from,
-      `❌ Terjadi kesalahan: ${err?.message ?? 'Coba lagi.'}\n\nKetik *.finance* untuk mencoba ulang.`,
-    );
-    setPendingAction(from, null);
-  }
-
-  return true;
-}
 
 // ─── Reusable Save Helper ─────────────────────────────────────────────────────
 

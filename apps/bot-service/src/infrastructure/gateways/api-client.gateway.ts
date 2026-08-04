@@ -269,3 +269,67 @@ export async function apiApproveQrSession(
   }
 }
 
+// ─── Reminder API ─────────────────────────────────────────────────────────────
+
+export interface Reminder {
+  id: string;
+  title: string;
+  body?: string;
+  remindAt: string;
+  recurrence?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export async function apiGetReminders(
+  phoneNumber: string,
+  displayName?: string,
+): Promise<Reminder[]> {
+  return authRequest(phoneNumber, displayName, async (token) => {
+    const res = await getClient().get('/api/reminders', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data?.data ?? res.data ?? [];
+  });
+}
+
+export async function apiCreateReminder(
+  phoneNumber: string,
+  displayName: string | undefined,
+  payload: { title: string; body?: string; remindAt: string; recurrence?: string },
+): Promise<Reminder> {
+  return authRequest(phoneNumber, displayName, async (token) => {
+    const res = await getClient().post('/api/reminders', payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data?.data ?? res.data;
+  });
+}
+
+export async function apiUpdateReminder(
+  phoneNumber: string,
+  displayName: string | undefined,
+  reminderId: string,
+  payload: { title?: string; body?: string; remindAt?: string; recurrence?: string; isActive?: boolean },
+): Promise<Reminder> {
+  return authRequest(phoneNumber, displayName, async (token) => {
+    const res = await getClient().patch(`/api/reminders/${reminderId}`, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data?.data ?? res.data;
+  });
+}
+
+export async function apiDeleteReminder(
+  phoneNumber: string,
+  displayName: string | undefined,
+  reminderId: string,
+): Promise<boolean> {
+  return authRequest(phoneNumber, displayName, async (token) => {
+    await getClient().delete(`/api/reminders/${reminderId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return true;
+  });
+}
+
