@@ -6,7 +6,7 @@ export async function generateIqcScreenshot(text: string, time: string, imageBuf
     let processedSticker: Buffer | undefined;
 
     if (imageBuffer) {
-      // Crop and resize the input image to a clean 512x512 square to bypass iqc-canvas validation limits
+      
       processedSticker = await sharp(imageBuffer)
         .resize(512, 512, {
           fit: 'cover',
@@ -29,7 +29,7 @@ export async function generateIqcScreenshot(text: string, time: string, imageBuf
       throw new Error('Canvas generation returned invalid object structure');
     }
     
-    // Explicitly convert PNG from generateIQC to JPEG format using sharp to match image/jpeg upload mimetype
+    
     return await sharp(pngBuffer)
       .jpeg({ quality: 95 })
       .toBuffer();

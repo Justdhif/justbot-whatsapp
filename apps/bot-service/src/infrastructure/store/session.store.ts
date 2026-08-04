@@ -13,8 +13,6 @@ export function getUserSession(userId: string): UserSession {
       lastImageMediaId: null,
       lastImageMimeType: null,
       lastImageCaption: null,
-      awaitingFinanceOtp: false,
-      cuanbuddyPhone: null,
     };
   }
   return userSessions[userId];
@@ -47,23 +45,4 @@ export function clearUserLastImage(userId: string): void {
   session.lastImageMimeType = null;
   session.lastImageCaption = null;
   session.updatedAt = Date.now();
-}
-
-
-
-export function setFinanceOtpPending(userId: string, pending: boolean): void {
-  const session = getUserSession(userId);
-  session.awaitingFinanceOtp = pending;
-  session.updatedAt = Date.now();
-}
-
-export function setCuanbuddyPhone(userId: string, phone: string | null): void {
-  const session = getUserSession(userId);
-  session.cuanbuddyPhone = phone;
-  session.awaitingFinanceOtp = false;
-  session.updatedAt = Date.now();
-}
-
-export function getCuanbuddyPhone(userId: string): string | null {
-  return getUserSession(userId).cuanbuddyPhone ?? null;
 }

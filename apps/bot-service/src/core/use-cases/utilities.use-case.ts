@@ -74,11 +74,6 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦  *.sticker*
 ├─✦  *.iqc <teks>*
 ├─✦  *.exit*
-│
-├─── o(" ${titleApps} ")
-├─✦  *.connect-finance* — Hubungkan akun CuanBuddy
-├─✦  *.transaksi* — 10 transaksi terakhir CuanBuddy
-├─✦  *.finance-help* — Panduan lengkap fitur Finance
 ╰────────────────────────────
 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural!`;
 }

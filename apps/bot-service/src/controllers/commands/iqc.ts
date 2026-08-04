@@ -9,12 +9,12 @@ export async function handleIqcCommand(
 ): Promise<boolean> {
   const trimmed = userText.trim();
   
-  // Trigger pattern: .iqc
+  
   const iqcMatch = trimmed.match(/^\.iqc$/i);
   if (iqcMatch) {
     const textContent = '';
     
-    // Retrieve user image attachment from session
+    
     const lastImageMediaId = session?.lastImageMediaId;
 
     if (!lastImageMediaId) {
@@ -25,9 +25,9 @@ export async function handleIqcCommand(
     await sendWhatsAppMessage(from, '⏳ Sedang membuat screenshot chat iPhone...');
 
     try {
-      // Get current local time in HH:mm format
+      
       const now = new Date();
-      // Adjust timezone to Jakarta (WIB) for mock default
+      
       const timeStr = now.toLocaleTimeString('id-ID', {
         timeZone: 'Asia/Jakarta',
         hour: '2-digit',
@@ -46,7 +46,7 @@ export async function handleIqcCommand(
 
       const imageBuffer = await generateIqcScreenshot(textContent, timeStr, uploadedImageBuffer);
       
-      // Send the generated chat mockup screenshot directly as an image
+      
       const imageSent = await sendWhatsAppImageFromBuffer(from, imageBuffer, textContent ? `📱 Screenshot chat iPhone: "${textContent}"` : '📱 Screenshot chat iPhone');
       if (!imageSent) {
         await sendWhatsAppMessage(from, 'Gagal mengirim screenshot chat iPhone. Coba lagi beberapa saat.');

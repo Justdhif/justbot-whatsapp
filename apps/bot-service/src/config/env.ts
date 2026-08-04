@@ -13,9 +13,6 @@ const envSchema = z.object({
   WA_CLOUD_API_ACCESS_TOKEN: z.string().min(1, 'WA_CLOUD_API_ACCESS_TOKEN is required'),
   
   
-  CUANBUDDY_API_BASE_URL: z.string().default('https://cuan-buddy-api.vercel.app'),
-
-  
   BOT_OPERATIONAL_START: z.string().default('07:00'),
   BOT_OPERATIONAL_END: z.string().default('21:00'),
   
