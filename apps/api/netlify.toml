@@ -1,29 +1,15 @@
-# ──────────────────────────────────────────────────────────────────────────────
-# Netlify Configuration — JustBot API
-# ──────────────────────────────────────────────────────────────────────────────
-#
-# Setup untuk Netlify site TERPISAH dari bot-service.
-# Pastikan di Netlify dashboard: Base directory = apps/api
-# ──────────────────────────────────────────────────────────────────────────────
-
 [build]
-  # Compile TypeScript → dist/ sebelum deploy
   command = "npm run build"
-  # Publish directory (untuk API-only site ini tidak dipakai untuk static files,
-  # tapi Netlify tetap butuh nilai ini)
   publish = "dist"
 
 [functions]
-  # Directory tempat Netlify Function berada
   directory = "functions"
-  # esbuild untuk bundling function entry point
-  node_bundler = "esbuild"
-  # Extend timeout ke 26 detik (default: 10 detik)
-  # Berguna untuk cold start NestJS pertama kali
-  [functions.environment]
+  # Gunakan nft (Node File Tracing) bukan esbuild.
+  # nft menelusuri semua dependency (termasuk dist/) dan mengemas semuanya
+  # ke dalam Lambda package, sehingga '../dist/lambda' selalu tersedia.
+  node_bundler = "nft"
 
 [[redirects]]
-  # Semua request diteruskan ke Netlify Function
   from = "/*"
   to = "/.netlify/functions/api"
   status = 200
