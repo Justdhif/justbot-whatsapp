@@ -3,6 +3,7 @@ import { setUserActiveMode } from '../infrastructure/store/session.store.js';
 import { handleMenuCommand } from './commands/menu.js';
 import { handleStickerCommand } from './commands/sticker.js';
 import { handleIqcCommand } from './commands/iqc.js';
+import { handleFinanceCommand, handleFinanceOtpInput } from './commands/finance.command.js';
 
 export async function handleWebhookActionOrMessage(
   from: string,
@@ -19,6 +20,17 @@ export async function handleWebhookActionOrMessage(
     const exitButtons = [{ id: ".menu", title: "📋 Buka Menu" }];
     await sendWhatsAppButtons(from, exitText, exitButtons, "🤖 MODE OFF");
     return true;
+  }
+
+  
+  const isFinanceHandled = await handleFinanceCommand(from, userText, senderName, session);
+  if (isFinanceHandled) {
+    return true;
+  }
+
+  
+  if (session.awaitingFinanceOtp && /^\d{6}$/.test(trimmed)) {
+    return await handleFinanceOtpInput(from, trimmed);
   }
 
   const isMenuHandled = await handleMenuCommand(from, userText, senderName);
@@ -38,3 +50,4 @@ export async function handleWebhookActionOrMessage(
 
   return false;
 }
+

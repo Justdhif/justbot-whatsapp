@@ -6,6 +6,9 @@ export interface UserSession {
   lastImageMediaId?: string | null;
   lastImageMimeType?: string | null;
   lastImageCaption?: string | null;
+  
+  awaitingFinanceOtp?: boolean;   
+  cuanbuddyPhone?: string | null; 
 }
 
 export interface ModuleDetail {
