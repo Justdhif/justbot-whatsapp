@@ -70,17 +70,17 @@ export function getHelpMenu(senderName?: string): string {
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.batal*
-├─✦  *.brat*
-├─✦  *.catat*
+├─✦  *.brat* _<teks>_
+├─✦  *.catat* _<deskripsi transaksi>_
 ├─✦  *.exit*
 ├─✦  *.finance*
-├─✦  *.hapus*
-├─✦  *.iqc*
+├─✦  *.hapus* _<id>_
+├─✦  *.iqc* _<teks>_
 ├─✦  *.konfirmasi*
 ├─✦  *.laporan*
-├─✦  *.login*
+├─✦  *.login* _<session-id>_
 ├─✦  *.menu*
-├─✦  *.riwayat*
+├─✦  *.riwayat* _[masuk|keluar]_
 ├─✦  *.sticker*
 ╰────────────────────────────
 📌 *Tips*: Bot ini secara otomatis mendeteksi kebutuhan Anda saat mengobrol biasa (tanpa mode khusus). Cukup tanyakan apa saja secara natural!`;
