@@ -172,9 +172,12 @@ export async function handleFinanceCommand(
     return handleNameInput(from, trimmed, senderName);
   }
 
-  // Intercept konfirmasi transaksi AI confidence-low
+  // Intercept konfirmasi transaksi AI
   if (session.pendingAction?.startsWith('awaiting:catat:confirm:')) {
-    if (lower === '.konfirmasi' || lower === 'konfirmasi') {
+    const isConfirm = lower === 'konfirmasi' || lower === 'catat:confirm';
+    const isCancel  = lower === 'batal'       || lower === 'catat:cancel';
+
+    if (isConfirm) {
       const jsonStr = session.pendingAction.slice('awaiting:catat:confirm:'.length);
       try {
         const data = JSON.parse(jsonStr);
@@ -186,13 +189,32 @@ export async function handleFinanceCommand(
         await sendWhatsAppMessage(from, '❌ Data konfirmasi rusak. Silakan ulangi perintah .catat.');
         return true;
       }
-    } else if (lower === '.batal' || lower === 'batal') {
+    }
+
+    if (isCancel) {
       setPendingAction(from, null);
-      await sendWhatsAppMessage(from, '🚫 Transaksi dibatalkan. Ulangi perintah .catat dengan deskripsi yang lebih jelas.');
+      await sendWhatsAppMessage(from, '🚫 Transaksi dibatalkan.');
       return true;
     }
-    // User mengirim sesuatu yang lain saat menunggu konfirmasi → abaikan dan tanya lagi
-    await sendWhatsAppMessage(from, '⚠️ Balas *.konfirmasi* untuk menyimpan, atau *.batal* untuk membatalkan transaksi di atas.');
+
+    // User kirim hal lain saat menunggu konfirmasi → ingatkan lagi dengan tombol
+    const jsonStr = session.pendingAction.slice('awaiting:catat:confirm:'.length);
+    try {
+      const data = JSON.parse(jsonStr);
+      const icon  = data.type === 'income' ? '📈' : '📉';
+      const label = data.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+      await sendWhatsAppButtons(
+        from,
+        `⚠️ Kamu belum mengkonfirmasi transaksi sebelumnya:\n\n${icon} *${label}* ${formatRupiah(data.amount)} • ${data.category}\n\nKonfirmasi atau batalkan dulu ya 👇`,
+        [
+          { id: 'catat:confirm', title: '✅ Konfirmasi' },
+          { id: 'catat:cancel',  title: '❌ Batal' },
+        ],
+        '⏳ MENUNGGU KONFIRMASI',
+      );
+    } catch {
+      setPendingAction(from, null);
+    }
     return true;
   }
 
@@ -416,22 +438,35 @@ async function handleAuthenticatedCommand(
     }
 
     const { type, amount, category, description, confidence, clarification } = parsed;
-    const icon = type === 'income' ? '📈' : '📉';
+    const icon  = type === 'income' ? '📈' : '📉';
     const label = type === 'income' ? 'Pemasukan' : 'Pengeluaran';
     const confidenceIcon = confidence === 'high' ? '✅' : confidence === 'medium' ? '🟡' : '🔴';
+    const extraNote = confidence === 'low' && clarification
+      ? `\n\n⚠️ _${clarification}_`
+      : '';
 
-    // Jika confidence low, tampilkan konfirmasi sebelum simpan
-    if (confidence === 'low') {
-      const confirmText = `${confidenceIcon} *AI kurang yakin dengan catatan ini:*\n\n${clarification ?? 'Tolong periksa detail berikut:'}\n\n*Hasil deteksi:*\n├─ Tipe    : ${label}\n├─ Jumlah  : ${formatRupiah(amount)}\n├─ Kategori: ${category}\n╰─ Deskripsi: ${description || '-'}\n\nKetik *.konfirmasi* untuk menyimpan, atau ulangi perintah .catat dengan deskripsi yang lebih jelas.`;
-      await sendWhatsAppMessage(from, confirmText);
-      // Simpan data di pending action agar bisa dikonfirmasi
-      setPendingAction(from, `awaiting:catat:confirm:${JSON.stringify({ type, amount, category, description })}`);
-      return true;
-    }
+    // Semua hasil AI → tampilkan kartu konfirmasi + 2 button
+    const confirmText =
+      `🤖 *AI mendeteksi transaksi ini:*${extraNote}\n\n` +
+      `${icon} *${label}*\n` +
+      `├─ Jumlah    : *${formatRupiah(amount)}*\n` +
+      `├─ Kategori  : ${category}\n` +
+      `╰─ Deskripsi : ${description || '-'}\n\n` +
+      `${confidenceIcon} _Keyakinan AI: ${confidence}_\n\n` +
+      `Konfirmasi atau batalkan transaksi ini 👇`;
 
-    // Confidence high/medium → langsung simpan
-    await sendWhatsAppMessage(from, `${confidenceIcon} _AI mendeteksi: ${label} ${formatRupiah(amount)} • ${category}_\n⏳ Menyimpan...`);
-    return saveCatatTransaction(from, senderName, type, amount, category, description);
+    setPendingAction(from, `awaiting:catat:confirm:${JSON.stringify({ type, amount, category, description })}`);
+
+    await sendWhatsAppButtons(
+      from,
+      confirmText,
+      [
+        { id: 'catat:confirm', title: '✅ Konfirmasi' },
+        { id: 'catat:cancel',  title: '❌ Batal' },
+      ],
+      `${icon} KONFIRMASI TRANSAKSI`,
+    );
+    return true;
   }
 
   // ── .riwayat ────────────────────────────────────────────────────────────

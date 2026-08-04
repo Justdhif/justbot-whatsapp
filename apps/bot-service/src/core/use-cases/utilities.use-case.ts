@@ -69,14 +69,12 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦ *${skillSticker}*
 │
 ├─── o(" ${titleShortcuts} ")
-├─✦  *.batal*
 ├─✦  *.brat* _<teks>_
 ├─✦  *.catat* _<deskripsi transaksi>_
 ├─✦  *.exit*
 ├─✦  *.finance*
 ├─✦  *.hapus* _<id>_
 ├─✦  *.iqc* _<teks>_
-├─✦  *.konfirmasi*
 ├─✦  *.laporan*
 ├─✦  *.login* _<session-id>_
 ├─✦  *.menu*
