@@ -101,4 +101,48 @@ export class UsersRepository {
       .set({ refreshTokenHash: null })
       .where(eq(users.id, userId));
   }
+
+  // ─── QR Sessions Database Queries ──────────────────────────────────────────
+
+  async createQrSession(expiresAt: Date) {
+    const [result] = await this.db
+      .insert(schema.qrSessions)
+      .values({
+        expiresAt,
+        status: 'pending',
+      })
+      .returning();
+    return result;
+  }
+
+  async findQrSessionById(id: string) {
+    const [result] = await this.db
+      .select()
+      .from(schema.qrSessions)
+      .where(eq(schema.qrSessions.id, id));
+    return result;
+  }
+
+  async updateQrSessionStatus(id: string, status: string) {
+    await this.db
+      .update(schema.qrSessions)
+      .set({ status })
+      .where(eq(schema.qrSessions.id, id));
+  }
+
+  async approveQrSession(id: string, userId: string) {
+    await this.db
+      .update(schema.qrSessions)
+      .set({
+        status: 'approved',
+        userId,
+      })
+      .where(eq(schema.qrSessions.id, id));
+  }
+
+  async deleteQrSession(id: string) {
+    await this.db
+      .delete(schema.qrSessions)
+      .where(eq(schema.qrSessions.id, id));
+  }
 }

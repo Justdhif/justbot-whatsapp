@@ -62,6 +62,13 @@ export const Navbar: React.FC = () => {
             </button>
 
             <a
+              href="#login"
+              className="px-4 py-2 text-sm font-semibold text-[#8a8f98] hover:text-white transition-colors"
+            >
+              Login Web
+            </a>
+
+            <a
               href="https://wa.me/6282213111575?text=Halo%20JustBot%2C%20saya%20ingin%20mencoba%20bot%20WhatsApp%20AI"
               target="_blank"
               rel="noopener noreferrer"
@@ -117,6 +124,13 @@ export const Navbar: React.FC = () => {
             {t('nav.testimonials')}
           </a>
           <div className="pt-4 border-t border-[#23252a] flex flex-col gap-3">
+            <a
+              href="#login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center py-2.5 rounded-lg text-sm font-semibold text-white bg-white/[0.04] border border-white/[0.08]"
+            >
+              Login Web
+            </a>
             <a
               href="https://wa.me/6282213111575?text=Halo%20JustBot%2C%20saya%20ingin%20mencoba%20bot%20WhatsApp%20AI"
               target="_blank"

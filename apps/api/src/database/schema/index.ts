@@ -7,3 +7,4 @@ export * from './users.schema';
 export * from './user-profiles.schema';
 export * from './transactions.schema';
 export * from './reminders.schema';
+export * from './qr-sessions.schema';

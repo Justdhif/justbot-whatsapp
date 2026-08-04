@@ -28,4 +28,8 @@ export const envValidationSchema = Joi.object({
   // Rate Limiting
   THROTTLE_TTL: Joi.number().default(900000),
   THROTTLE_LIMIT: Joi.number().default(100),
+
+  // Bot Integration
+  WA_BOT_NUMBER: Joi.string().default('6282213111575'),
+  BOT_SECRET: Joi.string().default('justbot_super_secure_bot_secret_key_12345'),
 });

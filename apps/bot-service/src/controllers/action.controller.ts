@@ -4,6 +4,7 @@ import { handleMenuCommand } from './commands/menu.js';
 import { handleStickerCommand } from './commands/sticker.js';
 import { handleIqcCommand } from './commands/iqc.js';
 import { handleFinanceCommand } from './commands/finance.js';
+import { handleLoginCommand } from './commands/login.js';
 
 export async function handleWebhookActionOrMessage(
   from: string,
@@ -13,6 +14,12 @@ export async function handleWebhookActionOrMessage(
 ): Promise<boolean> {
   const trimmed = userText.trim();
   const lower = trimmed.toLowerCase();
+
+  // Login QR commands — intercept langsung
+  if (lower.startsWith('.login ')) {
+    const isHandled = await handleLoginCommand(from, userText);
+    if (isHandled) return true;
+  }
 
   // ── Intercept: Pending Action ────────────────────────────────────────────
   // Jika user sedang dalam conversation flow (misal: menunggu input nama register),

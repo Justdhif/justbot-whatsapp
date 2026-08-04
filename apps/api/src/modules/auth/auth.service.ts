@@ -138,6 +138,86 @@ export class AuthService {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  // QR Login Flows
+  // ──────────────────────────────────────────────────────────────────────────
+
+  async generateQrSession(): Promise<{ sessionId: string; qrLink: string }> {
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 5); // Expired dalam 5 menit
+
+    const waPhoneNumber = this.configService.get<string>('WA_PHONE_NUMBER_ID'); 
+    // Gunakan nomor telepon tujuan bot WA, tapi untuk format tautan kita bisa gunakan link wa.me
+    // Kita butuh nomor WA bot dari environment
+    const botPhone = this.configService.get<string>('WA_BOT_NUMBER', '6282213111575');
+
+    const result = await this.usersRepository.createQrSession(expiresAt);
+    
+    // Link yang akan dikonversi menjadi QR Code
+    const qrLink = `https://wa.me/${botPhone}?text=.login%20${result.id}`;
+
+    return {
+      sessionId: result.id,
+      qrLink,
+    };
+  }
+
+  async checkQrSessionStatus(sessionId: string): Promise<{ status: string; tokens?: TokenPair }> {
+    const session = await this.usersRepository.findQrSessionById(sessionId);
+    
+    if (!session) {
+      return { status: 'not_found' };
+    }
+
+    if (session.status === 'expired' || new Date() > new Date(session.expiresAt)) {
+      if (session.status === 'pending') {
+        await this.usersRepository.updateQrSessionStatus(sessionId, 'expired');
+      }
+      return { status: 'expired' };
+    }
+
+    if (session.status === 'approved' && session.userId) {
+      // Generate token pair untuk user yang menyetujui
+      const tokens = await this.generateTokens(session.userId);
+      await this.storeRefreshTokenHash(session.userId, tokens.refreshToken);
+      
+      // Hapus session setelah digunakan agar tidak bisa dipolling ulang
+      await this.usersRepository.deleteQrSession(sessionId);
+
+      return {
+        status: 'approved',
+        tokens,
+      };
+    }
+
+    return { status: session.status };
+  }
+
+  async approveQrSession(sessionId: string, phoneNumber: string): Promise<boolean> {
+    const session = await this.usersRepository.findQrSessionById(sessionId);
+    if (!session) {
+      throw new BadRequestException('Sesi QR tidak ditemukan');
+    }
+
+    if (new Date() > new Date(session.expiresAt)) {
+      await this.usersRepository.updateQrSessionStatus(sessionId, 'expired');
+      throw new BadRequestException('Sesi QR sudah kedaluwarsa');
+    }
+
+    if (session.status !== 'pending') {
+      throw new BadRequestException(`Sesi QR sudah tidak aktif (status: ${session.status})`);
+    }
+
+    // Cari user berdasarkan nomor HP
+    const user = await this.usersRepository.findByPhoneNumber(phoneNumber);
+    if (!user) {
+      throw new BadRequestException('Nomor WhatsApp belum terdaftar di aplikasi.');
+    }
+
+    await this.usersRepository.approveQrSession(sessionId, user.id);
+    return true;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Private helpers
   // ──────────────────────────────────────────────────────────────────────────
 

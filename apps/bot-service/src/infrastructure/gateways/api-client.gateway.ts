@@ -243,3 +243,29 @@ export async function apiGetFinanceSummary(
     return res.data?.data ?? res.data;
   });
 }
+
+/**
+ * Mengirim persetujuan login QR ke backend API.
+ */
+export async function apiApproveQrSession(
+  sessionId: string,
+  phoneNumber: string,
+): Promise<boolean> {
+  try {
+    await getClient().post(
+      '/api/auth/qr/approve',
+      { sessionId, phoneNumber },
+      {
+        headers: {
+          'x-bot-token': env.BOT_SECRET,
+        },
+      },
+    );
+    return true;
+  } catch (err: any) {
+    const msg = err?.response?.data?.message ?? err?.message;
+    logger.error({ err, sessionId, phoneNumber }, `❌ [ApiClient] Failed to approve QR session: ${msg}`);
+    throw new Error(msg || 'Gagal menyetujui QR Code');
+  }
+}
+
