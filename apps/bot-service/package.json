@@ -5,9 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "node strip_comments.js && tsc",
-    "start": "node dist/index.js",
-    "strip": "node strip_comments.js"
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@fastify/formbody": "^7.4.0",
