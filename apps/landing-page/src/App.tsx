@@ -7,7 +7,6 @@ import { TestimonialsSection } from './components/TestimonialsSection';
 import { Footer } from './components/Footer';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { TermsOfServicePage } from './pages/TermsOfServicePage';
-import { LoginPage } from './pages/LoginPage';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -19,10 +18,6 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  if (currentPath === '/login' || window.location.hash === '#login') {
-    return <LoginPage />;
-  }
 
   if (currentPath === '/privacy' || window.location.hash === '#privacy') {
     return <PrivacyPolicyPage />;
