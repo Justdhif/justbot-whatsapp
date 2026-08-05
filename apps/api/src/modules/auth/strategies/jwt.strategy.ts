@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UsersRepository } from '../../users/users.repository';
 
 export interface JwtAccessPayload {
   sub: string;
@@ -9,20 +10,9 @@ export interface JwtAccessPayload {
   exp?: number;
 }
 
-/**
- * JWT Access Token Strategy
- * Digunakan oleh JwtAuthGuard (global guard) untuk memvalidasi
- * semua protected route.
- *
- * Token diambil dari header: Authorization: Bearer <access_token>
- *
- * Catatan: process.env diakses langsung di super() karena ConfigService
- * belum tersedia saat Passport memanggil super() di constructor.
- * Ini adalah pattern standar NestJS + Passport.
- */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor() {
+  constructor(private readonly usersRepository: UsersRepository) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -30,10 +20,21 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  validate(payload: JwtAccessPayload): { id: string } {
+  async validate(payload: JwtAccessPayload): Promise<{ id: string; role: string; email?: string; phoneNumber?: string }> {
     if (payload.type !== 'access') {
       throw new UnauthorizedException('Invalid token type');
     }
-    return { id: payload.sub };
+
+    const user = await this.usersRepository.findById(payload.sub);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('User is not active or not found');
+    }
+
+    return {
+      id: user.id,
+      role: user.role,
+      email: user.email || undefined,
+      phoneNumber: user.phoneNumber || undefined,
+    };
   }
 }
