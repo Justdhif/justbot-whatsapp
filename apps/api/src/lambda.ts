@@ -29,10 +29,10 @@ async function bootstrapServer() {
   });
 
   const config = app.get(ConfigService);
-  const corsOrigins = config
-    .get<string>('CORS_ORIGINS', '*')
-    .split(',')
-    .map((o: string) => o.trim());
+  const rawOrigins = config.get<string>('CORS_ORIGINS', '*');
+  const corsOrigins = rawOrigins === '*'
+    ? true
+    : rawOrigins.split(',').map((o: string) => o.trim());
 
   // Security headers
   app.use(

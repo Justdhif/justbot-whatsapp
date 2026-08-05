@@ -14,10 +14,10 @@ async function bootstrap() {
 
   const config = app.get(ConfigService);
   const port = config.get<number>('PORT', 3001);
-  const corsOrigins = config
-    .get<string>('CORS_ORIGINS', 'http://localhost:3000')
-    .split(',')
-    .map((origin) => origin.trim());
+  const rawOrigins = config.get<string>('CORS_ORIGINS', 'http://localhost:3000');
+  const corsOrigins = rawOrigins === '*'
+    ? true
+    : rawOrigins.split(',').map((o) => o.trim());
 
   // ── Security Headers (Helmet) ──────────────────────────────────────────
   app.use(
