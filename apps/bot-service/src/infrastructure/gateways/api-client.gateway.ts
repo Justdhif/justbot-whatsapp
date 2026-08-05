@@ -302,3 +302,27 @@ export async function apiDeleteReminder(
   });
 }
 
+export async function apiLogBotActivity(
+  phoneNumber: string,
+  displayName: string | undefined,
+  payload: {
+    senderNumber: string;
+    senderName?: string;
+    messageText: string;
+    direction: 'incoming' | 'outgoing';
+    moduleUsed?: string;
+    status?: 'success' | 'failed' | 'ignored';
+  },
+): Promise<boolean> {
+  return authRequest(phoneNumber, displayName, async (token) => {
+    await getClient().post('/api/analytics/logs', payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return true;
+  }).catch((err) => {
+    logger.error({ err, phoneNumber }, '❌ [ApiClient] Failed to log bot activity');
+    return false;
+  });
+}
+
+

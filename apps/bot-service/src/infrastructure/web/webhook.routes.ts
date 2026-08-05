@@ -14,6 +14,7 @@ import {
   hasBeenNotifiedToday,
   markUserNotifiedToday,
 } from "../store/notification.store.js";
+import { apiLogBotActivity } from "../gateways/api-client.gateway.js";
 
 interface WebhookQuery {
   "hub.mode"?: string;
@@ -193,6 +194,25 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               return reply.status(200).send({ status: "success" });
             }
 
+            const safeLogActivity = async (
+              text: string,
+              direction: 'incoming' | 'outgoing',
+              moduleUsed?: string
+            ) => {
+              try {
+                await apiLogBotActivity(from, senderName, {
+                  senderNumber: from,
+                  senderName: senderName || undefined,
+                  messageText: text,
+                  direction,
+                  moduleUsed,
+                  status: 'success',
+                });
+              } catch (err) {
+                logger.warn({ err }, 'Failed to log bot activity');
+              }
+            };
+
             const iqcRequest = /^\.iqc$/i.test(imageCaptionText);
             if (iqcRequest) {
               const isIqcHandled = await handleWebhookActionOrMessage(from, imageCaptionText, senderName, session);
@@ -201,6 +221,9 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               }
             }
 
+            // Log incoming image/caption
+            await safeLogActivity(imageCaptionText || "kiriman gambar", 'incoming', session.activeMode || undefined);
+
             const botReply = await processIncomingMessage(
               from,
               imageCaptionText || "kiriman gambar",
@@ -208,6 +231,8 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             );
             if (botReply !== "action:processed") {
               await sendWhatsAppMessage(from, botReply);
+              // Log outgoing reply
+              await safeLogActivity(botReply, 'outgoing', session.activeMode || undefined);
             }
             return reply.status(200).send({ status: "success" });
           }
@@ -217,6 +242,28 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             if (isActionHandled) {
               return reply.status(200).send({ status: "success" });
             }
+
+            const safeLogActivity = async (
+              text: string,
+              direction: 'incoming' | 'outgoing',
+              moduleUsed?: string
+            ) => {
+              try {
+                await apiLogBotActivity(from, senderName, {
+                  senderNumber: from,
+                  senderName: senderName || undefined,
+                  messageText: text,
+                  direction,
+                  moduleUsed,
+                  status: 'success',
+                });
+              } catch (err) {
+                logger.warn({ err }, 'Failed to log bot activity');
+              }
+            };
+
+            // Log incoming text
+            await safeLogActivity(userText, 'incoming', session.activeMode || undefined);
 
             const botReply = await processIncomingMessage(
               from,
@@ -249,6 +296,9 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             } else {
               await sendWhatsAppMessage(from, botReply);
             }
+
+            // Log outgoing reply
+            await safeLogActivity(botReply, 'outgoing', session.activeMode || undefined);
           }
         }
       } catch (error) {
