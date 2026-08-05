@@ -242,49 +242,8 @@ export default function DashboardOverview() {
   // Today's Reminders (Agenda) filtered by selected date
   const todaysReminders = reminders.filter(r => isSameDay(new Date(r.remindAt), selectedDate));
 
-  const fallbackReminders = [
-    { time: '10.00', title: 'Pengingat Tagihan', desc: 'Kirim pengingat tagihan listrik' },
-    { time: '14.00', title: 'Broadcast Promo', desc: 'Kirim promo ke pelanggan' },
-    { time: '17.00', title: 'Follow Up', desc: 'Follow up pesanan #INV-1021' }
-  ];
-
-  const displayReminders = todaysReminders.length > 0
-    ? todaysReminders.slice(0, 3).map(r => ({
-        id: r.id,
-        time: new Date(r.remindAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.'),
-        title: r.title,
-        desc: 'Pengingat otomatis dari WhatsApp Bot'
-      }))
-    : fallbackReminders.map((r, idx) => ({
-        id: `mock-${idx}`,
-        time: r.time,
-        title: r.title,
-        desc: r.desc
-      }));
-
   // Dynamic Transaction Filtering based on selectedDate
   const filteredTransactions = transactions.filter(t => isSameDay(new Date(t.createdAt), selectedDate));
-
-  // Fallback mock transactions mapped to selectedDate hours to make the interface populated
-  const getMockTransactionsForDate = (date: Date) => {
-    const d1 = new Date(date);
-    const d2 = new Date(date);
-    const d3 = new Date(date);
-    
-    d1.setHours(9, 30, 0);
-    d2.setHours(13, 15, 0);
-    d3.setHours(16, 45, 0);
-
-    return [
-      { id: 'mock-tx-1', description: 'Pembayaran Klien (JustBot)', amount: 1500000, type: 'income' as const, category: 'jasa', createdAt: d1.toISOString() },
-      { id: 'mock-tx-2', description: 'Langganan Server (Vercel)', amount: 320000, type: 'expense' as const, category: 'operasional', createdAt: d2.toISOString() },
-      { id: 'mock-tx-3', description: 'Pembelian Kopi & Snack', amount: 45000, type: 'expense' as const, category: 'konsumsi', createdAt: d3.toISOString() }
-    ];
-  };
-
-  const displayTransactions = filteredTransactions.length > 0 
-    ? filteredTransactions.slice(0, 3) 
-    : getMockTransactionsForDate(selectedDate);
 
   const chartConfig = {
     pesan: {
@@ -632,39 +591,46 @@ export default function DashboardOverview() {
 
               {/* Reminders layout list as a premium vertical timeline */}
               <div className="space-y-4.5 relative pl-1">
-                {displayReminders.map((rem, idx) => {
-                  const isLast = idx === displayReminders.length - 1;
-                  return (
-                    <div key={rem.id} className="flex items-center justify-between gap-3 text-xs relative min-h-[46px]">
-                      {/* Left: Time and Icon */}
-                      <div className="flex items-center gap-2 text-zinc-400 font-mono w-[68px] shrink-0">
-                        <CalendarCheck className="h-4 w-4 opacity-75" />
-                        <span className="font-semibold">{rem.time}</span>
-                      </div>
+                {todaysReminders.length > 0 ? (
+                  todaysReminders.slice(0, 3).map((rem, idx) => {
+                    const isLast = idx === Math.min(todaysReminders.length, 3) - 1;
+                    const timeStr = new Date(rem.remindAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
+                    return (
+                      <div key={rem.id} className="flex items-center justify-between gap-3 text-xs relative min-h-[46px]">
+                        {/* Left: Time and Icon */}
+                        <div className="flex items-center gap-2 text-zinc-400 font-mono w-[68px] shrink-0">
+                          <CalendarCheck className="h-4 w-4 opacity-75" />
+                          <span className="font-semibold">{timeStr}</span>
+                        </div>
 
-                      {/* Middle: Timeline Dot and Line */}
-                      <div className="relative flex flex-col items-center w-5 shrink-0 self-stretch justify-center">
-                        {/* Dot */}
-                        <div className="w-2 h-2 rounded-full bg-[#25D366] z-10 shadow-sm shadow-[#25D366]/50" />
-                        {/* Line to next item */}
-                        {!isLast && (
-                          <div className="absolute top-[50%] bottom-[-26px] w-[1.5px] bg-[#25D366]/35 z-0" />
-                        )}
-                      </div>
+                        {/* Middle: Timeline Dot and Line */}
+                        <div className="relative flex flex-col items-center w-5 shrink-0 self-stretch justify-center">
+                          {/* Dot */}
+                          <div className="w-2 h-2 rounded-full bg-[#25D366] z-10 shadow-sm shadow-[#25D366]/50" />
+                          {/* Line to next item */}
+                          {!isLast && (
+                            <div className="absolute top-[50%] bottom-[-26px] w-[1.5px] bg-[#25D366]/35 z-0" />
+                          )}
+                        </div>
 
-                      {/* Right: Title, Desc, and Checkmark */}
-                      <div className="flex-1 min-w-0 pl-1">
-                        <p className="font-bold text-white leading-tight truncate">{rem.title}</p>
-                        <p className="text-[10px] text-zinc-550 mt-0.5 truncate leading-tight text-zinc-400">{rem.desc}</p>
-                      </div>
+                        {/* Right: Title, Desc, and Checkmark */}
+                        <div className="flex-1 min-w-0 pl-1">
+                          <p className="font-bold text-white leading-tight truncate">{rem.title}</p>
+                          <p className="text-[10px] text-zinc-550 mt-0.5 truncate leading-tight text-zinc-400">Pengingat otomatis WhatsApp</p>
+                        </div>
 
-                      {/* Far Right: Checkmark */}
-                      <div className="shrink-0 flex items-center justify-center pl-2">
-                        <CheckCircle2 className="h-4.5 w-4.5 text-primary/80" />
+                        {/* Far Right: Checkmark */}
+                        <div className="shrink-0 flex items-center justify-center pl-2">
+                          <CheckCircle2 className="h-4.5 w-4.5 text-primary/80" />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="py-8 text-center text-[11px] border border-dashed border-zinc-900 rounded-xl bg-zinc-950/20 text-zinc-500 font-medium">
+                    Tidak ada agenda untuk tanggal ini.
+                  </div>
+                )}
               </div>
 
               <div className="mt-5 pt-3 border-t border-zinc-900/60 text-center">
@@ -691,46 +657,52 @@ export default function DashboardOverview() {
 
               {/* Transactions layout list as a premium vertical timeline */}
               <div className="space-y-4.5 relative pl-1">
-                {displayTransactions.map((tx, idx) => {
-                  const isLast = idx === displayTransactions.length - 1;
-                  const txTime = new Date(tx.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
-                  return (
-                    <div key={tx.id} className="flex items-center justify-between gap-3 text-xs relative min-h-[46px]">
-                      {/* Left: Time and Icon */}
-                      <div className="flex items-center gap-2 text-zinc-400 font-mono w-[68px] shrink-0">
-                        {tx.type === 'income' ? <TrendingUp className="h-4 w-4 text-emerald-500/80" /> : <TrendingDown className="h-4 w-4 text-red-400/80" />}
-                        <span className="font-semibold">{txTime}</span>
-                      </div>
+                {filteredTransactions.length > 0 ? (
+                  filteredTransactions.slice(0, 3).map((tx, idx) => {
+                    const isLast = idx === Math.min(filteredTransactions.length, 3) - 1;
+                    const txTime = new Date(tx.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
+                    return (
+                      <div key={tx.id} className="flex items-center justify-between gap-3 text-xs relative min-h-[46px]">
+                        {/* Left: Time and Icon */}
+                        <div className="flex items-center gap-2 text-zinc-400 font-mono w-[68px] shrink-0">
+                          {tx.type === 'income' ? <TrendingUp className="h-4 w-4 text-emerald-500/80" /> : <TrendingDown className="h-4 w-4 text-red-400/80" />}
+                          <span className="font-semibold">{txTime}</span>
+                        </div>
 
-                      {/* Middle: Timeline Dot and Line */}
-                      <div className="relative flex flex-col items-center w-5 shrink-0 self-stretch justify-center">
-                        {/* Dot (emerald for income, red for expense) */}
-                        <div className={`w-2 h-2 rounded-full z-10 shadow-sm ${
-                          tx.type === 'income' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-400 shadow-red-400/50'
-                        }`} />
-                        {/* Line to next item */}
-                        {!isLast && (
-                          <div className="absolute top-[50%] bottom-[-26px] w-[1.5px] bg-zinc-800 z-0" />
-                        )}
-                      </div>
+                        {/* Middle: Timeline Dot and Line */}
+                        <div className="relative flex flex-col items-center w-5 shrink-0 self-stretch justify-center">
+                          {/* Dot (emerald for income, red for expense) */}
+                          <div className={`w-2 h-2 rounded-full z-10 shadow-sm ${
+                            tx.type === 'income' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-400 shadow-red-400/50'
+                          }`} />
+                          {/* Line to next item */}
+                          {!isLast && (
+                            <div className="absolute top-[50%] bottom-[-26px] w-[1.5px] bg-zinc-800 z-0" />
+                          )}
+                        </div>
 
-                      {/* Right: Title, Desc, and Checkmark */}
-                      <div className="flex-1 min-w-0 pl-1">
-                        <p className="font-bold text-white leading-tight truncate">{tx.description || 'Transaksi Tanpa Keterangan'}</p>
-                        <p className="text-[10px] text-zinc-500 mt-0.5 truncate leading-tight capitalize">{tx.category}</p>
-                      </div>
+                        {/* Right: Title, Desc, and Checkmark */}
+                        <div className="flex-1 min-w-0 pl-1">
+                          <p className="font-bold text-white leading-tight truncate">{tx.description || 'Transaksi Tanpa Keterangan'}</p>
+                          <p className="text-[10px] text-zinc-550 mt-0.5 truncate leading-tight text-zinc-400 capitalize">{tx.category}</p>
+                        </div>
 
-                      {/* Far Right: Amount */}
-                      <div className="shrink-0 flex items-center justify-center pl-2">
-                        <span className={`font-bold font-mono ${
-                          tx.type === 'income' ? 'text-emerald-500' : 'text-red-400'
-                        }`}>
-                          {tx.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(tx.amount))}
-                        </span>
+                        {/* Far Right: Amount */}
+                        <div className="shrink-0 flex items-center justify-center pl-2">
+                          <span className={`font-bold font-mono ${
+                            tx.type === 'income' ? 'text-emerald-500' : 'text-red-400'
+                          }`}>
+                            {tx.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(tx.amount))}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="py-8 text-center text-[11px] border border-dashed border-zinc-900 rounded-xl bg-zinc-950/20 text-zinc-500 font-medium">
+                    Tidak ada transaksi untuk tanggal ini.
+                  </div>
+                )}
               </div>
 
               <div className="mt-5 pt-3 border-t border-zinc-900/60 text-center">
