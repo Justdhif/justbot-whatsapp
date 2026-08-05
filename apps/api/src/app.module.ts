@@ -18,6 +18,7 @@ import { UsersModule } from './modules/users/users.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { BotConfigurationsModule } from './modules/bot-configurations/bot-configurations.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { BotConfigurationsModule } from './modules/bot-configurations/bot-config
     FinanceModule,
     RemindersModule,
     BotConfigurationsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
