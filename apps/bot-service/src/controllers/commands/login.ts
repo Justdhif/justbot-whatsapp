@@ -28,10 +28,18 @@ Halaman web aplikasi kamu akan otomatis dialihkan ke Dashboard dalam beberapa de
 Selamat menggunakan JustBot Web! 🖥️✨`;
       await sendWhatsAppMessage(from, successMsg);
     } catch (err: any) {
-      await sendWhatsAppMessage(
-        from,
-        `❌ Gagal menyetujui login:\n${err?.message || 'Sesi kedaluwarsa atau tidak valid.'}`
-      );
+      const errMsg = err?.message || '';
+      let replyMsg = '❌ *Gagal Menyetujui Login*';
+      
+      if (errMsg.includes('belum terdaftar')) {
+        replyMsg += '\n\nNomor WhatsApp Anda belum terdaftar di aplikasi JustBot. Silakan lakukan registrasi terlebih dahulu di halaman web dashboard.';
+      } else if (errMsg.includes('kedaluwarsa')) {
+        replyMsg += '\n\nSesi QR login Anda sudah kedaluwarsa. Silakan segarkan (refresh) QR Code di halaman web dashboard dan coba lagi.';
+      } else {
+        replyMsg += `\n\nKeterangan: ${errMsg || 'Sesi kedaluwarsa atau tidak valid.'}`;
+      }
+      
+      await sendWhatsAppMessage(from, replyMsg);
     }
     return true;
   }

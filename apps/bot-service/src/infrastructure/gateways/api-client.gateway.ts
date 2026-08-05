@@ -234,7 +234,7 @@ export async function apiApproveQrSession(
     );
     return true;
   } catch (err: any) {
-    const msg = err?.response?.data?.message ?? err?.message;
+    const msg = err?.response?.data?.error?.message ?? err?.response?.data?.message ?? err?.message;
     logger.error({ err, sessionId, phoneNumber }, `❌ [ApiClient] Failed to approve QR session: ${msg}`);
     throw new Error(msg || 'Gagal menyetujui QR Code');
   }
