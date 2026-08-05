@@ -4,7 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import * as schema from '../schema';
 import { users, userProfiles, botConfigurations } from '../schema';
 
-export async function seedSuperAdmin(db: NeonHttpDatabase<typeof schema>): Promise<void> {
+export async function seedSuperAdmin(db: NeonHttpDatabase<any>): Promise<void> {
   console.log('   🔑 Running Super Admin Seeder...');
 
   const adminEmail = 'superadmin@justbot.com';
@@ -14,9 +14,12 @@ export async function seedSuperAdmin(db: NeonHttpDatabase<typeof schema>): Promi
 
   // 1. Cek / Insert Super Admin
   let userId: string;
-  const existing = await db.query.users.findFirst({
-    where: (u, { eq: eqFn }) => eqFn(u.email, adminEmail),
-  });
+  const existingResult = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, adminEmail))
+    .limit(1);
+  const existing = existingResult[0] ?? null;
 
   if (existing) {
     userId = existing.id;
@@ -56,7 +59,12 @@ export async function seedSuperAdmin(db: NeonHttpDatabase<typeof schema>): Promi
   }
 
   // 2. Inisialisasi default row di bot_configurations jika kosong
-  const config = await db.query.botConfigurations.findFirst();
+  const configResult = await db
+    .select()
+    .from(botConfigurations)
+    .limit(1);
+  const config = configResult[0] ?? null;
+
   if (!config) {
     await db.insert(botConfigurations)
       .values({
