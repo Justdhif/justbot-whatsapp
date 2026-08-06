@@ -68,7 +68,7 @@ export default function RegisterPage() {
   useEffect(() => {
     const { accessToken, refreshToken } = getAuthTokens();
     if (accessToken || refreshToken) {
-      router.push('/dashboard');
+      router.push('/register/success');
     }
   }, [router]);
 
@@ -89,7 +89,7 @@ export default function RegisterPage() {
           setAuthTokens(payload.tokens.accessToken, payload.tokens.refreshToken);
           
           setTimeout(() => {
-            router.push('/dashboard');
+            router.push('/register/success');
           }, 1200);
         } else if (payload.status === 'expired') {
           if (pollTimerRef.current) clearInterval(pollTimerRef.current);
@@ -211,10 +211,10 @@ export default function RegisterPage() {
       const payload = (response as any).data || response;
 
       if (payload.accessToken && payload.refreshToken) {
-        setSuccessMessage('Pendaftaran berhasil! Mengarahkan ke dashboard...');
+        setSuccessMessage('Pendaftaran berhasil! Mengarahkan...');
         setAuthTokens(payload.accessToken, payload.refreshToken);
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/register/success');
         }, 1200);
       } else {
         setErrorMessage('Gagal mendaftar akun baru.');
@@ -254,10 +254,10 @@ export default function RegisterPage() {
       const payload = (response as any).data || response;
 
       if (payload.accessToken && payload.refreshToken) {
-        setSuccessMessage('Login berhasil! Mengarahkan ke dashboard...');
+        setSuccessMessage('Login berhasil! Mengarahkan...');
         setAuthTokens(payload.accessToken, payload.refreshToken);
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/register/success');
         }, 1200);
       } else {
         setErrorMessage('Gagal memperoleh token autentikasi.');
