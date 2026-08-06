@@ -325,4 +325,24 @@ export async function apiLogBotActivity(
   });
 }
 
+export interface BotConfiguration {
+  id: string;
+  effectiveDays: number[];
+  effectiveHourStart: string;
+  effectiveHourEnd: string;
+  isMaintenance: boolean;
+  timezone: string;
+  customWelcomeMessage: string | null;
+}
+
+export async function apiGetBotConfiguration(): Promise<BotConfiguration | null> {
+  try {
+    const res = await getClient().get('/api/bot-configurations');
+    return res.data?.data ?? res.data;
+  } catch (err: any) {
+    logger.error({ err }, '❌ [ApiClient] Failed to fetch bot configuration');
+    return null;
+  }
+}
+
 

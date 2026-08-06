@@ -9,7 +9,7 @@ import {
 } from "../gateways/whatsapp.gateway.js";
 import { getUserSession, setUserLastImage, clearUserLastImage } from "../store/session.store.js";
 import { generateStickerFromWhatsAppMedia, sendWhatsAppSticker } from "../gateways/whatsapp.gateway.js";
-import { isBotOnline } from "../../utils/schedule.js";
+import { isBotOnline, getBotOnlineStatus } from "../../utils/schedule.js";
 import {
   hasBeenNotifiedToday,
   markUserNotifiedToday,
@@ -97,33 +97,50 @@ export async function webhookRoutes(fastify: FastifyInstance) {
           session.timezoneOffset = tzOffset;
           session.timezoneName = tzName;
 
-          if (!isBotOnline(session.timezoneOffset)) {
+          const botStatus = await getBotOnlineStatus(session.timezoneOffset);
+
+          if (!botStatus.isOnline) {
             logger.info(
-              { from, senderName, tzName: session.timezoneName },
-              "🌙 Bot is currently OFF / Outside Operational Hours.",
+              { from, senderName, tzName: session.timezoneName, isMaintenance: botStatus.isMaintenance },
+              botStatus.isMaintenance
+                ? "🔧 Bot is currently in MAINTENANCE mode."
+                : "🌙 Bot is currently OFF / Outside Operational Hours.",
             );
 
             if (!hasBeenNotifiedToday(from)) {
               markUserNotifiedToday(from);
 
               const nameGreeting = senderName ? ` ${senderName}` : "";
-              const offMessage = `🌙 *JUSTBOT SEDANG OFF (DILUAR JAM OPERASIONAL / LIBUR)* 🌙
+              let offMessage = "";
+
+              if (botStatus.isMaintenance) {
+                offMessage = `🔧 *JUSTBOT SEDANG MAINTENANCE* 🔧
+══════════════════════════════════════
+
+Halo${nameGreeting}! Mohon maaf atas ketidaknyamanan ini.
+
+Saat ini *JustBot AI* sedang dalam pemeliharaan sistem (maintenance) untuk peningkatan layanan.
+
+Silakan hubungi kami kembali beberapa saat lagi. Terima kasih atas kesabaran Anda! 🙏✨`;
+              } else {
+                offMessage = `🌙 *JUSTBOT SEDANG OFF (DILUAR JAM OPERASIONAL / LIBUR)* 🌙
 ══════════════════════════════════════
 
 Halo${nameGreeting}! Terima kasih telah menghubungi *JustBot AI*.
 
 Saat ini bot sedang *OFF* pada zona waktu Anda (*${session.timezoneName}*).
 
-📅 *Hari Aktif*: Sabtu - Kamis (Jumat Libur)
-🕒 *Jam Aktif*: ${env.BOT_OPERATIONAL_START} - ${env.BOT_OPERATIONAL_END}
+📅 *Hari Aktif*: ${botStatus.effectiveDaysText}
+🕒 *Jam Aktif*: ${botStatus.effectiveHourStart} - ${botStatus.effectiveHourEnd}
 
 Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas pengertian Anda! 🙏✨`;
+              }
 
               await sendWhatsAppMessage(from, offMessage);
             } else {
               logger.info(
                 { from },
-                "User already received OFF notification today. Ignoring subsequent messages.",
+                "User already received OFF/Maintenance notification today. Ignoring subsequent messages.",
               );
             }
 
