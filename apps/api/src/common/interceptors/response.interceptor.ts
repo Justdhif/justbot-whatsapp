@@ -13,20 +13,7 @@ export interface ApiResponse<T> {
   meta?: Record<string, unknown>;
 }
 
-/**
- * Global Response Interceptor
- * Membungkus semua response sukses dalam format yang konsisten.
- *
- * Format success response:
- * {
- *   "success": true,
- *   "data": { ... },
- *   "meta": { ... }  // optional, untuk pagination, dll
- * }
- *
- * Jika controller mengembalikan object dengan key `data` dan `meta`,
- * keduanya akan diproyeksikan. Jika tidak, value langsung jadi `data`.
- */
+
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
   intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponse<T>> {

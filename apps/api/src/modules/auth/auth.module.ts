@@ -10,11 +10,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    /**
-     * JwtModule hanya digunakan untuk signing.
-     * Verifikasi dilakukan oleh Passport strategies masing-masing
-     * menggunakan secret-nya sendiri (access vs refresh).
-     */
+    
     JwtModule.register({}),
     UsersModule,
   ],

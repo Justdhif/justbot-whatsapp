@@ -14,9 +14,9 @@ interface QrResponse {
 export default function RegisterPage() {
   const router = useRouter();
   
-  // Modes: 'register' | 'login'
+  
   const [mode, setMode] = useState<'register' | 'login'>('register');
-  // Login modes: 'qr' | 'manual'
+  
   const [loginMode, setLoginMode] = useState<'qr' | 'manual'>('qr');
   
   const [loading, setLoading] = useState<boolean>(true);
@@ -26,27 +26,27 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   
-  // Registration form input states
+  
   const [regName, setRegName] = useState<string>('');
   const [regEmail, setRegEmail] = useState<string>('');
   const [regPhone, setRegPhone] = useState<string>('');
   const [regPassword, setRegPassword] = useState<string>('');
   const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
 
-  // OTP Verification States
+  
   const [isOtpSent, setIsOtpSent] = useState<boolean>(false);
   const [regOtp, setRegOtp] = useState<string>('');
   const [otpCountdown, setOtpCountdown] = useState<number>(0);
   const [otpLoading, setOtpLoading] = useState<boolean>(false);
 
-  // Login form input states
+  
   const [loginIdentifier, setLoginIdentifier] = useState<string>('');
   const [loginPassword, setLoginPassword] = useState<string>('');
   const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
 
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // OTP Countdown Effect
+  
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (otpCountdown > 0) {
@@ -57,14 +57,14 @@ export default function RegisterPage() {
     return () => clearTimeout(timer);
   }, [otpCountdown]);
 
-  // Clear timers on unmount
+  
   useEffect(() => {
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
   }, []);
 
-  // Check if already logged in
+  
   useEffect(() => {
     const { accessToken, refreshToken } = getAuthTokens();
     if (accessToken || refreshToken) {
@@ -121,7 +121,7 @@ export default function RegisterPage() {
     }
   }, [startPolling]);
 
-  // Load QR on component mount or switching to QR login
+  
   useEffect(() => {
     if (mode === 'login' && loginMode === 'qr') {
       generateQR();
@@ -142,12 +142,12 @@ export default function RegisterPage() {
     setSuccessMessage('');
 
     try {
-      // Menghapus semua karakter non-angka
+      
       let cleanPhone = regPhone.trim().replace(/\D/g, '');
       if (cleanPhone.startsWith('0')) {
         cleanPhone = '62' + cleanPhone.substring(1);
       } else if (cleanPhone.startsWith('62')) {
-        // sudah ada kode negara 62
+        
       } else {
         cleanPhone = '62' + cleanPhone;
       }
@@ -190,7 +190,7 @@ export default function RegisterPage() {
       if (cleanPhone.startsWith('0')) {
         cleanPhone = '62' + cleanPhone.substring(1);
       } else if (cleanPhone.startsWith('62')) {
-        // sudah ada kode negara 62
+        
       } else {
         cleanPhone = '62' + cleanPhone;
       }
@@ -272,15 +272,15 @@ export default function RegisterPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-black overflow-hidden px-4">
-      {/* Background ambient glow */}
+      {}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02),transparent_70%)] pointer-events-none" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-zinc-900/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-zinc-900/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Container */}
+      {}
       <div className="w-full max-w-[420px] z-10">
         
-        {/* Brand */}
+        {}
         <div className="flex flex-col items-center mb-6">
           <div className="h-16 w-16 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-900 flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/10">
             <img src="/favicon.png" alt="JustBot Logo" className="h-12 w-12 object-contain" />
@@ -296,10 +296,10 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Form Card */}
+        {}
         <div className="glow-card rounded-2xl p-6 bg-zinc-950/80 backdrop-blur-md flex flex-col">
           
-          {/* Status Notifications */}
+          {}
           {errorMessage && (
             <div className="p-3 bg-red-950/20 border border-red-950 text-red-400 rounded-lg text-xs font-medium mb-4 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -313,10 +313,10 @@ export default function RegisterPage() {
               <span>{successMessage}</span>
             </div>
           )}
-          {/* MODE: REGISTER */}
+          {}
           {mode === 'register' && (
             <form onSubmit={isOtpSent ? handleRegister : handleSendOtp} className="space-y-4">
-              {/* Display Name */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Nama Tampilan (Display Name)</label>
                 <div className="relative">
@@ -333,7 +333,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Email */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Email (Opsional)</label>
                 <div className="relative">
@@ -349,7 +349,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Phone Number */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Wajib)</label>
                 <div className="flex h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20 transition-colors overflow-hidden disabled:opacity-50">
@@ -369,7 +369,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Password */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Kata Sandi</label>
                 <div className="relative">
@@ -394,7 +394,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* OTP Code (Only shown when OTP is sent) */}
+              {}
               {isOtpSent && (
                 <div className="space-y-1.5 border-t border-zinc-900 pt-4 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
                   <div className="flex justify-between items-center">
@@ -424,7 +424,7 @@ export default function RegisterPage() {
                     Kode OTP dikirim langsung ke WhatsApp nomor Anda.
                   </p>
                   
-                  {/* Resend OTP */}
+                  {}
                   <div className="flex justify-end pt-1">
                     {otpCountdown > 0 ? (
                       <span className="text-[11px] text-zinc-500 font-medium">
@@ -460,10 +460,10 @@ export default function RegisterPage() {
             </form>
           )}
 
-          {/* MODE: LOGIN (Fallback/Emergency) */}
+          {}
           {mode === 'login' && (
             <form onSubmit={handleManualLogin} className="space-y-4">
-              {/* Email / Phone field */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Email atau Nomor HP</label>
                 <div className="relative">
@@ -479,7 +479,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Password field */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Kata Sandi</label>
                 <div className="relative">
@@ -530,7 +530,7 @@ export default function RegisterPage() {
 
         </div>
 
-        {/* Footer info */}
+        {}
         <p className="text-xs text-zinc-650 text-center mt-6">
           JustBot WhatsApp Bot Service © 2026.
         </p>

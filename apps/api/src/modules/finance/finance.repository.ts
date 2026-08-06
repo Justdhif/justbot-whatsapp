@@ -92,7 +92,7 @@ export class FinanceRepository {
     return result[0] ?? null;
   }
 
-  /** Summary: total income, total expense, dan saldo bersih */
+  
   async getSummary(userId: string, startDate?: string, endDate?: string) {
     const conditions = [eq(transactions.userId, userId)];
     if (startDate) conditions.push(gte(transactions.transactionDate, startDate));

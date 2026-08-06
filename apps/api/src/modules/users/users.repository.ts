@@ -86,7 +86,7 @@ export class UsersRepository {
     return result[0] ?? null;
   }
 
-  /** Simpan hash dari refresh token baru (bukan token aslinya) */
+  
   async updateRefreshTokenHash(userId: string, hash: string) {
     await this.db
       .update(users)
@@ -94,7 +94,7 @@ export class UsersRepository {
       .where(eq(users.id, userId));
   }
 
-  /** Set refreshTokenHash = NULL saat logout */
+  
   async clearRefreshTokenHash(userId: string) {
     await this.db
       .update(users)
@@ -102,7 +102,7 @@ export class UsersRepository {
       .where(eq(users.id, userId));
   }
 
-  // ─── QR Sessions Database Queries ──────────────────────────────────────────
+  
 
   async createQrSession(expiresAt: Date) {
     const [result] = await this.db
@@ -146,7 +146,7 @@ export class UsersRepository {
       .where(eq(schema.qrSessions.id, id));
   }
 
-  // ─── OTP Database Queries ────────────────────────────────────────────────
+  
   
   async deleteOtpsByPhone(phoneNumber: string) {
     await this.db

@@ -8,23 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-/**
- * Global HTTP Exception Filter
- * Mengubah semua exception menjadi format response yang konsisten.
- *
- * Format error response:
- * {
- *   "success": false,
- *   "error": {
- *     "statusCode": 401,
- *     "code": "UNAUTHORIZED",
- *     "message": "...",
- *     "details": []   // dari class-validator
- *   },
- *   "timestamp": "...",
- *   "path": "/api/..."
- * }
- */
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
@@ -47,7 +31,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const resp = exceptionResponse as Record<string, unknown>;
         message = (resp['message'] as string) ?? exception.message;
-        // class-validator mengembalikan array of messages
+        
         if (Array.isArray(resp['message'])) {
           details = resp['message'] as unknown[];
           message = 'Validation failed';

@@ -11,10 +11,10 @@ export async function handleMenuCommand(
   const lower = userText.trim().toLowerCase();
 
   if (lower === ".menu") {
-    // Proactively resolve access token to sync displayName to session if registered
+    
     await resolveAccessToken(from).catch(() => null);
     
-    // Fetch dynamic bot configuration (days & hours) from database
+    
     const config = await apiGetBotConfiguration().catch(() => null);
     
     const session = getUserSession(from);

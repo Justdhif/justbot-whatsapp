@@ -10,7 +10,7 @@ export interface BotStatusResult {
 }
 
 export async function getBotOnlineStatus(offsetHours: number = 7): Promise<BotStatusResult> {
-  let effectiveDays: number[] = [1, 2, 3, 4, 6, 7]; // Default fallback: Senin-Kamis, Sabtu-Minggu
+  let effectiveDays: number[] = [1, 2, 3, 4, 6, 7]; 
   let effectiveHourStart = '07:00';
   let effectiveHourEnd = '21:00';
   let isMaintenance = false;

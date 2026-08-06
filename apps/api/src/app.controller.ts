@@ -3,11 +3,7 @@ import { Public } from './common/decorators/public.decorator';
 
 @Controller()
 export class AppController {
-  /**
-   * GET /
-   * Root route — info dasar API.
-   * Berguna untuk health check Netlify dan verifikasi deployment.
-   */
+  
   @Public()
   @Get()
   getRoot() {

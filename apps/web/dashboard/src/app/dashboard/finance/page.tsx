@@ -46,18 +46,18 @@ export default function FinanceManager() {
   const [summary, setSummary] = useState<FinanceSummary>({ income: 0, expense: 0, balance: 0 });
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   
-  // Pagination & Filtering
+  
   const [totalCount, setTotalCount] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(10);
   const [typeFilter, setTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   
-  // Create Modal state
+  
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   
-  // Form State
+  
   const [formType, setFormType] = useState<'income' | 'expense'>('expense');
   const [formAmount, setFormAmount] = useState<string>('');
   const [formCategory, setFormCategory] = useState<string>('');
@@ -138,7 +138,7 @@ export default function FinanceManager() {
         })
       });
       
-      // Reset form & reload
+      
       setFormAmount('');
       setFormCategory('');
       setFormDescription('');
@@ -174,7 +174,7 @@ export default function FinanceManager() {
     }).format(value);
   };
 
-  // Group by category helper for visualization
+  
   const getCategoryStats = () => {
     const stats: Record<string, { amount: number; type: 'income' | 'expense' }> = {};
     transactions.forEach(t => {
@@ -196,7 +196,7 @@ export default function FinanceManager() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-2.5">
@@ -214,9 +214,9 @@ export default function FinanceManager() {
         </button>
       </div>
 
-      {/* Stats Summary Panel */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Balance */}
+        {}
         <div className="glow-card rounded-xl p-6 bg-zinc-950/40">
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Saldo Bersih</p>
           <p className="text-2xl font-bold tracking-tight text-white font-mono mt-2">
@@ -227,7 +227,7 @@ export default function FinanceManager() {
           </div>
         </div>
 
-        {/* Income */}
+        {}
         <div className="glow-card rounded-xl p-6 bg-zinc-950/40">
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Total Pemasukan</p>
           <p className="text-2xl font-bold tracking-tight text-emerald-500 font-mono mt-2">
@@ -238,7 +238,7 @@ export default function FinanceManager() {
           </div>
         </div>
 
-        {/* Expense */}
+        {}
         <div className="glow-card rounded-xl p-6 bg-zinc-950/40">
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Total Pengeluaran</p>
           <p className="text-2xl font-bold tracking-tight text-red-400 font-mono mt-2">
@@ -250,10 +250,10 @@ export default function FinanceManager() {
         </div>
       </div>
 
-      {/* Analytics & Breakdown */}
+      {}
       {transactions.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Cashflow Ratio Visualizer */}
+          {}
           <div className="glow-card rounded-xl p-6 bg-zinc-950/20 lg:col-span-2 flex flex-col justify-between">
             <div>
               <h3 className="text-sm font-semibold text-white mb-2">Persentase Pengeluaran</h3>
@@ -267,7 +267,7 @@ export default function FinanceManager() {
                     <span>Spent: {((summary.expense / summary.income) * 100).toFixed(1)}%</span>
                     <span>Saved: {(((summary.income - summary.expense) / summary.income) * 100).toFixed(1)}%</span>
                   </div>
-                  {/* Custom Progress bar */}
+                  {}
                   <div className="h-3 w-full bg-zinc-900 rounded-full overflow-hidden flex">
                     <div 
                       className="bg-red-500 h-full rounded-l-full transition-all duration-500" 
@@ -291,7 +291,7 @@ export default function FinanceManager() {
             </div>
           </div>
 
-          {/* Category List visual breakdown */}
+          {}
           <div className="glow-card rounded-xl p-6 bg-zinc-950/20">
             <h3 className="text-sm font-semibold text-white mb-4">Pengeluaran per Kategori</h3>
             {categoryStats.length === 0 ? (
@@ -304,7 +304,7 @@ export default function FinanceManager() {
                       <span className="text-zinc-400 font-medium">{cat.name}</span>
                       <span className="text-zinc-300 font-semibold font-mono">{formatCurrency(cat.amount)}</span>
                     </div>
-                    {/* SVG mini progress bar */}
+                    {}
                     <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full ${
@@ -321,12 +321,12 @@ export default function FinanceManager() {
         </div>
       )}
 
-      {/* Filter and Transactions List Pane */}
+      {}
       <div className="glow-card rounded-xl p-6 bg-zinc-950/20 space-y-6">
         
-        {/* Filtering Options */}
+        {}
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center pb-4 border-b border-zinc-900">
-          {/* Search Category */}
+          {}
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
             <input
@@ -335,13 +335,13 @@ export default function FinanceManager() {
               value={categoryFilter}
               onChange={(e) => {
                 setCategoryFilter(e.target.value);
-                setPage(1); // reset to page 1 on search change
+                setPage(1); 
               }}
               className="pl-9 pr-4 h-9 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700 transition-colors"
             />
           </div>
 
-          {/* Type Filter Tabs */}
+          {}
           <div className="flex items-center gap-1 p-0.5 rounded-lg bg-zinc-950 border border-zinc-900 shrink-0">
             {(['all', 'income', 'expense'] as const).map((t) => (
               <button
@@ -362,7 +362,7 @@ export default function FinanceManager() {
           </div>
         </div>
 
-        {/* Transactions Table / List */}
+        {}
         {loading ? (
           <div className="py-20 flex justify-center items-center">
             <Loader2 className="h-7 w-7 text-zinc-600 animate-spin" />
@@ -373,7 +373,7 @@ export default function FinanceManager() {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Desktop Table Headers (only visible md+) */}
+            {}
             <div className="hidden md:grid grid-cols-12 px-4 text-xs font-medium text-zinc-500 uppercase tracking-wider pb-2 border-b border-zinc-900">
               <div className="col-span-3">Tanggal</div>
               <div className="col-span-4">Keterangan</div>
@@ -382,14 +382,14 @@ export default function FinanceManager() {
               <div className="col-span-1 text-right"></div>
             </div>
 
-            {/* List Rows */}
+            {}
             <div className="space-y-2">
               {transactions.map((tx) => (
                 <div 
                   key={tx.id} 
                   className="grid grid-cols-1 md:grid-cols-12 items-center gap-3 md:gap-0 p-4 md:p-3 rounded-lg bg-zinc-950/80 border border-zinc-900 hover:border-zinc-800 transition-colors"
                 >
-                  {/* Date Column */}
+                  {}
                   <div className="col-span-3 text-xs text-zinc-400 font-mono">
                     {new Date(tx.createdAt).toLocaleDateString('id-ID', { 
                       weekday: 'short',
@@ -399,26 +399,26 @@ export default function FinanceManager() {
                     })}
                   </div>
                   
-                  {/* Description Column */}
+                  {}
                   <div className="col-span-4 text-sm font-medium text-white truncate">
                     {tx.description || <span className="text-zinc-600 italic">Tanpa Keterangan</span>}
                   </div>
                   
-                  {/* Category Column */}
+                  {}
                   <div className="col-span-2">
                     <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-900 text-zinc-300 border border-zinc-800 capitalize">
                       {tx.category}
                     </span>
                   </div>
 
-                  {/* Amount Column */}
+                  {}
                   <div className={`col-span-2 md:text-right text-sm font-semibold font-mono ${
                     tx.type === 'income' ? 'text-emerald-500' : 'text-red-400'
                   }`}>
                     {tx.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(tx.amount))}
                   </div>
 
-                  {/* Action Column */}
+                  {}
                   <div className="col-span-1 text-right">
                     <button
                       onClick={() => handleDeleteTransaction(tx.id)}
@@ -432,7 +432,7 @@ export default function FinanceManager() {
               ))}
             </div>
 
-            {/* Pagination Controls */}
+            {}
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-4 border-t border-zinc-900">
                 <span className="text-xs text-zinc-500 font-mono">
@@ -461,7 +461,7 @@ export default function FinanceManager() {
         )}
       </div>
 
-      {/* Add Transaction Dialog/Modal */}
+      {}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="glow-card rounded-2xl w-full max-w-md bg-zinc-950 p-6 space-y-6 relative animate-in zoom-in duration-300">
@@ -484,7 +484,7 @@ export default function FinanceManager() {
             )}
 
             <form onSubmit={handleAddTransaction} className="space-y-4">
-              {/* Type Switch */}
+              {}
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -510,7 +510,7 @@ export default function FinanceManager() {
                 </button>
               </div>
 
-              {/* Amount Input */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Nominal (Rupiah)</label>
                 <input
@@ -523,7 +523,7 @@ export default function FinanceManager() {
                 />
               </div>
 
-              {/* Category Input */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Kategori</label>
                 <input
@@ -536,7 +536,7 @@ export default function FinanceManager() {
                 />
               </div>
 
-              {/* Description Input */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Keterangan (Opsional)</label>
                 <input
@@ -548,7 +548,7 @@ export default function FinanceManager() {
                 />
               </div>
 
-              {/* Date Input */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Tanggal Transaksi</label>
                 <input
@@ -560,7 +560,7 @@ export default function FinanceManager() {
                 />
               </div>
 
-              {/* Submit Buttons */}
+              {}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"

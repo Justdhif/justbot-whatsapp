@@ -12,10 +12,7 @@ export class BotConfigurationsController {
     private readonly botConfigurationsService: BotConfigurationsService,
   ) {}
 
-  /**
-   * GET /api/bot-configurations
-   * Mengambil konfigurasi bot operasional aktif (Public).
-   */
+  
   @Public()
   @Get()
   async getConfiguration() {
@@ -27,10 +24,7 @@ export class BotConfigurationsController {
     };
   }
 
-  /**
-   * PATCH /api/bot-configurations
-   * Memperbarui konfigurasi bot operasional (Hanya Admin / Super Admin).
-   */
+  
   @Patch()
   @UseGuards(RolesGuard)
   @Roles('admin', 'super_admin')

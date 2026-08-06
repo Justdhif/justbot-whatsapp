@@ -12,9 +12,7 @@ export class BotConfigurationsRepository {
     private readonly db: NeonHttpDatabase<typeof schema>,
   ) {}
 
-  /**
-   * Mengambil konfigurasi bot pertama (global configuration).
-   */
+  
   async findFirst(): Promise<BotConfiguration | null> {
     const result = await this.db
       .select()
@@ -23,9 +21,7 @@ export class BotConfigurationsRepository {
     return result[0] ?? null;
   }
 
-  /**
-   * Membuat konfigurasi bot awal jika kosong.
-   */
+  
   async createDefault(): Promise<BotConfiguration> {
     const result = await this.db
       .insert(botConfigurations)
@@ -40,9 +36,7 @@ export class BotConfigurationsRepository {
     return result[0];
   }
 
-  /**
-   * Memperbarui konfigurasi bot.
-   */
+  
   async update(
     id: string,
     payload: Partial<Omit<BotConfiguration, 'id' | 'createdAt' | 'updatedAt'>>,

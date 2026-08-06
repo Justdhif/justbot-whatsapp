@@ -5,12 +5,7 @@ import * as schema from './schema';
 
 export const DATABASE_CONNECTION = 'DATABASE_CONNECTION';
 
-/**
- * Drizzle + Neon provider untuk NestJS DI.
- *
- * Menggunakan `neon-http` driver yang dirancang untuk serverless/edge functions.
- * Koneksi dibuat sekali dan di-reuse melalui connection pool Neon (PgBouncer).
- */
+
 export const databaseProvider = {
   provide: DATABASE_CONNECTION,
   useFactory: (configService: ConfigService) => {

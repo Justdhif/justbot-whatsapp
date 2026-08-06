@@ -85,12 +85,12 @@ export default function DashboardOverview() {
   const [recentActivities, setRecentActivities] = useState<ActivityLog[]>([]);
   const [chartDataState, setChartDataState] = useState<{ labels: string[]; values: number[] } | null>(null);
   
-  // Interactive states
+  
   const [statsPeriod, setStatsPeriod] = useState<'7d' | '30d' | '90d'>('7d');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
-  // Load backend data
+  
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -133,7 +133,7 @@ export default function DashboardOverview() {
     loadData();
   }, []);
 
-  // Load chart data dynamically based on statsPeriod selection
+  
   useEffect(() => {
     const loadChartData = async () => {
       try {
@@ -178,7 +178,7 @@ export default function DashboardOverview() {
     }
   };
 
-  // 10 real modules of JustBot from bot-service
+  
   const modulesList = [
     { id: 'coding', label: 'Coding Assistant', desc: 'Bantuan penulisan & debug kode pemrograman', icon: Terminal },
     { id: 'finance', label: 'Finance Consultant', desc: 'Konsultasi keuangan & manajemen budget', icon: Wallet },
@@ -192,7 +192,7 @@ export default function DashboardOverview() {
     { id: 'util', label: 'Smart Utilities', desc: 'Kalkulator instan & konversi satuan', icon: Cpu }
   ];
 
-  // Map active stats data for Recharts
+  
   const chartData = chartDataState
     ? chartDataState.labels.map((label, index) => ({
         date: label,
@@ -204,7 +204,7 @@ export default function DashboardOverview() {
     ? Math.max(...chartDataState.values) * 1.25
     : 100;
 
-  // Calendar rendering helpers
+  
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -212,11 +212,11 @@ export default function DashboardOverview() {
     const totalDays = new Date(year, month + 1, 0).getDate();
     
     const days = [];
-    // Pad previous month days
+    
     for (let i = 0; i < firstDay; i++) {
       days.push(null);
     }
-    // Present month days
+    
     for (let i = 1; i <= totalDays; i++) {
       days.push(new Date(year, month, i));
     }
@@ -239,10 +239,10 @@ export default function DashboardOverview() {
            d1.getDate() === d2.getDate();
   };
 
-  // Today's Reminders (Agenda) filtered by selected date
+  
   const todaysReminders = reminders.filter(r => isSameDay(new Date(r.remindAt), selectedDate));
 
-  // Dynamic Transaction Filtering based on selectedDate
+  
   const filteredTransactions = transactions.filter(t => isSameDay(new Date(t.createdAt), selectedDate));
 
   const chartConfig = {
@@ -264,10 +264,10 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
-      {/* Overview Cards Row */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* Status Bot */}
+        {}
         <div className="glow-card rounded-2xl p-6 bg-zinc-950/40 border border-zinc-900">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-zinc-400">Status WhatsApp Bot</h3>
@@ -291,7 +291,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Keuangan Ringkasan */}
+        {}
         <div className="glow-card rounded-2xl p-6 bg-zinc-950/40 border border-zinc-900">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-zinc-400">Total Saldo Bersih</h3>
@@ -312,7 +312,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Pengingat Card */}
+        {}
         <div className="glow-card rounded-2xl p-6 bg-zinc-950/40 border border-zinc-900">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-zinc-400">Pengingat Aktif</h3>
@@ -331,13 +331,13 @@ export default function DashboardOverview() {
 
       </div>
 
-      {/* Overview stats layout grid */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* LEFT COLUMN: Charts & Bot Activity & Modules & WhatsApp CTA */}
+        {}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* STATISTIK AKTIVITAS CARD */}
+          {}
           <div className="glow-card rounded-2xl p-6 bg-zinc-950/40 border border-zinc-900">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-1.5">
@@ -345,7 +345,7 @@ export default function DashboardOverview() {
                 <HelpCircle className="h-4 w-4 text-zinc-500 cursor-pointer hover:text-zinc-300" />
               </div>
               
-              {/* Period selection tabs */}
+              {}
               <div className="flex p-0.5 bg-zinc-950 border border-zinc-900 rounded-lg text-xs font-medium">
                 {(['7d', '30d', '90d'] as const).map((p) => (
                   <button
@@ -365,7 +365,7 @@ export default function DashboardOverview() {
               </div>
             </div>
 
-            {/* Premium Recharts Line/Area Chart */}
+            {}
             <div className="h-[210px] w-full mt-2 select-none">
               <ChartContainer config={chartConfig} className="h-full w-full aspect-auto">
                 <AreaChart 
@@ -415,7 +415,7 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* AKTIVITAS TERBARU CARD (Recent bot operation logs, under chart) */}
+          {}
           <div className="glow-card rounded-2xl p-6 bg-zinc-950/40 border border-zinc-900">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-semibold text-zinc-200">Aktivitas Terbaru</h3>
@@ -427,7 +427,7 @@ export default function DashboardOverview() {
               </Link>
             </div>
 
-            {/* Logs activity stack */}
+            {}
             <div className="space-y-4">
               {recentActivities.map((act) => {
                 const IconComponent = getIconComponent(act.icon);
@@ -448,18 +448,18 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* MODUL BOT CARD (Horizontal scroll with side-fades) */}
+          {}
           <div className="glow-card rounded-2xl p-6 bg-zinc-950/40 border border-zinc-900 flex flex-col">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-semibold text-zinc-200">Modul Bot</h3>
             </div>
 
-            {/* Horizontal slider container */}
+            {}
             <div className="relative w-full -mx-2">
-              {/* Left Gradient Edge Fade */}
+              {}
               <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-zinc-950 to-transparent pointer-events-none z-10" />
               
-              {/* Horizontal Scroll Area */}
+              {}
               <div className="flex gap-4 overflow-x-auto scrollbar-none py-1.5 px-6 scroll-smooth">
                 {modulesList.map((m) => {
                   const Icon = m.icon;
@@ -478,14 +478,14 @@ export default function DashboardOverview() {
                 })}
               </div>
 
-              {/* Right Gradient Edge Fade */}
+              {}
               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-zinc-950 to-transparent pointer-events-none z-10" />
             </div>
           </div>
 
-          {/* Premium Chat CTA Card */}
+          {}
           <div className="glow-card bg-zinc-950/40 border border-zinc-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
-            {/* Background design elements */}
+            {}
             <div className="absolute top-1/2 right-0 -translate-y-1/2 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
             
             <div className="flex items-start gap-4 z-10">
@@ -514,18 +514,18 @@ export default function DashboardOverview() {
 
         </div>
 
-        {/* RIGHT COLUMN: Calendar & Today Agenda & Transaction Timeline */}
+        {}
         <div className="lg:col-span-1 space-y-6">
           
-          {/* CALENDAR & AGENDA CONTAINER */}
+          {}
           <div className="glow-card rounded-2xl bg-zinc-950/40 border border-zinc-900 overflow-hidden flex flex-col">
             
-            {/* Calendar Block */}
+            {}
             <div className="p-6 border-b border-zinc-900/60">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-zinc-200">Kalender</h3>
                 
-                {/* Month Picker dropdown styles */}
+                {}
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={prevMonth}
@@ -545,12 +545,12 @@ export default function DashboardOverview() {
                 </div>
               </div>
 
-              {/* Day headers */}
+              {}
               <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-zinc-500 mb-2">
                 <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
               </div>
 
-              {/* Calendar Grid */}
+              {}
               <div className="grid grid-cols-7 gap-1 text-center text-xs">
                 {daysGrid.map((day, idx) => {
                   if (!day) return <span key={`empty-${idx}`} />;
@@ -577,7 +577,7 @@ export default function DashboardOverview() {
               </div>
             </div>
 
-            {/* AGENDA HARI INI BLOCK */}
+            {}
             <div className="p-6">
               <div className="flex items-center justify-between mb-4.5">
                 <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Agenda Hari Ini</h4>
@@ -589,7 +589,7 @@ export default function DashboardOverview() {
                 </Link>
               </div>
 
-              {/* Reminders layout list as a premium vertical timeline */}
+              {}
               <div className="space-y-4.5 relative pl-1">
                 {todaysReminders.length > 0 ? (
                   todaysReminders.slice(0, 3).map((rem, idx) => {
@@ -597,29 +597,29 @@ export default function DashboardOverview() {
                     const timeStr = new Date(rem.remindAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
                     return (
                       <div key={rem.id} className="flex items-center justify-between gap-3 text-xs relative min-h-[46px]">
-                        {/* Left: Time and Icon */}
+                        {}
                         <div className="flex items-center gap-2 text-zinc-400 font-mono w-[68px] shrink-0">
                           <CalendarCheck className="h-4 w-4 opacity-75" />
                           <span className="font-semibold">{timeStr}</span>
                         </div>
 
-                        {/* Middle: Timeline Dot and Line */}
+                        {}
                         <div className="relative flex flex-col items-center w-5 shrink-0 self-stretch justify-center">
-                          {/* Dot */}
+                          {}
                           <div className="w-2 h-2 rounded-full bg-[#25D366] z-10 shadow-sm shadow-[#25D366]/50" />
-                          {/* Line to next item */}
+                          {}
                           {!isLast && (
                             <div className="absolute top-[50%] bottom-[-26px] w-[1.5px] bg-[#25D366]/35 z-0" />
                           )}
                         </div>
 
-                        {/* Right: Title, Desc, and Checkmark */}
+                        {}
                         <div className="flex-1 min-w-0 pl-1">
                           <p className="font-bold text-white leading-tight truncate">{rem.title}</p>
                           <p className="text-[10px] text-zinc-550 mt-0.5 truncate leading-tight text-zinc-400">Pengingat otomatis WhatsApp</p>
                         </div>
 
-                        {/* Far Right: Checkmark */}
+                        {}
                         <div className="shrink-0 flex items-center justify-center pl-2">
                           <CheckCircle2 className="h-4.5 w-4.5 text-primary/80" />
                         </div>
@@ -642,7 +642,7 @@ export default function DashboardOverview() {
 
           </div>
 
-          {/* TRANSAKSI TERAKHIR CARD (Timeline design just like Today's Agenda, under Today's Agenda card) */}
+          {}
           <div className="glow-card rounded-2xl bg-zinc-950/40 border border-zinc-900 overflow-hidden flex flex-col">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4.5">
@@ -655,7 +655,7 @@ export default function DashboardOverview() {
                 </Link>
               </div>
 
-              {/* Transactions layout list as a premium vertical timeline */}
+              {}
               <div className="space-y-4.5 relative pl-1">
                 {filteredTransactions.length > 0 ? (
                   filteredTransactions.slice(0, 3).map((tx, idx) => {
@@ -663,31 +663,31 @@ export default function DashboardOverview() {
                     const txTime = new Date(tx.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
                     return (
                       <div key={tx.id} className="flex items-center justify-between gap-3 text-xs relative min-h-[46px]">
-                        {/* Left: Time and Icon */}
+                        {}
                         <div className="flex items-center gap-2 text-zinc-400 font-mono w-[68px] shrink-0">
                           {tx.type === 'income' ? <TrendingUp className="h-4 w-4 text-emerald-500/80" /> : <TrendingDown className="h-4 w-4 text-red-400/80" />}
                           <span className="font-semibold">{txTime}</span>
                         </div>
 
-                        {/* Middle: Timeline Dot and Line */}
+                        {}
                         <div className="relative flex flex-col items-center w-5 shrink-0 self-stretch justify-center">
-                          {/* Dot (emerald for income, red for expense) */}
+                          {}
                           <div className={`w-2 h-2 rounded-full z-10 shadow-sm ${
                             tx.type === 'income' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-400 shadow-red-400/50'
                           }`} />
-                          {/* Line to next item */}
+                          {}
                           {!isLast && (
                             <div className="absolute top-[50%] bottom-[-26px] w-[1.5px] bg-zinc-800 z-0" />
                           )}
                         </div>
 
-                        {/* Right: Title, Desc, and Checkmark */}
+                        {}
                         <div className="flex-1 min-w-0 pl-1">
                           <p className="font-bold text-white leading-tight truncate">{tx.description || 'Transaksi Tanpa Keterangan'}</p>
                           <p className="text-[10px] text-zinc-550 mt-0.5 truncate leading-tight text-zinc-400 capitalize">{tx.category}</p>
                         </div>
 
-                        {/* Far Right: Amount */}
+                        {}
                         <div className="shrink-0 flex items-center justify-center pl-2">
                           <span className={`font-bold font-mono ${
                             tx.type === 'income' ? 'text-emerald-500' : 'text-red-400'

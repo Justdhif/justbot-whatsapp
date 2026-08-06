@@ -258,7 +258,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               }
             }
 
-            // Log incoming image/caption
+            
             await safeLogActivity(imageCaptionText || "kiriman gambar", 'incoming', session.activeMode || undefined);
 
             const botReply = await processIncomingMessage(
@@ -268,7 +268,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
             );
             if (botReply !== "action:processed") {
               await sendWhatsAppMessage(from, botReply);
-              // Log outgoing reply
+              
               await safeLogActivity(botReply, 'outgoing', session.activeMode || undefined);
             }
             return reply.status(200).send({ status: "success" });
@@ -299,7 +299,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               }
             };
 
-            // Log incoming text
+            
             await safeLogActivity(userText, 'incoming', session.activeMode || undefined);
 
             const botReply = await processIncomingMessage(
@@ -334,7 +334,7 @@ Silakan hubungi kami kembali pada waktu aktif tersebut. Terima kasih banyak atas
               await sendWhatsAppMessage(from, botReply);
             }
 
-            // Log outgoing reply
+            
             await safeLogActivity(botReply, 'outgoing', session.activeMode || undefined);
           }
         }

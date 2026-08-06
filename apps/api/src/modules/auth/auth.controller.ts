@@ -26,10 +26,7 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
-  /**
-   * POST /api/auth/register/send-otp
-   * Kirim OTP verifikasi registrasi ke WhatsApp.
-   */
+  
   @Public()
   @Post('register/send-otp')
   @HttpCode(HttpStatus.OK)
@@ -37,10 +34,7 @@ export class AuthController {
     return this.authService.sendOtp(dto);
   }
 
-  /**
-   * POST /api/auth/register
-   * Registrasi user baru. Public route (tidak perlu token).
-   */
+  
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -48,10 +42,7 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  /**
-   * POST /api/auth/login
-   * Login dengan email/phone + password. Mengembalikan access & refresh token.
-   */
+  
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -59,14 +50,7 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  /**
-   * POST /api/auth/refresh
-   * Tukar refresh token dengan token pair baru (sliding session rotation).
-   * Header: Authorization: Bearer <refresh_token>
-   *
-   * Client harus menyimpan token baru dan menghapus token lama.
-   * Selama user aktif dalam 30 hari, mereka tidak akan pernah diminta login ulang.
-   */
+  
   @Public()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
@@ -78,29 +62,20 @@ export class AuthController {
     return this.authService.refreshTokens(userId, refreshToken);
   }
 
-  /**
-   * POST /api/auth/logout
-   * Invalidasi refresh token di database. Wajib pakai access token.
-   */
+  
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@CurrentUser('id') userId: string) {
     await this.authService.logout(userId);
   }
 
-  /**
-   * GET /api/auth/me
-   * Informasi user yang sedang login (dari JWT payload).
-   */
+  
   @Get('me')
   getMe(@CurrentUser() user: { id: string }) {
     return { userId: user.id };
   }
 
-  /**
-   * POST /api/auth/qr/generate
-   * Membuat QR Session baru untuk login web.
-   */
+  
   @Public()
   @Post('qr/generate')
   @HttpCode(HttpStatus.OK)
@@ -108,10 +83,7 @@ export class AuthController {
     return this.authService.generateQrSession();
   }
 
-  /**
-   * GET /api/auth/qr/status/:id
-   * Dipolling oleh web frontend untuk mengetahui status login QR.
-   */
+  
   @Public()
   @Get('qr/status/:id')
   @HttpCode(HttpStatus.OK)
@@ -119,10 +91,7 @@ export class AuthController {
     return this.authService.checkQrSessionStatus(id);
   }
 
-  /**
-   * POST /api/auth/qr/approve
-   * Dipanggil oleh Bot untuk menyetujui sesi login QR.
-   */
+  
   @Public()
   @Post('qr/approve')
   @HttpCode(HttpStatus.OK)
@@ -138,11 +107,7 @@ export class AuthController {
     return { success: true, message: 'Login QR disetujui' };
   }
 
-  /**
-   * POST /api/auth/bot-token
-   * Dipanggil oleh Bot untuk mendapatkan JWT token pair berdasarkan nomor HP pengguna
-   * (diverifikasi menggunakan x-bot-token).
-   */
+  
   @Public()
   @Post('bot-token')
   @HttpCode(HttpStatus.OK)

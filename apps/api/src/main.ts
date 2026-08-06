@@ -19,14 +19,14 @@ async function bootstrap() {
     ? true
     : rawOrigins.split(',').map((o) => o.trim());
 
-  // ── Security Headers (Helmet) ──────────────────────────────────────────
+  
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
 
-  // ── CORS ──────────────────────────────────────────────────────────────
+  
   app.enableCors({
     origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -34,12 +34,12 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Global API prefix — kecuali "/" agar root route tetap accessible
+  
   app.setGlobalPrefix('api', {
     exclude: [{ path: '/', method: RequestMethod.GET }],
   });
 
-  // ── Graceful Shutdown ─────────────────────────────────────────────────
+  
   app.enableShutdownHooks();
 
   await app.listen(port);

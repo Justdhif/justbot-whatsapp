@@ -6,7 +6,7 @@ interface RequestOptions extends RequestInit {
   token?: string;
 }
 
-// Helper to get stored tokens
+
 export function getAuthTokens() {
   const accessToken = getCookie('access_token');
   const refreshToken = getCookie('refresh_token');
@@ -16,27 +16,27 @@ export function getAuthTokens() {
   };
 }
 
-// Helper to save tokens
+
 export function setAuthTokens(accessToken: string, refreshToken: string) {
-  // Store access token (long lived: 7d) and refresh token (long lived: 365d)
+  
   setCookie('access_token', accessToken, { maxAge: 7 * 24 * 60 * 60, path: '/' });
   setCookie('refresh_token', refreshToken, { maxAge: 365 * 24 * 60 * 60, path: '/' });
 }
 
-// Helper to clear tokens
+
 export function clearAuthTokens() {
   deleteCookie('access_token', { path: '/' });
   deleteCookie('refresh_token', { path: '/' });
 }
 
-// Core fetch wrapper
+
 export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   
   let { accessToken, refreshToken } = getAuthTokens();
 
-  // Proactive refresh: if accessToken is missing but refreshToken is available, try refreshing first
-  // to avoid sending an unauthenticated request and triggering a 401.
+  
+  
   if (!accessToken && refreshToken) {
     try {
       const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
@@ -77,7 +77,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
 
   let response = await fetch(url, fetchOptions);
 
-  // If unauthorized, attempt token refresh once
+  
   if (response.status === 401 && refreshToken) {
     try {
       const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
@@ -94,7 +94,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
         if (data.accessToken && data.refreshToken) {
           setAuthTokens(data.accessToken, data.refreshToken);
           
-          // Retry original request with new access token
+          
           headers.set('Authorization', `Bearer ${data.accessToken}`);
           response = await fetch(url, fetchOptions);
         } else {
@@ -122,6 +122,6 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
   }
 
   const resJson = await response.json();
-  // Standard format might wrap in { data, message, statusCode }
+  
   return resJson;
 }

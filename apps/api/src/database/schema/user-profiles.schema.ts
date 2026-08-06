@@ -1,18 +1,11 @@
 import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core';
 import { users } from './users.schema';
 
-/**
- * Table: user_profiles
- * Relasi one-to-one dengan users. Dipisah agar tabel users tetap minimal
- * dan hanya berisi data auth-critical.
- */
+
 export const userProfiles = pgTable('user_profiles', {
   id: uuid('id').defaultRandom().primaryKey(),
 
-  /**
-   * FK ke users.id — cascade delete: jika user dihapus, profile ikut terhapus.
-   * unique() memastikan relasi one-to-one.
-   */
+  
   userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' })

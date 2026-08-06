@@ -45,10 +45,7 @@ class TransactionQueryDto {
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
 
-  /**
-   * POST /api/finance/transactions
-   * Buat transaksi baru (income atau expense).
-   */
+  
   @Post('transactions')
   @HttpCode(HttpStatus.CREATED)
   async create(
@@ -58,11 +55,7 @@ export class FinanceController {
     return this.financeService.create(userId, dto);
   }
 
-  /**
-   * GET /api/finance/transactions
-   * Daftar transaksi dengan filter opsional: type, startDate, endDate, category.
-   * Mendukung pagination via query params: page, limit.
-   */
+  
   @Get('transactions')
   async findAll(
     @CurrentUser('id') userId: string,
@@ -78,11 +71,7 @@ export class FinanceController {
     });
   }
 
-  /**
-   * GET /api/finance/summary
-   * Ringkasan keuangan: total pemasukan, pengeluaran, dan saldo.
-   * Filter opsional: startDate, endDate.
-   */
+  
   @Get('summary')
   async getSummary(
     @CurrentUser('id') userId: string,
@@ -92,9 +81,7 @@ export class FinanceController {
     return this.financeService.getSummary(userId, startDate, endDate);
   }
 
-  /**
-   * GET /api/finance/transactions/:id
-   */
+  
   @Get('transactions/:id')
   async findOne(
     @CurrentUser('id') userId: string,
@@ -103,9 +90,7 @@ export class FinanceController {
     return this.financeService.findOne(id, userId);
   }
 
-  /**
-   * PATCH /api/finance/transactions/:id
-   */
+  
   @Patch('transactions/:id')
   async update(
     @CurrentUser('id') userId: string,
@@ -115,9 +100,7 @@ export class FinanceController {
     return this.financeService.update(id, userId, dto);
   }
 
-  /**
-   * DELETE /api/finance/transactions/:id
-   */
+  
   @Delete('transactions/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

@@ -19,9 +19,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class RemindersController {
   constructor(private readonly remindersService: RemindersService) {}
 
-  /**
-   * POST /api/reminders
-   */
+  
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
@@ -31,18 +29,13 @@ export class RemindersController {
     return this.remindersService.create(userId, dto);
   }
 
-  /**
-   * GET /api/reminders
-   * Hanya mengembalikan reminder aktif, diurutkan berdasarkan waktu terdekat.
-   */
+  
   @Get()
   async findAll(@CurrentUser('id') userId: string) {
     return this.remindersService.findAll(userId);
   }
 
-  /**
-   * GET /api/reminders/:id
-   */
+  
   @Get(':id')
   async findOne(
     @CurrentUser('id') userId: string,
@@ -51,9 +44,7 @@ export class RemindersController {
     return this.remindersService.findOne(id, userId);
   }
 
-  /**
-   * PATCH /api/reminders/:id
-   */
+  
   @Patch(':id')
   async update(
     @CurrentUser('id') userId: string,
@@ -63,9 +54,7 @@ export class RemindersController {
     return this.remindersService.update(id, userId, dto);
   }
 
-  /**
-   * DELETE /api/reminders/:id
-   */
+  
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

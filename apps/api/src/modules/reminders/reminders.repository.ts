@@ -55,10 +55,7 @@ export class RemindersRepository {
     return result[0] ?? null;
   }
 
-  /**
-   * Digunakan oleh bot-service untuk mengambil reminder yang belum dikirim
-   * dan waktu pengirimannya sudah lewat/tiba.
-   */
+  
   async findPendingReminders() {
     const now = new Date();
     return this.db

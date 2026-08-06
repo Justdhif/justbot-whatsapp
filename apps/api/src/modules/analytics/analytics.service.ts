@@ -46,7 +46,7 @@ export class AnalyticsService {
         const dayStr = `${d.getDate()} ${indonesianMonths[d.getMonth()]}`;
         labels.push(dayStr);
 
-        // Count incoming messages on this day
+        
         const dayIncomingCount = logs.filter((log: any) => 
           log.direction === 'incoming' && isSameDay(log.createdAt, d)
         ).length;
@@ -82,7 +82,7 @@ export class AnalyticsService {
       return { labels, values };
     }
 
-    // 90d
+    
     const labels: string[] = [];
     const values: number[] = [];
     const indonesianMonths = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -130,7 +130,7 @@ export class AnalyticsService {
         return { icon: 'MessageSquare', color: 'text-primary' };
       }
       
-      // Outgoing
+      
       switch (log.moduleUsed) {
         case 'finance':
           return { icon: 'Wallet', color: 'text-emerald-500' };
@@ -150,7 +150,7 @@ export class AnalyticsService {
         displayMsg = `Balasan terkirim ke ${log.senderNumber}: "${log.messageText}"`;
       }
 
-      // Truncate message text if too long
+      
       if (displayMsg.length > 60) {
         displayMsg = displayMsg.slice(0, 57) + '...';
       }
@@ -164,7 +164,7 @@ export class AnalyticsService {
       };
     });
 
-    // Fallback if no logs in database
+    
     if (displayActivities.length === 0) {
       const suffix = (parseInt(userId.replace(/[^0-9]/g, ''), 10) || 5678) % 9000 + 1000;
       displayActivities = [

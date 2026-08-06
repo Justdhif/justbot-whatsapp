@@ -1,14 +1,6 @@
 import { pgTable, uuid, varchar, text, boolean, timestamp } from 'drizzle-orm/pg-core';
 
-/**
- * Table: users
- * Core auth table. Semua data sensitif di-hash sebelum disimpan.
- *
- * Refresh token strategy (Instagram/TikTok-like sliding session):
- * - Hanya hash dari refresh token yang disimpan (bukan token aslinya)
- * - Setiap kali token di-refresh, hash lama dihapus dan diganti hash baru
- * - Jika user logout, refreshTokenHash di-set NULL → token lama tidak bisa dipakai lagi
- */
+
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
 
@@ -17,11 +9,7 @@ export const users = pgTable('users', {
 
   passwordHash: text('password_hash').notNull(),
 
-  /**
-   * Hanya menyimpan HASH dari refresh token (bcrypt).
-   * Token asli tidak pernah disimpan di database.
-   * NULL = user sudah logout atau belum pernah login.
-   */
+  
   refreshTokenHash: text('refresh_token_hash'),
 
   role: varchar('role', { length: 20 }).default('user').notNull(),

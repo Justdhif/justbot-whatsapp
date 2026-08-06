@@ -26,7 +26,7 @@ export default function RemindersPage() {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   
-  // Form State
+  
   const [formTitle, setFormTitle] = useState<string>('');
   const [formDate, setFormDate] = useState<string>('');
   const [formTime, setFormTime] = useState<string>('');
@@ -36,7 +36,7 @@ export default function RemindersPage() {
     setLoading(true);
     try {
       const res = await apiFetch<Reminder[]>('/reminders');
-      // Handle response wrapper
+      
       const payload = (res as any).data || res;
       setReminders(payload || []);
     } catch (err) {
@@ -79,7 +79,7 @@ export default function RemindersPage() {
         })
       });
 
-      // Reset form & reload
+      
       setFormTitle('');
       setFormDate('');
       setFormTime('');
@@ -105,7 +105,7 @@ export default function RemindersPage() {
     }
   };
 
-  // Helper to format remaining time
+  
   const getRemainingTime = (remindAtStr: string) => {
     const diffMs = new Date(remindAtStr).getTime() - new Date().getTime();
     if (diffMs <= 0) return 'Sudah terlewat';
@@ -122,7 +122,7 @@ export default function RemindersPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       
-      {/* Header */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-2.5">
@@ -140,7 +140,7 @@ export default function RemindersPage() {
         </button>
       </div>
 
-      {/* Reminders List */}
+      {}
       {loading ? (
         <div className="h-[40vh] flex flex-col items-center justify-center">
           <Loader2 className="h-8 w-8 text-zinc-500 animate-spin" />
@@ -196,7 +196,7 @@ export default function RemindersPage() {
         </div>
       )}
 
-      {/* Add Reminder Modal */}
+      {}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="glow-card rounded-2xl w-full max-w-md bg-zinc-950 p-6 space-y-6 relative animate-in zoom-in duration-300">
@@ -219,7 +219,7 @@ export default function RemindersPage() {
             )}
 
             <form onSubmit={handleAddReminder} className="space-y-4">
-              {/* Title / Description */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Agenda / Pesan Pengingat</label>
                 <textarea
@@ -232,7 +232,7 @@ export default function RemindersPage() {
                 />
               </div>
 
-              {/* Date & Time Row */}
+              {}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-zinc-400">Tanggal</label>
@@ -256,7 +256,7 @@ export default function RemindersPage() {
                 </div>
               </div>
 
-              {/* Submit Buttons */}
+              {}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"

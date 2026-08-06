@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  // Authenticate and load profile
+  
   useEffect(() => {
     const checkAuth = async () => {
       const { accessToken, refreshToken } = getAuthTokens();
@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       
       try {
         const response = await apiFetch<UserProfile>('/users/me');
-        // Handle wrapper response structure
+        
         const payload = (response as any).data || response;
         setProfile(payload);
       } catch (err) {
@@ -70,13 +70,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider className="bg-black text-zinc-100 min-h-screen">
-      {/* App Sidebar from Shadcn */}
+      {}
       <AppSidebar profile={profile} onLogout={handleLogout} />
       
-      {/* Main Content Area */}
+      {}
       <SidebarInset className="flex-1 flex flex-col bg-black min-w-0">
         
-        {/* Header toolbar for Mobile & Sidebar Toggle */}
+        {}
         <header className="flex h-14 items-center gap-4 border-b border-zinc-900 bg-zinc-950 px-4 md:px-6 sticky top-0 z-30 w-full shrink-0">
           <SidebarTrigger className="text-zinc-400 hover:text-white hover:bg-zinc-900 h-8 w-8 rounded-lg transition-colors cursor-pointer" />
           <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
         
-        {/* Children Pages viewport */}
+        {}
         <div className="flex-1 p-4 md:p-6 w-full mx-auto overflow-y-auto">
           {children}
         </div>

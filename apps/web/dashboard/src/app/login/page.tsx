@@ -14,7 +14,7 @@ interface QrResponse {
 export default function LoginPage() {
   const router = useRouter();
   
-  // Login modes: 'qr' | 'manual'
+  
   const [loginMode, setLoginMode] = useState<'qr' | 'manual'>('qr');
   
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,21 +24,21 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   
-  // Form input states
+  
   const [loginIdentifier, setLoginIdentifier] = useState<string>('');
   const [loginPassword, setLoginPassword] = useState<string>('');
   const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
 
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Clear timers on unmount
+  
   useEffect(() => {
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
   }, []);
 
-  // Check if already logged in
+  
   useEffect(() => {
     const { accessToken, refreshToken } = getAuthTokens();
     if (accessToken || refreshToken) {
@@ -95,7 +95,7 @@ export default function LoginPage() {
     }
   }, [startPolling]);
 
-  // Load QR on component mount or switching to QR login
+  
   useEffect(() => {
     if (loginMode === 'qr') {
       generateQR();
@@ -149,15 +149,15 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-black overflow-hidden px-4">
-      {/* Background ambient glow */}
+      {}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02),transparent_70%)] pointer-events-none" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-zinc-900/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-zinc-900/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Container */}
+      {}
       <div className="w-full max-w-[420px] z-10">
         
-        {/* Brand */}
+        {}
         <div className="flex flex-col items-center mb-6">
           <div className="h-11 w-11 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-900 flex items-center justify-center mb-3">
             <img src="/favicon.png" alt="JustBot Logo" className="h-8.5 w-8.5 object-contain" />
@@ -168,10 +168,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Form Card */}
+        {}
         <div className="glow-card rounded-2xl p-6 bg-zinc-950/80 backdrop-blur-md flex flex-col">
           
-          {/* Status Notifications */}
+          {}
           {errorMessage && (
             <div className="p-3 bg-red-950/20 border border-red-950 text-red-400 rounded-lg text-xs font-medium mb-4 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -187,7 +187,7 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-5">
-            {/* Login Mode Selector */}
+            {}
             <div className="flex justify-center gap-4 text-xs font-medium border-b border-zinc-900 pb-3.5">
               <button
                 onClick={() => {
@@ -223,7 +223,7 @@ export default function LoginPage() {
               </button>
             </div>
 
-            {/* MODE: WhatsApp QR Code */}
+            {}
             {loginMode === 'qr' && (
               <div className="flex flex-col items-center">
                 {loading ? (
@@ -266,7 +266,7 @@ export default function LoginPage() {
                   </div>
                 ) : (
                   <div className="w-full flex flex-col items-center">
-                    {/* QR Frame */}
+                    {}
                     <div className="p-3.5 bg-white rounded-xl shadow-inner mb-5 relative">
                       {qrData && (
                         <a href={qrData.qrLink} target="_blank" rel="noopener noreferrer" title="Buka di WhatsApp langsung">
@@ -283,7 +283,7 @@ export default function LoginPage() {
                       </div>
                     </div>
 
-                    {/* Instructions */}
+                    {}
                     <div className="text-left w-full space-y-2.5 text-xs text-zinc-400 mb-5">
                       <p className="flex gap-2">
                         <span className="h-4 w-4 shrink-0 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-bold flex items-center justify-center text-zinc-300">1</span>
@@ -303,10 +303,10 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* MODE: Email / Password Traditional Login */}
+            {}
             {loginMode === 'manual' && (
               <form onSubmit={handleManualLogin} className="space-y-4">
-                {/* Email / Phone field */}
+                {}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-zinc-400">Email atau Nomor HP</label>
                   <div className="relative">
@@ -322,7 +322,7 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Password field */}
+                {}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-zinc-400">Kata Sandi</label>
                   <div className="relative">
@@ -358,7 +358,7 @@ export default function LoginPage() {
 
         </div>
 
-        {/* Footer info */}
+        {}
         <p className="text-xs text-zinc-650 text-center mt-6">
           JustBot WhatsApp Bot Service © 2026.
         </p>

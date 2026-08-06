@@ -20,10 +20,7 @@ export class CreateReminderDto {
   @IsDateString({}, { message: 'remindAt must be a valid ISO 8601 datetime string' })
   remindAt!: string;
 
-  /**
-   * Optional cron expression untuk reminder berulang.
-   * Contoh: "0 9 * * 1-5" = Setiap hari kerja jam 09:00
-   */
+  
   @IsOptional()
   @IsString()
   @MaxLength(100)

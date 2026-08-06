@@ -1,11 +1,7 @@
 import { sendWhatsAppCtaUrlButton } from '../../infrastructure/gateways/whatsapp.gateway.js';
 import { changeFont } from '../../utils/font.js';
 
-/**
- * Handler command .manager
- * Memberikan informasi lengkap mengenai Akun Manager, kelebihan, list command,
- * dan tombol/link pendaftaran langsung.
- */
+
 export async function handleManagerCommand(
   from: string,
   userText: string,

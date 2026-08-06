@@ -9,9 +9,7 @@ export class BotConfigurationsService {
     private readonly botConfigurationsRepository: BotConfigurationsRepository,
   ) {}
 
-  /**
-   * Mengambil konfigurasi aktif (auto-initialize jika kosong).
-   */
+  
   async getConfiguration(): Promise<BotConfiguration> {
     let config = await this.botConfigurationsRepository.findFirst();
     if (!config) {
@@ -20,9 +18,7 @@ export class BotConfigurationsService {
     return config;
   }
 
-  /**
-   * Mengubah konfigurasi bot operasional (hanya untuk admin / super_admin).
-   */
+  
   async updateConfiguration(
     adminId: string,
     dto: UpdateBotConfigurationDto,

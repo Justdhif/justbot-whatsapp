@@ -29,7 +29,7 @@ export default function SettingsPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [configId, setConfigId] = useState<string>('');
   
-  // Form State
+  
   const [isMaintenance, setIsMaintenance] = useState<boolean>(false);
   const [hourStart, setHourStart] = useState<string>('08:00');
   const [hourEnd, setHourEnd] = useState<string>('17:00');
@@ -107,7 +107,7 @@ export default function SettingsPage() {
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err: any) {
       console.error('Error updating config:', err);
-      // Give readable error message based on response status (403 Forbidden)
+      
       if (err.message?.includes('Forbidden') || err.message?.includes('Unauthorized')) {
         setErrorMsg('Hanya Admin atau Super Admin yang dapat memperbarui pengaturan bot.');
       } else {
@@ -130,7 +130,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-3xl space-y-8 animate-in fade-in duration-300">
       
-      {/* Header */}
+      {}
       <div>
         <h2 className="text-3xl font-semibold tracking-tight text-white flex items-center gap-2.5">
           <Settings className="h-7 w-7 text-zinc-400" /> Pengaturan WhatsApp Bot
@@ -140,7 +140,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Notifications */}
+      {}
       {successMsg && (
         <div className="p-4 bg-emerald-950/20 border border-emerald-900 text-emerald-400 rounded-xl text-sm font-medium flex items-center gap-2">
           <CheckCircle2 className="h-4.5 w-4.5 shrink-0" /> {successMsg}
@@ -157,11 +157,11 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Settings Form Card */}
+      {}
       <div className="glow-card rounded-xl p-6 md:p-8 bg-zinc-950/20">
         <form onSubmit={handleSave} className="space-y-8">
           
-          {/* Maintenance Toggle */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <Bot className="h-4.5 w-4.5 text-zinc-400" /> Status Operasional
@@ -186,7 +186,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Time & Timezone Section */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <Clock className="h-4.5 w-4.5 text-zinc-400" /> Waktu Kerja Harian
@@ -234,7 +234,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          {/* Workdays Section */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <CalendarDays className="h-4.5 w-4.5 text-zinc-400" /> Hari Aktif Bot
@@ -264,7 +264,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          {/* Welcome Message Section */}
+          {}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <Bot className="h-4.5 w-4.5 text-zinc-400" /> Pesan Sambutan Kustom
@@ -284,7 +284,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          {/* Save Button */}
+          {}
           <div className="border-t border-zinc-900 pt-6 flex justify-end">
             <button
               type="submit"

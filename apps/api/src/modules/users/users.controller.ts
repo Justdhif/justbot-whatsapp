@@ -7,19 +7,13 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  /**
-   * GET /api/users/me
-   * Mengambil profile lengkap user yang sedang login.
-   */
+  
   @Get('me')
   async getProfile(@CurrentUser('id') userId: string) {
     return this.usersService.getProfile(userId);
   }
 
-  /**
-   * PATCH /api/users/me
-   * Update profile user yang sedang login.
-   */
+  
   @Patch('me')
   @HttpCode(HttpStatus.OK)
   async updateProfile(

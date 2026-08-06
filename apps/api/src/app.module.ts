@@ -22,7 +22,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
-    // ── Config (global) ───────────────────────────────────────────────────
+    
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envValidationSchema,
@@ -30,7 +30,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       cache: true,
     }),
 
-    // ── Rate Limiting ─────────────────────────────────────────────────────
+    
     ThrottlerModule.forRoot([
       {
         ttl: parseInt(process.env.THROTTLE_TTL ?? '900000', 10),
@@ -38,10 +38,10 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
       },
     ]),
 
-    // ── Database (Global) ─────────────────────────────────────────────────
+    
     DatabaseModule,
 
-    // ── Feature Modules ───────────────────────────────────────────────────
+    
     AuthModule,
     UsersModule,
     FinanceModule,
@@ -51,28 +51,28 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
   ],
   controllers: [AppController],
   providers: [
-    // Global JWT guard — semua route protected kecuali yang @Public()
+    
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    // Global response format interceptor
+    
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
     },
-    // Global exception filter
+    
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    // Global validation pipe
+    
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
-        whitelist: true,         // Hapus property yang tidak ada di DTO
-        forbidNonWhitelisted: true, // Throw error jika ada property asing
-        transform: true,         // Auto-transform payload ke class DTO
+        whitelist: true,         
+        forbidNonWhitelisted: true, 
+        transform: true,         
         transformOptions: {
           enableImplicitConversion: true,
         },

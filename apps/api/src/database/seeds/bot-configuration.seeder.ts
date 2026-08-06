@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 export async function seedBotConfiguration(db: NeonHttpDatabase<any>): Promise<void> {
   console.log('   ⚙️ Running Bot Configuration Seeder...');
 
-  // 1. Dapatkan super admin ID untuk kolom updatedBy
+  
   const adminEmail = 'superadmin@justbot.com';
   const existingResult = await db
     .select()
@@ -15,7 +15,7 @@ export async function seedBotConfiguration(db: NeonHttpDatabase<any>): Promise<v
   const admin = existingResult[0] ?? null;
   const adminId = admin ? admin.id : null;
 
-  // 2. Inisialisasi default row di bot_configurations jika kosong
+  
   const configResult = await db
     .select()
     .from(botConfigurations)

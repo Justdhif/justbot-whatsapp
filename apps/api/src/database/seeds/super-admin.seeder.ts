@@ -10,7 +10,7 @@ export async function seedSuperAdmin(db: NeonHttpDatabase<any>): Promise<void> {
   const adminPassword = 'SuperAdmin123!';
   const passwordHash = bcrypt.hashSync(adminPassword, 10);
 
-  // 1. Cek / Insert Super Admin
+  
   let userId: string;
   const existingResult = await db
     .select()
@@ -23,7 +23,7 @@ export async function seedSuperAdmin(db: NeonHttpDatabase<any>): Promise<void> {
     userId = existing.id;
     console.log(`      ⚠  User Super Admin (${adminEmail}) sudah terdaftar.`);
     
-    // Update password, role, & isActive just in case
+    
     await db.update(users)
       .set({
         passwordHash,
@@ -45,7 +45,7 @@ export async function seedSuperAdmin(db: NeonHttpDatabase<any>): Promise<void> {
     userId = insertRes[0].id;
     console.log('      ✓ User Super Admin berhasil ditambahkan.');
 
-    // Insert profile
+    
     await db.insert(userProfiles)
       .values({
         userId,
