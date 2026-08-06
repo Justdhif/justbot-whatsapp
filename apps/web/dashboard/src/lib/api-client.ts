@@ -18,9 +18,9 @@ export function getAuthTokens() {
 
 // Helper to save tokens
 export function setAuthTokens(accessToken: string, refreshToken: string) {
-  // Store access token (short lived: 15m) and refresh token (long lived: 30d)
-  setCookie('access_token', accessToken, { maxAge: 15 * 60, path: '/' });
-  setCookie('refresh_token', refreshToken, { maxAge: 30 * 24 * 60 * 60, path: '/' });
+  // Store access token (long lived: 7d) and refresh token (long lived: 365d)
+  setCookie('access_token', accessToken, { maxAge: 7 * 24 * 60 * 60, path: '/' });
+  setCookie('refresh_token', refreshToken, { maxAge: 365 * 24 * 60 * 60, path: '/' });
 }
 
 // Helper to clear tokens
@@ -34,6 +34,32 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   
   let { accessToken, refreshToken } = getAuthTokens();
+
+  // Proactive refresh: if accessToken is missing but refreshToken is available, try refreshing first
+  // to avoid sending an unauthenticated request and triggering a 401.
+  if (!accessToken && refreshToken) {
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${refreshToken}`,
+        },
+      });
+
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+        const data = refreshData?.data || refreshData;
+        if (data && data.accessToken && data.refreshToken) {
+          setAuthTokens(data.accessToken, data.refreshToken);
+          accessToken = data.accessToken;
+          refreshToken = data.refreshToken;
+        }
+      }
+    } catch (e) {
+      console.error('Proactive refresh failed:', e);
+    }
+  }
   
   const headers = new Headers(options.headers || {});
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {

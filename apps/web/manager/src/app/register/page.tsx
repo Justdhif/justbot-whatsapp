@@ -11,11 +11,11 @@ interface QrResponse {
   qrLink: string;
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   
-  // Tab states: 'login' | 'register'
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  // Modes: 'register' | 'login'
+  const [mode, setMode] = useState<'register' | 'login'>('register');
   // Login modes: 'qr' | 'manual'
   const [loginMode, setLoginMode] = useState<'qr' | 'manual'>('qr');
   
@@ -26,16 +26,17 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   
-  // Form input states
-  const [loginIdentifier, setLoginIdentifier] = useState<string>('');
-  const [loginPassword, setLoginPassword] = useState<string>('');
-  const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
-  const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
-  
+  // Registration form input states
   const [regName, setRegName] = useState<string>('');
   const [regEmail, setRegEmail] = useState<string>('');
   const [regPhone, setRegPhone] = useState<string>('');
   const [regPassword, setRegPassword] = useState<string>('');
+  const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
+
+  // Login form input states
+  const [loginIdentifier, setLoginIdentifier] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
+  const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
 
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -105,12 +106,55 @@ export default function LoginPage() {
 
   // Load QR on component mount or switching to QR login
   useEffect(() => {
-    if (activeTab === 'login' && loginMode === 'qr') {
+    if (mode === 'login' && loginMode === 'qr') {
       generateQR();
     } else {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     }
-  }, [activeTab, loginMode, generateQR]);
+  }, [mode, loginMode, generateQR]);
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regPassword || (!regEmail.trim() && !regPhone.trim())) {
+      setErrorMessage('Email atau nomor HP wajib diisi salah satu.');
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const bodyPayload = {
+        displayName: regName.trim() || undefined,
+        email: regEmail.trim() || undefined,
+        phoneNumber: regPhone.trim() || undefined,
+        password: regPassword,
+      };
+
+      const response = await apiFetch<{ accessToken: string; refreshToken: string }>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(bodyPayload),
+      });
+
+      const payload = (response as any).data || response;
+
+      if (payload.accessToken && payload.refreshToken) {
+        setSuccessMessage('Pendaftaran berhasil! Mengarahkan ke dashboard...');
+        setAuthTokens(payload.accessToken, payload.refreshToken);
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1200);
+      } else {
+        setErrorMessage('Gagal mendaftar akun baru.');
+      }
+    } catch (err: any) {
+      console.error('Register error:', err);
+      setErrorMessage(err.message || 'Registrasi gagal. Email atau nomor HP mungkin sudah terdaftar.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleManualLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,49 +199,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regPassword || (!regEmail.trim() && !regPhone.trim())) {
-      setErrorMessage('Email atau nomor HP wajib diisi salah satu.');
-      return;
-    }
-
-    setSubmitting(true);
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    try {
-      const bodyPayload = {
-        displayName: regName.trim() || undefined,
-        email: regEmail.trim() || undefined,
-        phoneNumber: regPhone.trim() || undefined,
-        password: regPassword,
-      };
-
-      const response = await apiFetch<{ accessToken: string; refreshToken: string }>('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(bodyPayload),
-      });
-
-      const payload = (response as any).data || response;
-
-      if (payload.accessToken && payload.refreshToken) {
-        setSuccessMessage('Registrasi berhasil! Mengarahkan ke dashboard...');
-        setAuthTokens(payload.accessToken, payload.refreshToken);
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1200);
-      } else {
-        setErrorMessage('Gagal mendaftar akun baru.');
-      }
-    } catch (err: any) {
-      console.error('Register error:', err);
-      setErrorMessage(err.message || 'Registrasi gagal. Email atau nomor HP mungkin sudah terdaftar.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-black overflow-hidden px-4">
       {/* Background ambient glow */}
@@ -213,42 +214,15 @@ export default function LoginPage() {
           <div className="h-11 w-11 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-900 flex items-center justify-center mb-3">
             <img src="/favicon.png" alt="JustBot Logo" className="h-8.5 w-8.5 object-contain" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">JustBot Dashboard</h1>
+          <h1 className="text-xl font-bold tracking-tight text-white">
+            {mode === 'register' ? 'Daftar Akun Manager' : 'Masuk Akun Manager'}
+          </h1>
           <p className="text-xs text-zinc-500 mt-1 text-center">
-            Kelola bot WhatsApp dan laporan keuangan Anda dalam satu portal
+            {mode === 'register' 
+              ? 'Catat laporan keuangan dan simpan pengingat WhatsApp Anda'
+              : 'Gunakan akun terdaftar Anda untuk mengakses laporan keuangan'
+            }
           </p>
-        </div>
-
-        {/* Tab Selector */}
-        <div className="grid grid-cols-2 p-1 bg-zinc-950 border border-zinc-900 rounded-xl mb-4 text-xs font-semibold">
-          <button
-            onClick={() => {
-              setActiveTab('login');
-              setErrorMessage('');
-              setSuccessMessage('');
-            }}
-            className={`h-8 rounded-lg transition-all ${
-              activeTab === 'login' 
-                ? 'bg-zinc-900 text-white shadow' 
-                : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            Masuk
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('register');
-              setErrorMessage('');
-              setSuccessMessage('');
-            }}
-            className={`h-8 rounded-lg transition-all ${
-              activeTab === 'register' 
-                ? 'bg-zinc-900 text-white shadow' 
-                : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            Daftar Akun
-          </button>
         </div>
 
         {/* Form Card */}
@@ -269,8 +243,92 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* TAB 1: LOGIN */}
-          {activeTab === 'login' && (
+          {/* MODE: REGISTER */}
+          {mode === 'register' && (
+            <form onSubmit={handleRegister} className="space-y-4">
+              {/* Display Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-400">Nama Tampilan (Display Name)</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Contoh: Budi Santoso"
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-400">Email (Opsional)</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="email"
+                    placeholder="budi@example.com"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Opsional)</label>
+                  <span className="text-[10px] text-zinc-500 font-medium">Format: 628xxx</span>
+                </div>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Contoh: 6282211223344"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-400">Kata Sandi</label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <input
+                    type={showRegPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Minimal 8 karakter"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRegPassword(!showRegPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 focus:outline-none p-1 rounded hover:bg-zinc-900 transition-colors"
+                  >
+                    {showRegPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-10 rounded-lg bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors flex items-center justify-center gap-1.5 mt-2"
+              >
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Buat Akun Manager'}
+              </button>
+            </form>
+          )}
+
+          {/* MODE: LOGIN (Fallback/Emergency) */}
+          {mode === 'login' && (
             <div className="space-y-5">
               {/* Login Mode Selector */}
               <div className="flex justify-center gap-4 text-xs font-medium border-b border-zinc-900 pb-3.5">
@@ -322,7 +380,7 @@ export default function LoginPage() {
                         <CheckCircle2 className="h-8 w-8 text-white" />
                       </div>
                       <h3 className="text-sm font-semibold text-white">Login Berhasil</h3>
-                      <p className="text-xs text-zinc-500 mt-1">Mengalihkan ke dashboard...</p>
+                      <p className="text-xs text-zinc-500 mt-1">Mengalihkan...</p>
                     </div>
                   ) : qrStatus === 'expired' ? (
                     <div className="py-8 flex flex-col items-center justify-center text-center">
@@ -402,7 +460,7 @@ export default function LoginPage() {
                         placeholder="Contoh: user@domain.com atau 628221..."
                         value={loginIdentifier}
                         onChange={(e) => setLoginIdentifier(e.target.value)}
-                        className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
+                        className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
                       />
                     </div>
                   </div>
@@ -442,94 +500,27 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* TAB 2: REGISTER */}
-          {activeTab === 'register' && (
-            <form onSubmit={handleRegister} className="space-y-4">
-              {/* Display Name */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Nama Tampilan (Display Name)</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input
-                    type="text"
-                    placeholder="Contoh: Budi Santoso"
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Email (Opsional)</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input
-                    type="email"
-                    placeholder="budi@example.com"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors"
-                  />
-                </div>
-              </div>
-
-              {/* Phone Number */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Opsional)</label>
-                  <span className="text-[10px] text-zinc-500 font-medium">Format: 628xxx</span>
-                </div>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input
-                    type="text"
-                    placeholder="Contoh: 6282211223344"
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-400">Kata Sandi</label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input
-                    type={showRegPassword ? 'text' : 'password'}
-                    required
-                    placeholder="Minimal 6 karakter"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowRegPassword(!showRegPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 focus:outline-none p-1 rounded hover:bg-zinc-900 transition-colors"
-                  >
-                    {showRegPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full h-10 rounded-lg bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors flex items-center justify-center gap-1.5 mt-2"
-              >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Buat Akun Baru'}
-              </button>
-            </form>
-          )}
+          {/* Toggle mode button */}
+          <div className="mt-5 text-center">
+            <button
+              onClick={() => {
+                setMode(mode === 'register' ? 'login' : 'register');
+                setErrorMessage('');
+                setSuccessMessage('');
+              }}
+              className="text-xs text-zinc-400 hover:text-white transition-colors underline focus:outline-none"
+            >
+              {mode === 'register' 
+                ? 'Sudah memiliki akun? Masuk ke Dashboard' 
+                : 'Belum memiliki akun? Daftar Manager Baru'
+              }
+            </button>
+          </div>
 
         </div>
 
         {/* Footer info */}
-        <p className="text-xs text-zinc-600 text-center mt-6">
+        <p className="text-xs text-zinc-650 text-center mt-6">
           JustBot WhatsApp Bot Service © 2026. Made with Google Antigravity.
         </p>
 

@@ -4,7 +4,8 @@
   "private": true,
   "description": "JustBot WhatsApp Monorepo Workspace",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "apps/web/*"
   ],
   "scripts": {
     "dev:bot": "npm --prefix apps/bot-service run dev",
@@ -13,9 +14,12 @@
     "dev:api": "npm --prefix apps/api run dev",
     "build:api": "npm --prefix apps/api run build",
     "start:api": "npm --prefix apps/api run start",
-    "dev:dashboard": "npm --prefix apps/dashboard run dev",
-    "build:dashboard": "npm --prefix apps/dashboard run build",
-    "start:dashboard": "npm --prefix apps/dashboard run start",
+    "dev:dashboard": "npm --prefix apps/web/dashboard run dev",
+    "build:dashboard": "npm --prefix apps/web/dashboard run build",
+    "start:dashboard": "npm --prefix apps/web/dashboard run start",
+    "dev:manager": "npm --prefix apps/web/manager run dev",
+    "build:manager": "npm --prefix apps/web/manager run build",
+    "start:manager": "npm --prefix apps/web/manager run start",
     "db:push": "npm --prefix apps/api run db:push",
     "db:generate": "npm --prefix apps/api run db:generate",
     "db:studio": "npm --prefix apps/api run db:studio",

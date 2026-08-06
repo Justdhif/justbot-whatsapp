@@ -69,7 +69,7 @@ Platform ini dirancang untuk memenuhi kebutuhan pengguna modern yang membutuhkan
                     │ HTTPS Webhook                                  │ HTTPS
                     ▼                                                ▼
 ┌─────────────────────────────────────────┐     ┌─────────────────────────────────────────┐
-│        META WHATSAPP CLOUD API          │     │             apps/dashboard              │
+│        META WHATSAPP CLOUD API          │     │          apps/web/dashboard             │
 │       (Message Relay & Delivery)        │     │  Next.js + TailwindCSS + Shadcn/ui      │
 └───────────────────┬─────────────────────┘     └────────────────────┬────────────────────┘
                     │ POST /webhook                                  │
@@ -121,13 +121,21 @@ justbot-whatsapp/                     # Monorepo Root
     │   ├── netlify.toml
     │   └── package.json
     │
-    ├── dashboard/                    # Web Portal Control Dashboard
-    │   ├── src/
-    │   │   ├── app/                  # Next.js App Router (dashboard, login, dll.)
-    │   │   ├── components/           # Komponen UI (app-sidebar, ui/)
-    │   │   └── lib/                  # Client API fetch adapter dengan token rotation
-    │   ├── package.json
-    │   └── tsconfig.json
+    ├── web/                          # Aplikasi Web Frontend
+    │   ├── dashboard/                # Panel Kontrol Admin (Hanya Login)
+    │   │   ├── src/
+    │   │   │   ├── app/              # Next.js App Router (dashboard, login, dll.)
+    │   │   │   ├── components/       # Komponen UI
+    │   │   │   └── lib/              # Client API fetch adapter
+    │   │   └── package.json
+    │   │
+    │   └── manager/                  # Portal Registrasi Manager (Auto-Login & Token Cycling)
+    │       ├── src/
+    │       │   ├── app/              # Next.js App Router (dashboard, register, dll.)
+    │       │   ├── components/       # Komponen UI (sidebar tanpa pengaturan bot)
+    │       │   └── lib/              # Client API fetch dengan proactive refresh
+    │       └── package.json
+    │
     │
     └── landing-page/                 # Halaman Marketing Publik
         ├── src/
@@ -166,19 +174,27 @@ Layer backend yang bertanggung jawab atas persistensi data, autentikasi pengguna
 
 ---
 
-### 3. `apps/dashboard` — Web Portal Control Dashboard
+### 3. `apps/web/dashboard` — Panel Kontrol Admin Portal
 
-Panel kontrol administratif pengguna untuk memantau status WhatsApp bot secara real-time, mengelola pencatatan keuangan arus kas, menyusun agenda pengingat notifikasi, serta merubah parameter operasional bot secara visual.
+Panel kontrol administratif khusus bagi **Admin/Super Admin** untuk memantau status bot WhatsApp secara real-time, mengonfigurasi pengaturan behavior bot secara visual, dan memantau status sistem. Menggunakan sistem masuk aman murni tanpa pendaftaran publik.
 
 **Teknologi:** Next.js (App Router) · React 19 · TailwindCSS v4 · Shadcn/ui · Recharts
 
-**Fitur Utama:** Portal masuk & daftar akun terpadu · Line chart Recharts interaktif · Slider visual modul bot · Timeline agenda & transaksi · Sliding session token rotation otomatis
-
-> **Dokumentasi lengkap** → [`apps/dashboard/README.md`](./apps/dashboard/README.md)
+> **Dokumentasi lengkap** → [`apps/web/dashboard/README.md`](./apps/web/dashboard/README.md)
 
 ---
 
-### 4. `apps/landing-page` — Halaman Publik
+### 4. `apps/web/manager` — Portal Registrasi & Panel Keuangan Manager
+
+Portal pendaftaran mandiri khusus bagi **Manager** untuk mencatat arus kas laporan keuangan personal dan menyusun timeline notifikasi pengingat via bot WhatsApp. Didesain ramah tanpa portal masuk terpisah (pendaftaran langsung masuk) serta dilengkapi fungsionalitas token sliding session jangka panjang (Instagram/TikTok-style).
+
+**Teknologi:** Next.js (App Router) · React 19 · TailwindCSS v4 · Shadcn/ui · Recharts
+
+> **Dokumentasi lengkap** → [`apps/web/manager/README.md`](./apps/web/manager/README.md)
+
+---
+
+### 5. `apps/landing-page` — Halaman Publik
 
 Antarmuka web publik yang berfungsi sebagai halaman pemasaran produk. Dibangun dengan React + Vite dan Framer Motion untuk animasi yang halus. Mendukung internasionalisasi (i18n) multi-bahasa.
 
@@ -232,8 +248,11 @@ cp apps/bot-service/.env.example apps/bot-service/.env
 # API Backend
 cp apps/api/.env.example apps/api/.env
 
-# Dashboard Portal
-cp apps/dashboard/.env.example apps/dashboard/.env.local
+# Dashboard Admin
+cp apps/web/dashboard/.env.example apps/web/dashboard/.env.local
+
+# Portal Manager
+cp apps/web/manager/.env.example apps/web/manager/.env.local
 ```
 
 Lihat dokumentasi masing-masing aplikasi untuk detail setiap variabel lingkungan.
@@ -253,8 +272,11 @@ npm run dev:bot
 # Menjalankan API Backend
 npm run dev:api
 
-# Menjalankan Dashboard Portal
+# Menjalankan Dashboard Admin
 npm run dev:dashboard
+
+# Menjalankan Portal Manager
+npm run dev:manager
 
 # Menjalankan Landing Page
 cd apps/landing-page && npm run dev
@@ -265,7 +287,8 @@ cd apps/landing-page && npm run dev
 ```bash
 npm run build:bot        # Build Bot Service
 npm run build:api        # Build API Backend
-npm run build:dashboard  # Build Dashboard Portal
+npm run build:dashboard  # Build Dashboard Admin
+npm run build:manager    # Build Portal Manager
 ```
 
 ### Database Management
@@ -291,7 +314,7 @@ Platform ini dirancang untuk di-deploy sebagai **Netlify Functions** (serverless
 4. Tambahkan Environment Variables yang diperlukan di dashboard Netlify.
 5. Deploy.
 
-> Setiap aplikasi (`bot-service`, `api`, `dashboard`, `landing-page`) dapat di-deploy sebagai **site Netlify terpisah** untuk fleksibilitas dan isolasi yang optimal.
+> Setiap aplikasi (`bot-service`, `api`, `web/dashboard`, `web/manager`, `landing-page`) dapat di-deploy sebagai **site Netlify terpisah** untuk fleksibilitas dan isolasi yang optimal.
 
 ---
 

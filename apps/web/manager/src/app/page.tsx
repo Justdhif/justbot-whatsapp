@@ -9,11 +9,11 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const { accessToken } = getAuthTokens();
-    if (accessToken) {
+    const { accessToken, refreshToken } = getAuthTokens();
+    if (accessToken || refreshToken) {
       router.push('/dashboard');
     } else {
-      router.push('/login');
+      router.push('/register');
     }
   }, [router]);
 
