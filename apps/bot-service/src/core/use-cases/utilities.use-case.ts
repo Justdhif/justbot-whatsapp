@@ -70,12 +70,12 @@ export function getHelpMenu(senderName?: string): string {
 │
 ├─── o(" ${titleShortcuts} ")
 ├─✦  *.brat* _<teks>_
-├─✦  *.catat* _<deskripsi transaksi>_
-├─✦  *.edit* _<deskripsi edit transaksi atau pengingat>_
+├─✦  *.catat* _<deskripsi>_
+├─✦  *.edit* _<deskripsi>_
 ├─✦  *.exit*
 ├─✦  *.finance*
-├─✦  *.hapus* _<id atau deskripsi transaksi atau pengingat>_
-├─✦  *.ingatkan* _<deskripsi waktu & pesan>_
+├─✦  *.hapus* _<deskripsi>_
+├─✦  *.ingatkan* _<deskripsi>_
 ├─✦  *.iqc* _<teks>_
 ├─✦  *.laporan*
 ├─✦  *.manager*
