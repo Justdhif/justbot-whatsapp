@@ -29,7 +29,13 @@ export class BotConfigurationsRepository {
   async createDefault(): Promise<BotConfiguration> {
     const result = await this.db
       .insert(botConfigurations)
-      .values({})
+      .values({
+        effectiveDays: [1, 2, 3, 4, 5],
+        effectiveHourStart: '08:00',
+        effectiveHourEnd: '17:00',
+        isMaintenance: false,
+        timezone: 'Asia/Jakarta',
+      })
       .returning();
     return result[0];
   }

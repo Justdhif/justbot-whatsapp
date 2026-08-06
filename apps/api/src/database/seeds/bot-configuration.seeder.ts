@@ -25,6 +25,11 @@ export async function seedBotConfiguration(db: NeonHttpDatabase<any>): Promise<v
   if (!config) {
     await db.insert(botConfigurations)
       .values({
+        effectiveDays: [1, 2, 3, 4, 5],
+        effectiveHourStart: '08:00',
+        effectiveHourEnd: '17:00',
+        isMaintenance: false,
+        timezone: 'Asia/Jakarta',
         updatedBy: adminId,
       });
     console.log('      ✓ Baris konfigurasi default bot berhasil diinisialisasi.');
