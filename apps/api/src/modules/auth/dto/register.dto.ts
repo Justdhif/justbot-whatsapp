@@ -31,4 +31,9 @@ export class RegisterDto {
   @IsString()
   @MaxLength(100)
   displayName?: string;
+
+  @IsString()
+  @MinLength(6)
+  @MaxLength(6)
+  otpCode!: string;
 }

@@ -23,6 +23,26 @@ interface WebhookQuery {
 }
 
 export async function webhookRoutes(fastify: FastifyInstance) {
+  fastify.post(
+    "/api/send-message",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const authHeader = request.headers['authorization'];
+      const expectedToken = `Bearer ${env.BOT_SECRET}`;
+      if (!authHeader || authHeader !== expectedToken) {
+        logger.warn("❌ [Bot API] Unauthorized attempt to send message");
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      const { to, text } = request.body as { to: string; text: string };
+      if (!to || !text) {
+        return reply.status(400).send({ error: "Missing to or text in body" });
+      }
+
+      const success = await sendWhatsAppMessage(to, text);
+      return reply.status(200).send({ success });
+    }
+  );
+
   fastify.get(
     "/webhook",
     async (

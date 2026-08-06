@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { UsersRepository } from '../users/users.repository';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { SendOtpDto } from './dto/send-otp.dto';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -26,27 +27,68 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<TokenPair> {
-    if (!dto.email && !dto.phoneNumber) {
-      throw new BadRequestException('Either email or phoneNumber is required');
+  async sendOtp(dto: SendOtpDto): Promise<{ success: boolean }> {
+    const existing = await this.usersRepository.findByPhoneNumber(dto.phoneNumber);
+    if (existing) {
+      throw new BadRequestException('Nomor WhatsApp sudah terdaftar');
     }
 
-    // Cek duplikasi email
+    // Generate random 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 menit kedalwarsa
+
+    // Bersihkan OTP lama untuk nomor ini
+    await this.usersRepository.deleteOtpsByPhone(dto.phoneNumber);
+
+    // Simpan OTP baru ke database
+    await this.usersRepository.createOtp(dto.phoneNumber, code, expiresAt);
+
+    // Kirim via bot-service relay
+    const messageText = 
+      `╭────────────────────────────\n` +
+      `│  🔑 *KODE OTP VERIFIKASI* 🔑\n` +
+      `╰────────────────────────────\n` +
+      `Halo! Berikut adalah kode OTP verifikasi pendaftaran akun Manager Anda:\n\n` +
+      `👉 *${code}*\n\n` +
+      `Kode ini rahasia dan hanya berlaku selama 5 menit. Jangan bagikan kode ini kepada siapapun.`;
+
+    const sent = await this.sendMessageToBot(dto.phoneNumber, messageText);
+    if (!sent) {
+      throw new BadRequestException('Gagal mengirimkan kode OTP via WhatsApp. Silakan coba lagi.');
+    }
+
+    return { success: true };
+  }
+
+  async register(dto: RegisterDto): Promise<TokenPair> {
+    if (!dto.phoneNumber) {
+      throw new BadRequestException('Nomor WhatsApp wajib diisi');
+    }
+
+    // Verifikasi OTP dari database
+    const validOtp = await this.usersRepository.findValidOtp(dto.phoneNumber, dto.otpCode);
+    if (!validOtp) {
+      throw new BadRequestException('Kode OTP salah atau telah kedaluwarsa');
+    }
+
+    // Cek duplikasi email jika diisi
     if (dto.email) {
       const existing = await this.usersRepository.findByEmail(dto.email);
-      if (existing) throw new BadRequestException('Email already registered');
+      if (existing) throw new BadRequestException('Email sudah terdaftar');
     }
 
-    // Cek duplikasi phone
-    if (dto.phoneNumber) {
-      const existing = await this.usersRepository.findByPhoneNumber(dto.phoneNumber);
-      if (existing) throw new BadRequestException('Phone number already registered');
-    }
+    // Cek duplikasi nomor HP
+    const existingPhone = await this.usersRepository.findByPhoneNumber(dto.phoneNumber);
+    if (existingPhone) throw new BadRequestException('Nomor WhatsApp sudah terdaftar');
+
+    // Hapus OTP dari database setelah sukses diverifikasi
+    await this.usersRepository.deleteOtpsByPhone(dto.phoneNumber);
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
 
     const user = await this.usersRepository.create({
-      email: dto.email,
+      email: dto.email || null,
       phoneNumber: dto.phoneNumber,
       passwordHash,
     });
@@ -54,10 +96,50 @@ export class AuthService {
     // Buat profile dengan display name (opsional)
     await this.usersRepository.createProfile(user.id, dto.displayName);
 
+    // Kirim pesan selamat datang ke WhatsApp
+    const welcomeMessage = 
+      `╭────────────────────────────\n` +
+      `│  🎉 *AKUN MANAGER TERDAFTAR* 🎉\n` +
+      `╰────────────────────────────\n` +
+      `Selamat datang! Akun Manager Anda atas nama *${dto.displayName || dto.phoneNumber}* telah berhasil dibuat dan terhubung.\n\n` +
+      `Berikut adalah hal-hal yang dapat Anda lakukan langsung via chat WhatsApp:\n` +
+      `1. 💰 *Catat Keuangan*: Ketik \`.catat <nominal> <kategori> <keterangan>\` (Contoh: \`.catat 50000 makanan beli nasi padang\`).\n` +
+      `2. 📊 *Laporan Keuangan*: Ketik \`.riwayat\` atau \`.summary\` untuk melihat pengeluaran Anda.\n` +
+      `3. 🔔 *Pengingat*: Ketik \`.ingatkan <waktu> <deskripsi>\` (Contoh: \`.ingatkan besok jam 8 pagi rapat kerja\`).\n\n` +
+      `Silakan ketik \`.menu\` untuk melihat seluruh opsi menu bantuan. Selamat mencoba! 🚀`;
+
+    await this.sendMessageToBot(dto.phoneNumber, welcomeMessage);
+
     const tokens = await this.generateTokens(user.id);
     await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
 
     return tokens;
+  }
+
+  private async sendMessageToBot(to: string, text: string): Promise<boolean> {
+    try {
+      const botServiceUrl = this.configService.get<string>('BOT_SERVICE_URL', 'https://justbot-service.netlify.app');
+      const botSecret = this.configService.get<string>('BOT_SECRET', 'justbot_super_secure_bot_secret_key_12345');
+
+      const response = await fetch(`${botServiceUrl}/api/send-message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${botSecret}`,
+        },
+        body: JSON.stringify({ to, text }),
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to send message to bot, status: ${response.status}`);
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Error calling bot send-message API:', err);
+      return false;
+    }
   }
 
   async login(dto: LoginDto): Promise<TokenPair> {

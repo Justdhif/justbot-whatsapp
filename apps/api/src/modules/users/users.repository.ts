@@ -145,4 +145,28 @@ export class UsersRepository {
       .delete(schema.qrSessions)
       .where(eq(schema.qrSessions.id, id));
   }
+
+  // ─── OTP Database Queries ────────────────────────────────────────────────
+  
+  async deleteOtpsByPhone(phoneNumber: string) {
+    await this.db
+      .delete(schema.otps)
+      .where(eq(schema.otps.phoneNumber, phoneNumber));
+  }
+
+  async createOtp(phoneNumber: string, code: string, expiresAt: Date) {
+    await this.db
+      .insert(schema.otps)
+      .values({ phoneNumber, code, expiresAt });
+  }
+
+  async findValidOtp(phoneNumber: string, code: string) {
+    const results = await this.db
+      .select()
+      .from(schema.otps)
+      .where(eq(schema.otps.phoneNumber, phoneNumber));
+    
+    const now = new Date();
+    return results.find(otp => otp.code === code && new Date(otp.expiresAt) > now) ?? null;
+  }
 }

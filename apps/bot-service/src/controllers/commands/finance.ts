@@ -17,7 +17,7 @@ import {
   Transaction,
 } from "../../infrastructure/gateways/api-client.gateway.js";
 import { askGroqAI } from "../../infrastructure/gateways/groq.gateway.js";
-import { sendRegisterPrompt, handleNameRegistration } from "./auth.shared.js";
+import { sendRegisterPrompt } from "./auth.shared.js";
 import { logger } from "../../utils/logger.js";
 
 interface ParsedTransaction {
@@ -202,12 +202,7 @@ export async function handleFinanceCommand(
   const lower = trimmed.toLowerCase();
   const session = getUserSession(from);
 
-  if (session.pendingAction === "awaiting:register:name") {
-    return handleNameRegistration(from, trimmed, senderName, async () => {
-      setUserActiveMode(from, "finance");
-      await sendFinanceMenu(from, senderName);
-    });
-  }
+
 
   if (session.pendingAction?.startsWith("awaiting:catat:confirm:")) {
     const isConfirm = lower === "konfirmasi" || lower === "catat:confirm";
@@ -405,10 +400,9 @@ export async function handleFinanceCommand(
   }
 
   if (lower === "auth:register") {
-    setPendingAction(from, "awaiting:register:name");
     await sendWhatsAppMessage(
       from,
-      `\ud83d\udcdd *Daftar Akun JustBot*\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\nSilakan ketik *nama panggilan* kamu:\n\n_Nama ini akan digunakan sebagai identitas akun kamu._`,
+      `Silakan buka tautan berikut untuk mendaftar akun Manager Anda:\n\n👉 https://justbot-manager.netlify.app/register`
     );
     return true;
   }

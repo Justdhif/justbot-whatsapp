@@ -15,6 +15,13 @@
       "when": 1785914619708,
       "tag": "0001_shocking_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785990347089,
+      "tag": "0002_crazy_chimera",
+      "breakpoints": true
     }
   ]
 }

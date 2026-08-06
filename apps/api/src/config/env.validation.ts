@@ -32,4 +32,5 @@ export const envValidationSchema = Joi.object({
   // Bot Integration
   WA_BOT_NUMBER: Joi.string().default('6282213111575'),
   BOT_SECRET: Joi.string().default('justbot_super_secure_bot_secret_key_12345'),
+  BOT_SERVICE_URL: Joi.string().uri().default('https://justbot-service.netlify.app'),
 });

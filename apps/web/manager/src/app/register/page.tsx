@@ -33,12 +33,29 @@ export default function RegisterPage() {
   const [regPassword, setRegPassword] = useState<string>('');
   const [showRegPassword, setShowRegPassword] = useState<boolean>(false);
 
+  // OTP Verification States
+  const [isOtpSent, setIsOtpSent] = useState<boolean>(false);
+  const [regOtp, setRegOtp] = useState<string>('');
+  const [otpCountdown, setOtpCountdown] = useState<number>(0);
+  const [otpLoading, setOtpLoading] = useState<boolean>(false);
+
   // Login form input states
   const [loginIdentifier, setLoginIdentifier] = useState<string>('');
   const [loginPassword, setLoginPassword] = useState<string>('');
   const [showLoginPassword, setShowLoginPassword] = useState<boolean>(false);
 
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // OTP Countdown Effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (otpCountdown > 0) {
+      timer = setTimeout(() => {
+        setOtpCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [otpCountdown]);
 
   // Clear timers on unmount
   useEffect(() => {
@@ -113,10 +130,54 @@ export default function RegisterPage() {
     }
   }, [mode, loginMode, generateQR]);
 
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regPhone.trim()) {
+      setErrorMessage('Nomor WhatsApp wajib diisi.');
+      return;
+    }
+
+    setOtpLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      // Menghapus semua karakter non-angka
+      let cleanPhone = regPhone.trim().replace(/\D/g, '');
+      if (cleanPhone.startsWith('0')) {
+        cleanPhone = '62' + cleanPhone.substring(1);
+      } else if (cleanPhone.startsWith('62')) {
+        // sudah ada kode negara 62
+      } else {
+        cleanPhone = '62' + cleanPhone;
+      }
+
+      const response = await apiFetch<{ success: boolean }>('/auth/register/send-otp', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber: cleanPhone }),
+      });
+
+      const payload = (response as any).data || response;
+
+      if (payload.success) {
+        setIsOtpSent(true);
+        setOtpCountdown(60);
+        setSuccessMessage('Kode OTP berhasil dikirim ke WhatsApp Anda.');
+      } else {
+        setErrorMessage('Gagal mengirimkan kode OTP.');
+      }
+    } catch (err: any) {
+      console.error('Send OTP error:', err);
+      setErrorMessage(err.message || 'Nomor WhatsApp Anda sudah terdaftar atau tidak valid.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regPassword || (!regEmail.trim() && !regPhone.trim())) {
-      setErrorMessage('Email atau nomor HP wajib diisi salah satu.');
+    if (!regPhone.trim() || !regPassword || !regOtp.trim()) {
+      setErrorMessage('Lengkapi nomor WhatsApp, kata sandi, dan kode OTP.');
       return;
     }
 
@@ -125,11 +186,21 @@ export default function RegisterPage() {
     setSuccessMessage('');
 
     try {
+      let cleanPhone = regPhone.trim().replace(/\D/g, '');
+      if (cleanPhone.startsWith('0')) {
+        cleanPhone = '62' + cleanPhone.substring(1);
+      } else if (cleanPhone.startsWith('62')) {
+        // sudah ada kode negara 62
+      } else {
+        cleanPhone = '62' + cleanPhone;
+      }
+
       const bodyPayload = {
         displayName: regName.trim() || undefined,
         email: regEmail.trim() || undefined,
-        phoneNumber: regPhone.trim() || undefined,
+        phoneNumber: cleanPhone,
         password: regPassword,
+        otpCode: regOtp.trim(),
       };
 
       const response = await apiFetch<{ accessToken: string; refreshToken: string }>('/auth/register', {
@@ -150,7 +221,7 @@ export default function RegisterPage() {
       }
     } catch (err: any) {
       console.error('Register error:', err);
-      setErrorMessage(err.message || 'Registrasi gagal. Email atau nomor HP mungkin sudah terdaftar.');
+      setErrorMessage(err.message || 'Kode OTP salah atau nomor WhatsApp sudah terdaftar.');
     } finally {
       setSubmitting(false);
     }
@@ -242,10 +313,9 @@ export default function RegisterPage() {
               <span>{successMessage}</span>
             </div>
           )}
-
           {/* MODE: REGISTER */}
           {mode === 'register' && (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={isOtpSent ? handleRegister : handleSendOtp} className="space-y-4">
               {/* Display Name */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Nama Tampilan (Display Name)</label>
@@ -253,10 +323,12 @@ export default function RegisterPage() {
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
                     type="text"
+                    required
+                    disabled={isOtpSent || submitting || otpLoading}
                     placeholder="Contoh: Budi Santoso"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -268,10 +340,11 @@ export default function RegisterPage() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
                     type="email"
+                    disabled={isOtpSent || submitting || otpLoading}
                     placeholder="budi@example.com"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -279,17 +352,19 @@ export default function RegisterPage() {
               {/* Phone Number */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Opsional)</label>
-                  <span className="text-[10px] text-zinc-500 font-medium">Format: 628xxx</span>
+                  <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Wajib)</label>
+                  <span className="text-[10px] text-zinc-550 font-medium">Flag: +62 (Masukkan sisa angka)</span>
                 </div>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                   <input
                     type="text"
-                    placeholder="Contoh: 6282211223344"
+                    required
+                    disabled={isOtpSent || submitting || otpLoading}
+                    placeholder="Contoh: 82211223344 atau 082211..."
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors font-mono"
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors font-mono disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -302,27 +377,85 @@ export default function RegisterPage() {
                   <input
                     type={showRegPassword ? 'text' : 'password'}
                     required
+                    disabled={isOtpSent || submitting || otpLoading}
                     placeholder="Minimal 8 karakter"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
-                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors disabled:opacity-50"
                   />
                   <button
                     type="button"
+                    disabled={isOtpSent || submitting || otpLoading}
                     onClick={() => setShowRegPassword(!showRegPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 focus:outline-none p-1 rounded hover:bg-zinc-900 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 focus:outline-none p-1 rounded hover:bg-zinc-900 transition-colors disabled:opacity-50"
                   >
                     {showRegPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
 
+              {/* OTP Code (Only shown when OTP is sent) */}
+              {isOtpSent && (
+                <div className="space-y-1.5 border-t border-zinc-900 pt-4 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-white flex items-center gap-1">
+                      <KeyRound className="h-3.5 w-3.5 text-zinc-400" /> Masukkan Kode OTP
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsOtpSent(false)}
+                      className="text-[10px] text-zinc-500 hover:text-zinc-300 underline font-medium"
+                    >
+                      Ubah data
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      placeholder="6-digit OTP"
+                      value={regOtp}
+                      onChange={(e) => setRegOtp(e.target.value.replace(/\D/g, ''))}
+                      className="h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-center tracking-[0.5em] text-lg font-bold text-white placeholder:tracking-normal placeholder:text-zinc-700 placeholder:text-sm focus:outline-none focus:border-zinc-700 transition-colors font-mono"
+                    />
+                  </div>
+                  <p className="text-[10px] text-zinc-550 leading-relaxed">
+                    Kode OTP dikirim langsung ke WhatsApp nomor Anda.
+                  </p>
+                  
+                  {/* Resend OTP */}
+                  <div className="flex justify-end pt-1">
+                    {otpCountdown > 0 ? (
+                      <span className="text-[11px] text-zinc-500 font-medium">
+                        Kirim ulang OTP dalam {otpCountdown}s
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={otpLoading}
+                        onClick={handleSendOtp}
+                        className="text-[11px] text-white font-semibold hover:underline flex items-center gap-1"
+                      >
+                        {otpLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Kirim Ulang Kode OTP'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || otpLoading}
                 className="w-full h-10 rounded-lg bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors flex items-center justify-center gap-1.5 mt-2"
               >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Buat Akun Manager'}
+                {otpLoading || submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isOtpSent ? (
+                  'Verifikasi & Buat Akun'
+                ) : (
+                  'Kirim Kode OTP'
+                )}
               </button>
             </form>
           )}
@@ -521,7 +654,7 @@ export default function RegisterPage() {
 
         {/* Footer info */}
         <p className="text-xs text-zinc-650 text-center mt-6">
-          JustBot WhatsApp Bot Service © 2026. Made with Google Antigravity.
+          JustBot WhatsApp Bot Service © 2026.
         </p>
 
       </div>

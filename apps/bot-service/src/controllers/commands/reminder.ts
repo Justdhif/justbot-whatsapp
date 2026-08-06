@@ -18,7 +18,6 @@ import {
 import { askGroqAI } from '../../infrastructure/gateways/groq.gateway.js';
 import {
   sendRegisterPrompt,
-  handleNameRegistration,
 } from './auth.shared.js';
 import { logger } from '../../utils/logger.js';
 
@@ -362,14 +361,7 @@ export async function handleReminderCommand(
     return true;
   }
 
-  if (lower === 'auth:register' && session.activeMode === 'reminder') {
-    setPendingAction(from, 'awaiting:register:name');
-    await sendWhatsAppMessage(
-      from,
-      `📝 *Daftar Akun JustBot*\n══════════════════════════════\nSilakan ketik *nama panggilan* kamu:\n\n_Nama ini akan digunakan sebagai identitas akun kamu._`,
-    );
-    return true;
-  }
+
 
   if (lower.startsWith('.ingatkan ') || lower === '.ingatkan') {
     const token = await resolveAccessToken(from, senderName);

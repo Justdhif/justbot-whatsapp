@@ -384,3 +384,62 @@ export async function sendWhatsAppInteractiveList(
   }
 }
 
+export async function sendWhatsAppCtaUrlButton(
+  to: string,
+  bodyText: string,
+  buttonTitle: string,
+  url: string,
+  headerText?: string
+): Promise<boolean> {
+  try {
+    const interactivePayload: any = {
+      type: 'cta_url',
+      body: {
+        text: bodyText,
+      },
+      action: {
+        name: 'cta_url',
+        parameters: {
+          display_text: buttonTitle.slice(0, 20),
+          url: url,
+        },
+      },
+    };
+
+    if (headerText) {
+      interactivePayload.header = {
+        type: 'text',
+        text: headerText,
+      };
+    }
+
+    const payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: to,
+      type: 'interactive',
+      interactive: interactivePayload,
+    };
+
+    const response = await axios.post(WA_API_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${env.WA_CLOUD_API_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 10000,
+    });
+
+    logger.info({ to, responseId: response.data?.messages?.[0]?.id }, 'Interactive CTA URL button sent successfully to WhatsApp');
+    return true;
+  } catch (error: any) {
+    logger.error(
+      {
+        to,
+        errorResponse: error?.response?.data || error.message,
+      },
+      'Failed to send WhatsApp interactive CTA URL button'
+    );
+    return false;
+  }
+}
+

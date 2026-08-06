@@ -79,6 +79,7 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦  *.iqc* _<teks>_
 ├─✦  *.laporan*
 ├─✦  *.login* _<session-id>_
+├─✦  *.manager*
 ├─✦  *.menu*
 ├─✦  *.pengingat*
 ├─✦  *.riwayat* _[masuk|keluar]_

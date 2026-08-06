@@ -360,7 +360,7 @@ export default function LoginPage() {
 
         {/* Footer info */}
         <p className="text-xs text-zinc-650 text-center mt-6">
-          JustBot WhatsApp Bot Service © 2026. Made with Google Antigravity.
+          JustBot WhatsApp Bot Service © 2026.
         </p>
 
       </div>
