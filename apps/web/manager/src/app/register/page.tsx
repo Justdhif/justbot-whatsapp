@@ -282,8 +282,8 @@ export default function RegisterPage() {
         
         {/* Brand */}
         <div className="flex flex-col items-center mb-6">
-          <div className="h-11 w-11 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-900 flex items-center justify-center mb-3">
-            <img src="/favicon.png" alt="JustBot Logo" className="h-8.5 w-8.5 object-contain" />
+          <div className="h-16 w-16 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-900 flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/10">
+            <img src="/favicon.png" alt="JustBot Logo" className="h-12 w-12 object-contain" />
           </div>
           <h1 className="text-xl font-bold tracking-tight text-white">
             {mode === 'register' ? 'Daftar Akun Manager' : 'Masuk Akun Manager'}
@@ -351,20 +351,20 @@ export default function RegisterPage() {
 
               {/* Phone Number */}
               <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Wajib)</label>
-                  <span className="text-[10px] text-zinc-550 font-medium">Flag: +62 (Masukkan sisa angka)</span>
-                </div>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Wajib)</label>
+                <div className="flex h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 focus-within:border-zinc-700 transition-colors overflow-hidden disabled:opacity-50">
+                  <div className="flex items-center gap-1.5 px-3 bg-zinc-900/40 border-r border-zinc-900 select-none text-sm text-zinc-300">
+                    <span className="text-base">🇮🇩</span>
+                    <span className="font-semibold font-mono text-zinc-400 text-xs">+62</span>
+                  </div>
                   <input
                     type="text"
                     required
                     disabled={isOtpSent || submitting || otpLoading}
-                    placeholder="Contoh: 82211223344 atau 082211..."
+                    placeholder="Contoh: 8213320..."
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors font-mono disabled:opacity-50"
+                    className="flex-1 px-3 bg-transparent text-sm text-white placeholder-zinc-650 focus:outline-none font-mono disabled:opacity-50"
                   />
                 </div>
               </div>
