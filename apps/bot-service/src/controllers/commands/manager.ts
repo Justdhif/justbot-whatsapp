@@ -15,27 +15,21 @@ export async function handleManagerCommand(
 
   if (lower === ".manager") {
     const titleManager = changeFont('JUSTBOT MANAGER', 'smallCaps');
+    const titleShortcuts = changeFont('MANAGER COMMAND', 'smallCaps');
     
     const infoText = 
       `╭─── o「 ${titleManager} 」o\n` +
       `│\n` +
       `📌 *Apa itu Akun Manager?*\n` +
-      `Asisten personal canggih (Catat Keuangan & Pengingat) yang terhubung langsung dengan WhatsApp Anda.\n\n` +
-      `⭐️ *Kelebihan Akun Manager*:\n` +
-      `├─✦ *Web Dashboard*: Pantau grafik pengeluaran & list pengingat.\n` +
-      `├─✦ *Sesi Permanen*: Login tersimpan (seperti Instagram/TikTok).\n` +
-      `├─✦ *Keamanan OTP*: Verifikasi pendaftaran instan via WhatsApp.\n` +
-      `├─✦ *Multi-Platform*: Catat via WA, pantau via web browser.\n` +
-      `│\n` +
-      `🛠️ *Fitur & Perintah Lanjutan*:\n` +
-      `├─✦ *Catat Keuangan*:\n` +
-      `│   • \`.catat <nominal> <kategori> <keterangan>\`\n` +
-      `│   • \`.riwayat\` / \`.laporan\` / \`.summary\`\n` +
-      `├─✦ *Pengingat Pintar*:\n` +
-      `│   • \`.ingatkan <waktu> <deskripsi>\`\n` +
-      `│   • \`.pengingat\` (Melihat daftar aktif)\n` +
-      `│\n` +
-      `══════════════════════════════\n` +
+      `Akun khusus pengguna JustBot untuk membantu mengelola, menyimpan, dan memantau seluruh data Anda secara terintegrasi melalui chat WhatsApp dan web browser.\n\n` +
+      `├─── o(" ${titleShortcuts} ")\n` +
+      `├─✦  *.catat* _<nominal> <kategori> <keterangan>_\n` +
+      `├─✦  *.riwayat* _[masuk|keluar]_\n` +
+      `├─✦  *.laporan*\n` +
+      `├─✦  *.summary*\n` +
+      `├─✦  *.ingatkan* _<waktu> <deskripsi>_\n` +
+      `├─✦  *.pengingat*\n` +
+      `╰────────────────────────────\n` +
       `Klik tombol di bawah untuk membuka halaman pendaftaran! 👇`;
 
     await sendWhatsAppCtaUrlButton(
