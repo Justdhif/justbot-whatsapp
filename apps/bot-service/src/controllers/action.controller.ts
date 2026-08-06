@@ -5,7 +5,6 @@ import { handleStickerCommand } from './commands/sticker.js';
 import { handleIqcCommand } from './commands/iqc.js';
 import { handleFinanceCommand } from './commands/finance.js';
 import { handleReminderCommand } from './commands/reminder.js';
-import { handleLoginCommand } from './commands/login.js';
 import { handleManagerCommand } from './commands/manager.js';
 import { classifyTargetModule } from './commands/general.js';
 
@@ -20,11 +19,6 @@ export async function handleWebhookActionOrMessage(
 
   if (lower === '.manager') {
     const isHandled = await handleManagerCommand(from, userText, senderName);
-    if (isHandled) return true;
-  }
-
-  if (lower.startsWith('.login ')) {
-    const isHandled = await handleLoginCommand(from, userText);
     if (isHandled) return true;
   }
 

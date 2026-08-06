@@ -78,7 +78,6 @@ export function getHelpMenu(senderName?: string): string {
 ├─✦  *.ingatkan* _<deskripsi waktu & pesan>_
 ├─✦  *.iqc* _<teks>_
 ├─✦  *.laporan*
-├─✦  *.login* _<session-id>_
 ├─✦  *.manager*
 ├─✦  *.menu*
 ├─✦  *.pengingat*
