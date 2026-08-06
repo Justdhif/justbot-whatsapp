@@ -20,23 +20,23 @@ export async function handleManagerCommand(
       `╭─── o「 ${titleManager} 」o\n` +
       `│\n` +
       `📌 *Apa itu Akun Manager?*\n` +
-      `Akun Manager adalah akun khusus pengguna JustBot untuk menikmati asisten personal canggih (pencatatan keuangan & agenda pengingat) yang terhubung langsung dengan WhatsApp Anda.\n\n` +
+      `Asisten personal canggih (Catat Keuangan & Pengingat) yang terhubung langsung dengan WhatsApp Anda.\n\n` +
       `⭐️ *Kelebihan Akun Manager*:\n` +
-      `├─✦ *Akses Web Dashboard GUI*: Pantau grafik pengeluaran bulanan dan kelola pengingat Anda dengan tampilan web premium.\n` +
-      `├─✦ *Siklus Sesi Tanpa Batas*: Login tetap tersimpan secara permanen (seperti Instagram/TikTok) tanpa harus berulang kali login.\n` +
-      `├─✦ *Keamanan OTP*: Pendaftaran diverifikasi aman menggunakan kode OTP WhatsApp secara real-time.\n` +
-      `├─✦ *Multi-Platform*: Catat lewat chat WhatsApp, pantau lewat browser web.\n` +
+      `├─✦ *Web Dashboard*: Pantau grafik pengeluaran & list pengingat.\n` +
+      `├─✦ *Sesi Permanen*: Login tersimpan (seperti Instagram/TikTok).\n` +
+      `├─✦ *Keamanan OTP*: Verifikasi pendaftaran instan via WhatsApp.\n` +
+      `├─✦ *Multi-Platform*: Catat via WA, pantau via web browser.\n` +
       `│\n` +
-      `🛠️ *Fitur & Perintah (Command) Lanjutan*:\n` +
-      `├─✦ *Pencatatan Keuangan*:\n` +
+      `🛠️ *Fitur & Perintah Lanjutan*:\n` +
+      `├─✦ *Catat Keuangan*:\n` +
       `│   • \`.catat <nominal> <kategori> <keterangan>\`\n` +
       `│   • \`.riwayat\` / \`.laporan\` / \`.summary\`\n` +
-      `├─✦ *Pengingat Pintar (Reminder)*:\n` +
+      `├─✦ *Pengingat Pintar*:\n` +
       `│   • \`.ingatkan <waktu> <deskripsi>\`\n` +
-      `│   • \`.pengingat\` (Melihat daftar pengingat aktif)\n` +
+      `│   • \`.pengingat\` (Melihat daftar aktif)\n` +
       `│\n` +
       `══════════════════════════════\n` +
-      `Klik tombol di bawah ini untuk membuka halaman pendaftaran! 👇`;
+      `Klik tombol di bawah untuk membuka halaman pendaftaran! 👇`;
 
     await sendWhatsAppCtaUrlButton(
       from,
