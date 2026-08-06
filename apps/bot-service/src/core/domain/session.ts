@@ -8,6 +8,7 @@ export interface UserSession {
   lastImageCaption?: string | null;
   accessToken?: string | null;
   refreshToken?: string | null;
+  displayName?: string | null;
   
   pendingAction?: string | null;
 }

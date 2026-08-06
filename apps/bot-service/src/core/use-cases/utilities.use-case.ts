@@ -16,8 +16,9 @@ Aturan Respon:
   return await askGroqAI(userPrompt, systemPrompt);
 }
 
-export function getHelpMenu(senderName?: string): string {
-  const greetingName = senderName ? ` ${senderName}` : '';
+export function getHelpMenu(senderName?: string, managerName?: string): string {
+  const greetingName = senderName ? `${senderName}` : 'Guest User';
+  const displayManager = managerName ? `${managerName}` : 'Belum Terhubung';
   
   const titleMain = changeFont('JUSTBOT AI', 'smallCaps');
   const titleUserInfo = changeFont('USER INFO', 'smallCaps');
@@ -26,7 +27,8 @@ export function getHelpMenu(senderName?: string): string {
   const titleShortcuts = changeFont('BOT COMMAND', 'smallCaps');
   const titleApps = changeFont('INTEGRATED APPS', 'smallCaps');
 
-  const labelName = changeFont('Nama', 'smallCaps');
+  const labelName = changeFont('Nama WA', 'smallCaps');
+  const labelManager = changeFont('Manager', 'smallCaps');
   const labelBotName = changeFont('Bot Name', 'smallCaps');
   const labelEngine = changeFont('Engine', 'smallCaps');
   const labelActive = changeFont('Active', 'smallCaps');
@@ -48,7 +50,8 @@ export function getHelpMenu(senderName?: string): string {
   return `╭─── o「 ${titleMain} 」o
 │
 ├─── o(" ${titleUserInfo} ")
-│ 👤 *${labelName}:* ${greetingName || 'Guest User'}
+│ 👤 *${labelName}:* ${greetingName}
+│ 💼 *${labelManager}:* ${displayManager}
 │
 ├─── o(" ${titleBotInfo} ")
 ├─✦ *${labelBotName}:* JustBot-Service

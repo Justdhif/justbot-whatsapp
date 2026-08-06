@@ -17,7 +17,7 @@ function getClient(): AxiosInstance {
   return _client;
 }
 
-async function loginUser(phoneNumber: string): Promise<{ accessToken: string; refreshToken: string } | null> {
+async function loginUser(phoneNumber: string): Promise<{ accessToken: string; refreshToken: string; displayName?: string } | null> {
   try {
     const res = await getClient().post(
       '/api/auth/bot-token',
@@ -28,9 +28,11 @@ async function loginUser(phoneNumber: string): Promise<{ accessToken: string; re
         },
       }
     );
+    const data = res.data?.data || res.data;
     return {
-      accessToken: res.data?.data?.accessToken ?? res.data?.accessToken,
-      refreshToken: res.data?.data?.refreshToken ?? res.data?.refreshToken,
+      accessToken: data?.accessToken,
+      refreshToken: data?.refreshToken,
+      displayName: data?.displayName,
     };
   } catch (err: any) {
     logger.debug(
@@ -97,7 +99,7 @@ export async function resolveAccessToken(
 
   const loginResult = await loginUser(phoneNumber);
   if (loginResult) {
-    setUserTokens(phoneNumber, loginResult.accessToken, loginResult.refreshToken);
+    setUserTokens(phoneNumber, loginResult.accessToken, loginResult.refreshToken, loginResult.displayName);
     return loginResult.accessToken;
   }
 

@@ -171,7 +171,7 @@ export class AuthService {
     return tokens;
   }
 
-  async generateTokenForBot(phoneNumber: string): Promise<TokenPair> {
+  async generateTokenForBot(phoneNumber: string): Promise<TokenPair & { displayName: string }> {
     const user = await this.usersRepository.findByPhoneNumber(phoneNumber);
     if (!user) {
       throw new UnauthorizedException('User not registered');
@@ -184,7 +184,10 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id);
     await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
 
-    return tokens;
+    return {
+      ...tokens,
+      displayName: user.displayName || '',
+    };
   }
 
   /**

@@ -16,6 +16,7 @@ export function getUserSession(userId: string): UserSession {
       accessToken: null,
       refreshToken: null,
       pendingAction: null,
+      displayName: null,
     };
   }
   return userSessions[userId];
@@ -58,10 +59,14 @@ export function setUserTokens(
   userId: string,
   accessToken: string | null,
   refreshToken: string | null,
+  displayName?: string | null,
 ): void {
   const session = getUserSession(userId);
   session.accessToken = accessToken;
   session.refreshToken = refreshToken;
+  if (displayName !== undefined) {
+    session.displayName = displayName;
+  }
   session.updatedAt = Date.now();
 }
 
