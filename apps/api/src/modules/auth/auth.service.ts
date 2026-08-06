@@ -171,6 +171,22 @@ export class AuthService {
     return tokens;
   }
 
+  async generateTokenForBot(phoneNumber: string): Promise<TokenPair> {
+    const user = await this.usersRepository.findByPhoneNumber(phoneNumber);
+    if (!user) {
+      throw new UnauthorizedException('User not registered');
+    }
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Account is deactivated');
+    }
+
+    const tokens = await this.generateTokens(user.id);
+    await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
   /**
    * Refresh Token Rotation (sliding session)
    *

@@ -17,40 +17,45 @@ function getClient(): AxiosInstance {
   return _client;
 }
 
-function generateBotPassword(phoneNumber: string): string {
-  return createHash('sha256')
-    .update(`${phoneNumber}:${env.BOT_SECRET}`)
-    .digest('hex')
-    .slice(0, 32) 
-    + 'A1'; 
-}
-
-function phoneToEmail(phoneNumber: string): string {
-  return `${phoneNumber}@justbot.app`;
-}
-
 async function loginUser(phoneNumber: string): Promise<{ accessToken: string; refreshToken: string } | null> {
   try {
-    const res = await getClient().post('/api/auth/login', {
-      email: phoneToEmail(phoneNumber),
-      password: generateBotPassword(phoneNumber),
-    });
+    const res = await getClient().post(
+      '/api/auth/bot-token',
+      { phoneNumber },
+      {
+        headers: {
+          'x-bot-token': env.BOT_SECRET,
+        },
+      }
+    );
     return {
       accessToken: res.data?.data?.accessToken ?? res.data?.accessToken,
       refreshToken: res.data?.data?.refreshToken ?? res.data?.refreshToken,
     };
-  } catch {
+  } catch (err: any) {
+    logger.debug(
+      { phoneNumber, errResponse: err?.response?.data || err.message },
+      'Failed to login user via bot-token'
+    );
     return null;
   }
 }
 
-async function registerUser(phoneNumber: string, displayName?: string): Promise<boolean> {
+export async function checkAccountExists(phoneNumber: string): Promise<boolean> {
+  const result = await loginUser(phoneNumber);
+  return result !== null;
+}
+
+export async function registerUserWithName(
+  phoneNumber: string,
+  displayName: string,
+): Promise<boolean> {
   try {
     await getClient().post('/api/auth/register', {
       phoneNumber,
-      email: phoneToEmail(phoneNumber),
-      password: generateBotPassword(phoneNumber),
-      displayName: displayName || `WA User ${phoneNumber}`,
+      displayName,
+    }, {
+      headers: { 'x-bot-token': env.BOT_SECRET }
     });
     return true;
   } catch (err: any) {
@@ -73,17 +78,6 @@ async function refreshTokens(refreshToken: string): Promise<{ accessToken: strin
   }
 }
 
-export async function checkAccountExists(phoneNumber: string): Promise<boolean> {
-  const result = await loginUser(phoneNumber);
-  return result !== null;
-}
-
-export async function registerUserWithName(
-  phoneNumber: string,
-  displayName: string,
-): Promise<boolean> {
-  return registerUser(phoneNumber, displayName);
-}
 
 export async function resolveAccessToken(
   phoneNumber: string,

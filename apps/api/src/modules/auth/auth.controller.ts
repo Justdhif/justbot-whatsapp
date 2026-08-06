@@ -137,4 +137,23 @@ export class AuthController {
     await this.authService.approveQrSession(body.sessionId, body.phoneNumber);
     return { success: true, message: 'Login QR disetujui' };
   }
+
+  /**
+   * POST /api/auth/bot-token
+   * Dipanggil oleh Bot untuk mendapatkan JWT token pair berdasarkan nomor HP pengguna
+   * (diverifikasi menggunakan x-bot-token).
+   */
+  @Public()
+  @Post('bot-token')
+  @HttpCode(HttpStatus.OK)
+  async getBotToken(
+    @Headers('x-bot-token') botToken: string,
+    @Body() body: { phoneNumber: string },
+  ) {
+    const botSecret = this.configService.get<string>('BOT_SECRET');
+    if (!botToken || botToken !== botSecret) {
+      throw new UnauthorizedException('Forbidden: Invalid bot token');
+    }
+    return this.authService.generateTokenForBot(body.phoneNumber);
+  }
 }
