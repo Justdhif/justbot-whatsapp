@@ -16,7 +16,34 @@ Aturan Respon:
   return await askGroqAI(userPrompt, systemPrompt);
 }
 
-export function getHelpMenu(senderName?: string, managerName?: string): string {
+const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+export function formatEffectiveDays(days: number[]): string {
+  if (!days || days.length === 0) return 'Tidak Aktif';
+  if (days.length === 7) return 'Setiap Hari';
+  
+  const sortedDays = [...days].sort((a, b) => a - b);
+  
+  let isContiguous = true;
+  for (let i = 1; i < sortedDays.length; i++) {
+    if (sortedDays[i] !== sortedDays[i - 1] + 1) {
+      isContiguous = false;
+      break;
+    }
+  }
+  
+  if (isContiguous && sortedDays.length > 2) {
+    return `${DAY_NAMES[sortedDays[0]]} - ${DAY_NAMES[sortedDays[sortedDays.length - 1]]}`;
+  }
+  
+  return sortedDays.map(d => DAY_NAMES[d]).join(', ');
+}
+
+export function getHelpMenu(
+  senderName?: string, 
+  managerName?: string,
+  config?: { effectiveDays: number[]; effectiveHourStart: string; effectiveHourEnd: string } | null
+): string {
   const greetingName = senderName ? `${senderName}` : 'Guest User';
   
   const titleMain = changeFont('JUSTBOT AI', 'smallCaps');
@@ -48,6 +75,12 @@ export function getHelpMenu(senderName?: string, managerName?: string): string {
 
   const managerLine = managerName ? `\n│ 💼 *${labelManager}:* ${managerName}` : '';
 
+  const formatTime = (t: string) => t.replace(/:/g, '.');
+  const activeDaysStr = config?.effectiveDays ? formatEffectiveDays(config.effectiveDays) : 'Sabtu - Kamis';
+  const activeHoursStr = (config?.effectiveHourStart && config?.effectiveHourEnd)
+    ? `${formatTime(config.effectiveHourStart)} - ${formatTime(config.effectiveHourEnd)}`
+    : '07.00 - 21.00';
+
   return `╭─── o「 ${titleMain} 」o
 │
 ├─── o(" ${titleUserInfo} ")
@@ -56,8 +89,8 @@ export function getHelpMenu(senderName?: string, managerName?: string): string {
 ├─── o(" ${titleBotInfo} ")
 ├─✦ *${labelBotName}:* JustBot-Service
 ├─✦ *${labelEngine}:* Fastify & Groq AI
-├─✦ *${labelActive}:* Sabtu - Kamis
-├─✦ *${labelHours}:* 07.00 - 21.00
+├─✦ *${labelActive}:* ${activeDaysStr}
+├─✦ *${labelHours}:* ${activeHoursStr}
 │
 ├─── o(" ${titleSkills} ")
 ├─✦ *${skillFinance}* 
