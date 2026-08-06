@@ -328,7 +328,7 @@ export default function RegisterPage() {
                     placeholder="Contoh: Budi Santoso"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors disabled:opacity-50"
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/20 transition-colors disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -344,7 +344,7 @@ export default function RegisterPage() {
                     placeholder="budi@example.com"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors disabled:opacity-50"
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/20 transition-colors disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -352,7 +352,7 @@ export default function RegisterPage() {
               {/* Phone Number */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-zinc-400">Nomor WhatsApp (Wajib)</label>
-                <div className="flex h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 focus-within:border-zinc-700 transition-colors overflow-hidden disabled:opacity-50">
+                <div className="flex h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20 transition-colors overflow-hidden disabled:opacity-50">
                   <div className="flex items-center gap-1.5 px-3 bg-zinc-900/40 border-r border-zinc-900 select-none text-sm text-zinc-300">
                     <span className="text-base">🇮🇩</span>
                     <span className="font-semibold font-mono text-zinc-400 text-xs">+62</span>
@@ -381,7 +381,7 @@ export default function RegisterPage() {
                     placeholder="Minimal 8 karakter"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
-                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors disabled:opacity-50"
+                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/20 transition-colors disabled:opacity-50"
                   />
                   <button
                     type="button"
@@ -404,7 +404,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setIsOtpSent(false)}
-                      className="text-[10px] text-zinc-500 hover:text-zinc-300 underline font-medium"
+                      className="text-[10px] text-primary hover:text-primary/85 underline font-medium"
                     >
                       Ubah data
                     </button>
@@ -417,7 +417,7 @@ export default function RegisterPage() {
                       placeholder="6-digit OTP"
                       value={regOtp}
                       onChange={(e) => setRegOtp(e.target.value.replace(/\D/g, ''))}
-                      className="h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-center tracking-[0.5em] text-lg font-bold text-white placeholder:tracking-normal placeholder:text-zinc-700 placeholder:text-sm focus:outline-none focus:border-zinc-700 transition-colors font-mono"
+                      className="h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-center tracking-[0.5em] text-lg font-bold text-white placeholder:tracking-normal placeholder:text-zinc-700 placeholder:text-sm focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/20 transition-colors font-mono"
                     />
                   </div>
                   <p className="text-[10px] text-zinc-550 leading-relaxed">
@@ -435,7 +435,7 @@ export default function RegisterPage() {
                         type="button"
                         disabled={otpLoading}
                         onClick={handleSendOtp}
-                        className="text-[11px] text-white font-semibold hover:underline flex items-center gap-1"
+                        className="text-[11px] text-primary font-semibold hover:underline flex items-center gap-1"
                       >
                         {otpLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Kirim Ulang Kode OTP'}
                       </button>
@@ -447,7 +447,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={submitting || otpLoading}
-                className="w-full h-10 rounded-lg bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors flex items-center justify-center gap-1.5 mt-2"
+                className="w-full h-10 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 mt-2 shadow-md shadow-primary/10"
               >
                 {otpLoading || submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -474,7 +474,7 @@ export default function RegisterPage() {
                     placeholder="Contoh: user@domain.com atau 628221..."
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                    className="pl-9 pr-3 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/20 transition-colors"
                   />
                 </div>
               </div>
@@ -490,7 +490,7 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-colors"
+                    className="pl-9 pr-10 h-10 w-full rounded-lg bg-zinc-950 border border-zinc-900 text-sm text-white placeholder-zinc-650 focus:outline-none focus:border-primary/80 focus:ring-1 focus:ring-primary/20 transition-colors"
                   />
                   <button
                     type="button"
@@ -505,7 +505,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-10 rounded-lg bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition-colors flex items-center justify-center gap-1.5 mt-2"
+                className="w-full h-10 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 mt-2 shadow-md shadow-primary/10"
               >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Masuk Dashboard'}
               </button>
@@ -519,7 +519,7 @@ export default function RegisterPage() {
                 setErrorMessage('');
                 setSuccessMessage('');
               }}
-              className="text-xs text-zinc-400 hover:text-white transition-colors underline focus:outline-none"
+              className="text-xs text-primary/85 hover:text-primary transition-colors underline focus:outline-none"
             >
               {mode === 'register' 
                 ? 'Sudah memiliki akun? Masuk ke Dashboard' 
