@@ -2,11 +2,9 @@ import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import { eq } from 'drizzle-orm';
 import * as bcrypt from 'bcryptjs';
 import * as schema from '../schema';
-import { users, userProfiles, botConfigurations } from '../schema';
+import { users, userProfiles } from '../schema';
 
 export async function seedSuperAdmin(db: NeonHttpDatabase<any>): Promise<void> {
-  console.log('   🔑 Running Super Admin Seeder...');
-
   const adminEmail = 'superadmin@justbot.com';
   const adminPhone = '628123456789';
   const adminPassword = 'SuperAdmin123!';
@@ -56,23 +54,6 @@ export async function seedSuperAdmin(db: NeonHttpDatabase<any>): Promise<void> {
         language: 'id',
       });
     console.log('      ✓ Profile Super Admin berhasil dibuat.');
-  }
-
-  // 2. Inisialisasi default row di bot_configurations jika kosong
-  const configResult = await db
-    .select()
-    .from(botConfigurations)
-    .limit(1);
-  const config = configResult[0] ?? null;
-
-  if (!config) {
-    await db.insert(botConfigurations)
-      .values({
-        updatedBy: userId,
-      });
-    console.log('      ✓ Baris konfigurasi default bot berhasil diinisialisasi.');
-  } else {
-    console.log('      ✓ Konfigurasi default bot sudah ada.');
   }
 
   console.log('      ─────────────────────────────────────────────');

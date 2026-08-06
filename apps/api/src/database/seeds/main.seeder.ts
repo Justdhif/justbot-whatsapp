@@ -1,6 +1,7 @@
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { seedSuperAdmin } from './super-admin.seeder';
+import { seedBotConfiguration } from './bot-configuration.seeder';
 
 /**
  * Main Database Seeder (seperti DatabaseSeeder di Laravel)
@@ -12,9 +13,8 @@ export async function runMainSeeder(db: NeonHttpDatabase<typeof schema>): Promis
   // 1. Jalankan Super Admin Seeder
   await seedSuperAdmin(db);
 
-  // 2. [Tambahkan seeder lain di sini di masa depan]
-  // await seedMockUsers(db);
-  // await seedDefaultData(db);
+  // 2. Jalankan Bot Configuration Seeder
+  await seedBotConfiguration(db);
 
   console.log('\n✅ Seeding database selesai dengan sukses!\n');
 }

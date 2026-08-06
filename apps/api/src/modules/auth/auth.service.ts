@@ -181,12 +181,15 @@ export class AuthService {
       throw new ForbiddenException('Account is deactivated');
     }
 
+    const userWithProfile = await this.usersRepository.findByIdWithProfile(user.id);
+    const displayName = userWithProfile?.profile?.displayName || '';
+
     const tokens = await this.generateTokens(user.id);
     await this.storeRefreshTokenHash(user.id, tokens.refreshToken);
 
     return {
       ...tokens,
-      displayName: user.displayName || '',
+      displayName,
     };
   }
 
