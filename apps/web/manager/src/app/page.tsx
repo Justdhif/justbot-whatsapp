@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     const { accessToken, refreshToken } = getAuthTokens();
     if (accessToken || refreshToken) {
-      router.push('/dashboard');
+      router.push('/register/success');
     } else {
       router.push('/register');
     }
