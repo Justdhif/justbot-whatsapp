@@ -18,7 +18,6 @@ Aturan Respon:
 
 export function getHelpMenu(senderName?: string, managerName?: string): string {
   const greetingName = senderName ? `${senderName}` : 'Guest User';
-  const displayManager = managerName ? `${managerName}` : 'Belum Terhubung';
   
   const titleMain = changeFont('JUSTBOT AI', 'smallCaps');
   const titleUserInfo = changeFont('USER INFO', 'smallCaps');
@@ -47,11 +46,12 @@ export function getHelpMenu(senderName?: string, managerName?: string): string {
 
   const bratGenerator = changeFont('Brat Generator', 'smallCaps');
 
+  const managerLine = managerName ? `\n│ 💼 *${labelManager}:* ${managerName}` : '';
+
   return `╭─── o「 ${titleMain} 」o
 │
 ├─── o(" ${titleUserInfo} ")
-│ 👤 *${labelName}:* ${greetingName}
-│ 💼 *${labelManager}:* ${displayManager}
+│ 👤 *${labelName}:* ${greetingName}${managerLine}
 │
 ├─── o(" ${titleBotInfo} ")
 ├─✦ *${labelBotName}:* JustBot-Service
